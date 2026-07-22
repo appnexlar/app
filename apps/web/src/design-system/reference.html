@@ -1,0 +1,483 @@
+<style>
+/*FONT_FACES*/
+
+:root {
+  /* Primitivos — marca */
+  --brand-navy-50:#f2f5f6; --brand-navy-100:#e1e7eb; --brand-navy-200:#c3cfd7;
+  --brand-navy-300:#97abb9; --brand-navy-400:#6b889c; --brand-navy-500:#4a6b82;
+  --brand-navy-600:#3b586d; --brand-navy-700:#2f4759; --brand-navy-800:#243746;
+  --brand-navy-900:#1c2c39; --brand-navy-950:#16222c;
+  --brand-orange-50:#fcefea; --brand-orange-100:#f8dcd2; --brand-orange-200:#f1b8a5;
+  --brand-orange-300:#e89376; --brand-orange-400:#de6e51; --brand-orange-500:#d2502e;
+  --brand-orange-600:#c04327; --brand-orange-700:#a83920; --brand-orange-800:#872f1e; --brand-orange-900:#6f281b;
+  --neutral-0:#ffffff; --neutral-50:#fafaf8; --neutral-100:#eeecea; --neutral-200:#e2dfdb;
+  --neutral-300:#d0ccc6; --neutral-400:#bcbab5; --neutral-500:#9a9791; --neutral-600:#78756f;
+  --neutral-700:#565450; --neutral-800:#3a3936; --neutral-900:#22211f;
+  --green-500:#1f9d6b; --green-700:#12764e; --green-50:#e7f4ee;
+  --amber-500:#e0a400; --amber-700:#8a5a00; --amber-50:#fbf1da;
+  --red-500:#c42d1c; --red-700:#971d0f; --red-50:#fbeae7;
+  --blue-500:#2e6fad; --blue-700:#1f4f7f; --blue-50:#e7eff7;
+
+  /* Semânticos (light) */
+  --bg:var(--neutral-50); --surface:var(--neutral-0); --surface-sunken:var(--neutral-100);
+  --text:var(--neutral-900); --text-muted:var(--neutral-600); --text-subtle:var(--neutral-500);
+  --border:var(--neutral-200); --border-strong:var(--neutral-300);
+  --primary:var(--brand-navy-800); --primary-hover:var(--brand-navy-900); --primary-soft:var(--brand-navy-50); --primary-on:#fff;
+  --accent:var(--brand-orange-500); --accent-hover:var(--brand-orange-600); --accent-soft:var(--brand-orange-50); --accent-on:#fff;
+  --success:var(--green-500); --success-fg:var(--green-700); --success-soft:var(--green-50);
+  --warning:var(--amber-500); --warning-fg:var(--amber-700); --warning-soft:var(--amber-50);
+  --danger:var(--red-500); --danger-fg:var(--red-700); --danger-soft:var(--red-50);
+  --info:var(--blue-500); --info-fg:var(--blue-700); --info-soft:var(--blue-50);
+  --hero-grid:rgba(255,255,255,0.06);
+
+  --font:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --shadow-sm:0 1px 3px rgba(22,34,44,.08),0 1px 2px rgba(22,34,44,.04);
+  --shadow-md:0 4px 12px rgba(22,34,44,.10);
+  --shadow-lg:0 12px 28px rgba(22,34,44,.14);
+  --radius-md:.625rem; --radius-lg:.875rem; --radius-xl:1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:var(--neutral-900); --surface:#2a2926; --surface-sunken:#201f1d;
+    --text:var(--neutral-50); --text-muted:#b6b2ab; --text-subtle:#8f8b84;
+    --border:#3d3b38; --border-strong:#4c4a46;
+    --primary:var(--brand-navy-400); --primary-hover:var(--brand-navy-300); --primary-soft:#20303c; --primary-on:#0f1a22;
+    --accent:var(--brand-orange-400); --accent-hover:var(--brand-orange-300); --accent-soft:#3a201a; --accent-on:#1a0d09;
+    --success-soft:#12281f; --warning-soft:#2c2410; --danger-soft:#2c1512; --info-soft:#12212e;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.4); --shadow-md:0 4px 14px rgba(0,0,0,.45); --shadow-lg:0 14px 32px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:var(--neutral-900); --surface:#2a2926; --surface-sunken:#201f1d;
+  --text:var(--neutral-50); --text-muted:#b6b2ab; --text-subtle:#8f8b84;
+  --border:#3d3b38; --border-strong:#4c4a46;
+  --primary:var(--brand-navy-400); --primary-hover:var(--brand-navy-300); --primary-soft:#20303c; --primary-on:#0f1a22;
+  --accent:var(--brand-orange-400); --accent-hover:var(--brand-orange-300); --accent-soft:#3a201a; --accent-on:#1a0d09;
+  --success-soft:#12281f; --warning-soft:#2c2410; --danger-soft:#2c1512; --info-soft:#12212e;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.4); --shadow-md:0 4px 14px rgba(0,0,0,.45); --shadow-lg:0 14px 32px rgba(0,0,0,.55);
+}
+:root[data-theme="light"] {
+  --bg:var(--neutral-50); --surface:var(--neutral-0); --surface-sunken:var(--neutral-100);
+  --text:var(--neutral-900); --text-muted:var(--neutral-600); --text-subtle:var(--neutral-500);
+  --border:var(--neutral-200); --border-strong:var(--neutral-300);
+  --primary:var(--brand-navy-800); --primary-soft:var(--brand-navy-50); --primary-on:#fff;
+  --accent:var(--brand-orange-500); --accent-hover:var(--brand-orange-600); --accent-soft:var(--brand-orange-50); --accent-on:#fff;
+  --success-soft:var(--green-50); --warning-soft:var(--amber-50); --danger-soft:var(--red-50); --info-soft:var(--blue-50);
+}
+
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font);
+  font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+h1,h2,h3,h4 { text-wrap:balance; margin:0; }
+.wrap { max-width:1080px; margin:0 auto; padding:0 24px; }
+
+/* Hero */
+.hero { background:var(--brand-navy-800); color:#fff; position:relative; overflow:hidden;
+  border-bottom:3px solid var(--brand-orange-500); }
+.hero::after { content:""; position:absolute; inset:0;
+  background-image:linear-gradient(var(--hero-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hero-grid) 1px,transparent 1px);
+  background-size:44px 44px; mask-image:radial-gradient(circle at 78% 30%,#000,transparent 72%); }
+.hero .wrap { position:relative; padding:56px 24px 48px; z-index:1; }
+.wordmark { font-weight:800; font-size:44px; letter-spacing:-.03em; line-height:1; }
+.wordmark .lar { color:var(--brand-orange-500); }
+.hero .tagline { color:var(--brand-navy-200); margin-top:8px; font-weight:500; letter-spacing:.02em; }
+.hero h1 { font-size:clamp(30px,5vw,46px); font-weight:800; letter-spacing:-.025em; margin-top:32px; max-width:16ch; }
+.hero .lead { color:var(--brand-navy-100); margin-top:14px; max-width:56ch; font-size:17px; }
+.hero .meta { margin-top:28px; display:flex; gap:10px; flex-wrap:wrap; }
+.pill { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600;
+  padding:6px 12px; border-radius:999px; background:rgba(255,255,255,.10); color:#fff;
+  border:1px solid rgba(255,255,255,.16); }
+.pill b { color:var(--brand-orange-300); }
+
+/* Theme toggle */
+.toggle { position:fixed; top:16px; right:16px; z-index:50; border:1px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.2); color:#fff; font:inherit; font-size:13px; font-weight:600;
+  padding:8px 14px; border-radius:999px; cursor:pointer; backdrop-filter:blur(6px); }
+.toggle:hover { background:rgba(0,0,0,.35); }
+
+/* Sections */
+section { padding:56px 0; border-top:1px solid var(--border); }
+section:first-of-type { border-top:none; }
+.eyebrow { font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--accent); display:flex; align-items:center; gap:10px; }
+.eyebrow::before { content:""; width:22px; height:2px; background:var(--accent); display:inline-block; }
+.sec-title { font-size:28px; font-weight:800; letter-spacing:-.02em; margin:14px 0 6px; }
+.sec-desc { color:var(--text-muted); max-width:60ch; }
+.grid { display:grid; gap:16px; }
+.subhead { font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--text-subtle); margin:32px 0 14px; }
+
+/* Swatches */
+.swatches { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+.swatch { border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden;
+  background:var(--surface); box-shadow:var(--shadow-sm); }
+.swatch .chip { height:86px; }
+.swatch .info { padding:11px 13px; }
+.swatch .name { font-weight:700; font-size:14px; }
+.swatch .role { font-size:11.5px; color:var(--text-subtle); margin-top:1px; }
+.swatch .hex { font-family:var(--mono); font-size:12px; color:var(--text-muted); margin-top:7px;
+  text-transform:uppercase; letter-spacing:.02em; }
+
+/* Ramp */
+.ramp { display:flex; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--border); }
+.ramp span { flex:1; height:52px; display:flex; align-items:flex-end; justify-content:center;
+  padding-bottom:5px; font-family:var(--mono); font-size:10px; }
+.ramp + .ramp { margin-top:10px; }
+
+/* Semantic tokens table */
+.tokens { grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); }
+.tok { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--border);
+  border-radius:var(--radius-md); background:var(--surface); }
+.tok .dot { width:34px; height:34px; border-radius:9px; flex:none; border:1px solid rgba(0,0,0,.08); }
+.tok .k { font-family:var(--mono); font-size:12.5px; font-weight:600; }
+.tok .v { font-size:11.5px; color:var(--text-subtle); margin-top:2px; }
+
+/* Type specimens */
+.type-row { display:flex; align-items:baseline; gap:20px; padding:16px 0; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.type-row:last-child { border-bottom:none; }
+.type-tag { flex:none; width:120px; font-family:var(--mono); font-size:11.5px; color:var(--text-subtle); }
+.type-tag b { display:block; color:var(--text-muted); font-family:var(--font); font-size:12px; font-weight:600; }
+.t-display { font-size:36px; font-weight:800; letter-spacing:-.03em; line-height:1.1; }
+.t-h1 { font-size:28px; font-weight:700; letter-spacing:-.02em; }
+.t-h2 { font-size:22px; font-weight:700; }
+.t-h3 { font-size:18px; font-weight:600; }
+.t-body { font-size:16px; }
+.t-label { font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.t-caption { font-size:12px; color:var(--text-muted); }
+.weights { display:flex; gap:22px; flex-wrap:wrap; margin-top:22px; }
+.weights div { font-size:30px; letter-spacing:-.02em; }
+.weights small { display:block; font-size:11px; color:var(--text-subtle); font-weight:500; letter-spacing:0; text-transform:none; margin-top:2px; }
+
+/* Scale / radius / shadow */
+.metrics { grid-template-columns:1fr 1fr; }
+@media (max-width:760px){ .metrics{ grid-template-columns:1fr; } }
+.panel { border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--surface);
+  padding:22px; box-shadow:var(--shadow-sm); }
+.panel h4 { font-size:15px; font-weight:700; margin-bottom:16px; }
+.space-row { display:flex; align-items:center; gap:12px; margin-bottom:9px; font-size:12.5px; color:var(--text-muted); font-family:var(--mono); }
+.space-row i { height:14px; background:var(--accent); border-radius:3px; display:block; }
+.radii { display:flex; gap:16px; flex-wrap:wrap; }
+.radii div { width:74px; }
+.radii .box { height:60px; background:var(--primary-soft); border:1.5px solid var(--primary); }
+.radii small { font-family:var(--mono); font-size:11px; color:var(--text-subtle); display:block; margin-top:6px; }
+.shadows { display:flex; gap:20px; flex-wrap:wrap; }
+.shadows div { width:96px; }
+.shadows .box { height:64px; background:var(--surface); border-radius:var(--radius-md); }
+.shadows small { font-family:var(--mono); font-size:11px; color:var(--text-subtle); display:block; margin-top:10px; }
+
+/* Components */
+.demo { border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--surface); padding:24px; box-shadow:var(--shadow-sm); }
+.demo + .demo { margin-top:16px; }
+.btn { font:inherit; font-weight:600; font-size:15px; border-radius:var(--radius-md); padding:11px 18px;
+  border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; gap:8px; min-height:44px; transition:.15s; }
+.btn-accent { background:var(--accent); color:var(--accent-on); }
+.btn-accent:hover { background:var(--accent-hover); }
+.btn-primary { background:var(--primary); color:var(--primary-on); }
+.btn-primary:hover { background:var(--primary-hover); }
+.btn-ghost { background:transparent; color:var(--text); border-color:var(--border-strong); }
+.btn-ghost:hover { background:var(--surface-sunken); }
+.btn-danger { background:transparent; color:var(--danger-fg); border-color:var(--danger); }
+.btn:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(210,80,46,.3); }
+.row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+
+.field { display:block; max-width:340px; }
+.field label { font-size:13px; font-weight:600; display:block; margin-bottom:6px; }
+.field .req { color:var(--accent); }
+.input { width:100%; font:inherit; font-size:16px; padding:11px 13px; border-radius:var(--radius-md);
+  border:1px solid var(--border-strong); background:var(--bg); color:var(--text); min-height:44px; }
+.input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(210,80,46,.22); }
+.input::placeholder { color:var(--text-subtle); }
+.hint { font-size:12px; color:var(--text-subtle); margin-top:6px; }
+
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+.chip-status { font-size:12.5px; font-weight:600; padding:5px 12px; border-radius:999px;
+  display:inline-flex; align-items:center; gap:6px; border:1px solid transparent; }
+.chip-status::before { content:""; width:7px; height:7px; border-radius:50%; background:currentColor; }
+.st-novo{ background:var(--info-soft); color:var(--info-fg); }
+.st-contato{ background:var(--primary-soft); color:var(--primary); }
+.st-qualif{ background:var(--accent-soft); color:var(--accent); }
+.st-visita{ background:var(--warning-soft); color:var(--warning-fg); }
+.st-proposta{ background:#efe6fb; color:#6b3fa0; }
+.st-ganho{ background:var(--success-soft); color:var(--success-fg); }
+.st-perdido{ background:var(--surface-sunken); color:var(--text-subtle); }
+
+.badge { font-size:12px; font-weight:600; padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:5px; }
+.bd-success{ background:var(--success-soft); color:var(--success-fg); }
+.bd-warning{ background:var(--warning-soft); color:var(--warning-fg); }
+.bd-danger{ background:var(--danger-soft); color:var(--danger-fg); }
+.bd-info{ background:var(--info-soft); color:var(--info-fg); }
+
+/* Lead card */
+.lead-card { max-width:380px; border:1px solid var(--border); border-radius:var(--radius-lg);
+  background:var(--surface); box-shadow:var(--shadow-sm); overflow:hidden; }
+.lead-card .top { padding:16px; display:flex; gap:12px; align-items:center; }
+.avatar { width:44px; height:44px; border-radius:50%; flex:none; background:var(--primary);
+  color:#fff; display:grid; place-items:center; font-weight:700; }
+.lead-card .nm { font-weight:700; font-size:16px; }
+.lead-card .wa { font-size:13px; color:var(--text-muted); display:flex; align-items:center; gap:6px; margin-top:2px; }
+.lead-card .body { padding:0 16px 14px; display:flex; gap:16px; flex-wrap:wrap; }
+.metric { font-size:12px; color:var(--text-subtle); }
+.metric b { display:block; font-size:15px; color:var(--text); font-weight:700; font-variant-numeric:tabular-nums; }
+.lead-card .foot { border-top:1px solid var(--border); padding:11px 16px; display:flex; justify-content:space-between; align-items:center; background:var(--surface-sunken); }
+.next { font-size:12.5px; color:var(--text-muted); }
+.next b { color:var(--accent); }
+
+/* States */
+.states { grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
+.state { border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--surface);
+  padding:22px; text-align:center; min-height:190px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+.state .ic { width:46px; height:46px; border-radius:12px; display:grid; place-items:center; font-size:22px; }
+.state h4 { font-size:15px; }
+.state p { font-size:12.5px; color:var(--text-muted); margin:0; max-width:24ch; }
+.state .btn { margin-top:6px; font-size:13px; min-height:0; padding:8px 14px; }
+.state.loading .ln { height:11px; border-radius:6px; background:var(--surface-sunken); width:100%; }
+.state.loading .ln.s { width:60%; }
+.spinner { width:30px; height:30px; border-radius:50%; border:3px solid var(--surface-sunken); border-top-color:var(--accent); animation:spin 1s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion:reduce){ .spinner{ animation:none; } }
+
+footer { padding:40px 0 64px; color:var(--text-subtle); font-size:13px; text-align:center; border-top:1px solid var(--border); }
+footer .wordmark { font-size:20px; margin-bottom:8px; }
+</style>
+
+<button class="toggle" id="tg" aria-label="Alternar tema">Tema: auto</button>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="wordmark">nex<span class="lar">lar</span></div>
+    <div class="tagline">Estratégia de Marca · Design System v1.0</div>
+    <h1>O sistema visual do CRM que organiza o corretor.</h1>
+    <p class="lead">Tokens, tipografia e componentes derivados do Brand Book. Mobile-first, tom profissional e cordial, referência Apple HIG. Esta é a fonte visual antes de qualquer tela.</p>
+    <div class="meta">
+      <span class="pill">Cor primária <b>Azul Noite</b></span>
+      <span class="pill">Acento <b>Laranja Nexlar</b></span>
+      <span class="pill">Tipografia <b>Plus Jakarta Sans</b></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <div class="eyebrow">Fundamento 01</div>
+    <h2 class="sec-title">Cores da marca</h2>
+    <p class="sec-desc">Cinco cores fixas do Brand Book. Azul Noite estrutura, Laranja aciona, os neutros quentes dão o descanso. Tudo o mais é escala construída a partir delas.</p>
+    <div class="grid swatches" style="margin-top:26px">
+      <div class="swatch"><div class="chip" style="background:#243746"></div><div class="info"><div class="name">Azul Noite</div><div class="role">Cor primária</div><div class="hex">#243746</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#d2502e"></div><div class="info"><div class="name">Laranja Nexlar</div><div class="role">Cor de acento</div><div class="hex">#D2502E</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#fafaf8"></div><div class="info"><div class="name">Branco</div><div class="role">Fundo principal</div><div class="hex">#FAFAF8</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#eeecea"></div><div class="info"><div class="name">Areia</div><div class="role">Fundo secundário</div><div class="hex">#EEECEA</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#bcbab5"></div><div class="info"><div class="name">Cinza</div><div class="role">Texto secundário</div><div class="hex">#BCBAB5</div></div></div>
+    </div>
+
+    <div class="subhead">Escalas construídas</div>
+    <div class="ramp">
+      <span style="background:#f2f5f6;color:#243746">50</span><span style="background:#e1e7eb;color:#243746">100</span><span style="background:#c3cfd7;color:#243746">200</span><span style="background:#97abb9;color:#243746">300</span><span style="background:#6b889c;color:#fff">400</span><span style="background:#4a6b82;color:#fff">500</span><span style="background:#3b586d;color:#fff">600</span><span style="background:#2f4759;color:#fff">700</span><span style="background:#243746;color:#fff">800</span><span style="background:#1c2c39;color:#fff">900</span><span style="background:#16222c;color:#fff">950</span>
+    </div>
+    <div class="ramp">
+      <span style="background:#fcefea;color:#872f1e">50</span><span style="background:#f8dcd2;color:#872f1e">100</span><span style="background:#f1b8a5;color:#872f1e">200</span><span style="background:#e89376;color:#4a1a10">300</span><span style="background:#de6e51;color:#fff">400</span><span style="background:#d2502e;color:#fff">500</span><span style="background:#c04327;color:#fff">600</span><span style="background:#a83920;color:#fff">700</span><span style="background:#872f1e;color:#fff">800</span><span style="background:#6f281b;color:#fff">900</span>
+    </div>
+    <div class="ramp">
+      <span style="background:#fafaf8;color:#22211f">50</span><span style="background:#eeecea;color:#22211f">100</span><span style="background:#e2dfdb;color:#22211f">200</span><span style="background:#d0ccc6;color:#22211f">300</span><span style="background:#bcbab5;color:#22211f">400</span><span style="background:#9a9791;color:#fff">500</span><span style="background:#78756f;color:#fff">600</span><span style="background:#565450;color:#fff">700</span><span style="background:#3a3936;color:#fff">800</span><span style="background:#22211f;color:#fff">900</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Fundamento 02</div>
+    <h2 class="sec-title">Tokens semânticos</h2>
+    <p class="sec-desc">Componentes nunca usam a cor crua. Consomem papéis de uso, que trocam sozinhos entre claro e escuro. Inclui os estados que toda tela do Nexlar precisa tratar.</p>
+    <div class="grid tokens" style="margin-top:26px">
+      <div class="tok"><span class="dot" style="background:var(--primary)"></span><div><div class="k">--primary</div><div class="v">Navegação, estrutura</div></div></div>
+      <div class="tok"><span class="dot" style="background:var(--accent)"></span><div><div class="k">--accent</div><div class="v">CTA, foco, destaque</div></div></div>
+      <div class="tok"><span class="dot" style="background:var(--surface);border-color:var(--border)"></span><div><div class="k">--surface</div><div class="v">Cards e painéis</div></div></div>
+      <div class="tok"><span class="dot" style="background:var(--surface-sunken)"></span><div><div class="k">--surface-sunken</div><div class="v">Áreas recuadas</div></div></div>
+      <div class="tok"><span class="dot" style="background:var(--success)"></span><div><div class="k">--success</div><div class="v">Estado de sucesso</div></div></div>
+      <div class="tok"><span class="dot" style="background:var(--warning)"></span><div><div class="k">--warning</div><div class="v">Atenção, follow-up</div></div></div>
+      <div class="tok"><span class="dot" style="background:var(--danger)"></span><div><div class="k">--danger</div><div class="v">Erro, exclusão</div></div></div>
+      <div class="tok"><span class="dot" style="background:var(--info)"></span><div><div class="k">--info</div><div class="v">Informação neutra</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Fundamento 03</div>
+    <h2 class="sec-title">Tipografia</h2>
+    <p class="sec-desc">Plus Jakarta Sans em toda a interface. Firme nos títulos, calma no corpo. Cinco pesos, uma escala só.</p>
+    <div class="panel" style="margin-top:26px">
+      <div class="type-row"><div class="type-tag"><b>Display</b>36 · 800</div><div class="t-display">Gestão de Negócios</div></div>
+      <div class="type-row"><div class="type-tag"><b>H1</b>28 · 700</div><div class="t-h1">Organização e eficiência</div></div>
+      <div class="type-row"><div class="type-tag"><b>H2</b>22 · 700</div><div class="t-h2">Seus leads em um só lugar</div></div>
+      <div class="type-row"><div class="type-tag"><b>H3</b>18 · 600</div><div class="t-h3">Próxima ação recomendada</div></div>
+      <div class="type-row"><div class="type-tag"><b>Corpo</b>16 · 400</div><div class="t-body">Texto de parágrafo e descrições. Conduz o corretor até a próxima ação certa, sem burocracia.</div></div>
+      <div class="type-row"><div class="type-tag"><b>Rótulo</b>13 · 600</div><div class="t-label">Rótulo de seção</div></div>
+      <div class="type-row"><div class="type-tag"><b>Legenda</b>12 · 400</div><div class="t-caption">Atualizado há 3 minutos · formato brasileiro</div></div>
+    </div>
+    <div class="weights">
+      <div style="font-weight:300">Aa<small>Light 300</small></div>
+      <div style="font-weight:400">Aa<small>Regular 400</small></div>
+      <div style="font-weight:600">Aa<small>SemiBold 600</small></div>
+      <div style="font-weight:700">Aa<small>Bold 700</small></div>
+      <div style="font-weight:800">Aa<small>ExtraBold 800</small></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Fundamento 04</div>
+    <h2 class="sec-title">Espaço, forma e profundidade</h2>
+    <p class="sec-desc">Base de 4px, cantos generosos e sombras suaves. O alvo de toque nunca fica abaixo de 44px, porque o corretor trabalha no celular.</p>
+    <div class="grid metrics" style="margin-top:26px">
+      <div class="panel">
+        <h4>Espaçamento · base 4px</h4>
+        <div class="space-row"><i style="width:4px"></i>1 · 4px</div>
+        <div class="space-row"><i style="width:8px"></i>2 · 8px</div>
+        <div class="space-row"><i style="width:12px"></i>3 · 12px</div>
+        <div class="space-row"><i style="width:16px"></i>4 · 16px</div>
+        <div class="space-row"><i style="width:24px"></i>6 · 24px</div>
+        <div class="space-row"><i style="width:32px"></i>8 · 32px</div>
+        <div class="space-row"><i style="width:48px"></i>12 · 48px</div>
+      </div>
+      <div class="panel">
+        <h4>Raio de canto</h4>
+        <div class="radii">
+          <div><div class="box" style="border-radius:6px"></div><small>sm 6</small></div>
+          <div><div class="box" style="border-radius:10px"></div><small>md 10</small></div>
+          <div><div class="box" style="border-radius:14px"></div><small>lg 14</small></div>
+          <div><div class="box" style="border-radius:20px"></div><small>xl 20</small></div>
+        </div>
+        <h4 style="margin-top:26px">Sombra</h4>
+        <div class="shadows">
+          <div><div class="box" style="box-shadow:var(--shadow-sm)"></div><small>sm</small></div>
+          <div><div class="box" style="box-shadow:var(--shadow-md)"></div><small>md</small></div>
+          <div><div class="box" style="box-shadow:var(--shadow-lg)"></div><small>lg</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Componentes 05</div>
+    <h2 class="sec-title">Peças base</h2>
+    <p class="sec-desc">Como os tokens viram interface. Amostra dos elementos que se repetem em toda tela do CRM.</p>
+
+    <div class="subhead">Botões</div>
+    <div class="demo">
+      <div class="row">
+        <button class="btn btn-accent">Salvar lead</button>
+        <button class="btn btn-primary">Ver funil</button>
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-danger">Excluir</button>
+      </div>
+    </div>
+
+    <div class="subhead">Campo · cadastro rápido</div>
+    <div class="demo">
+      <div class="row" style="gap:20px;align-items:flex-start">
+        <div class="field">
+          <label>Nome <span class="req">*</span></label>
+          <input class="input" value="Marina Prado" />
+        </div>
+        <div class="field">
+          <label>WhatsApp <span class="req">*</span></label>
+          <input class="input" value="(11) 98877-1200" />
+          <div class="hint">Só nome e WhatsApp são obrigatórios.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subhead">Status do funil</div>
+    <div class="demo">
+      <div class="chips">
+        <span class="chip-status st-novo">Novo</span>
+        <span class="chip-status st-contato">Em contato</span>
+        <span class="chip-status st-qualif">Qualificado</span>
+        <span class="chip-status st-visita">Visita</span>
+        <span class="chip-status st-proposta">Proposta</span>
+        <span class="chip-status st-ganho">Ganho</span>
+        <span class="chip-status st-perdido">Perdido</span>
+      </div>
+    </div>
+
+    <div class="subhead">Selos de feedback</div>
+    <div class="demo">
+      <div class="chips">
+        <span class="badge bd-success">✓ Documento recebido</span>
+        <span class="badge bd-warning">⏱ Follow-up hoje</span>
+        <span class="badge bd-danger">! 5 dias parado</span>
+        <span class="badge bd-info">↺ Reativar em 30 dias</span>
+      </div>
+    </div>
+
+    <div class="subhead">Card de lead</div>
+    <div class="lead-card">
+      <div class="top">
+        <div class="avatar">MP</div>
+        <div>
+          <div class="nm">Marina Prado</div>
+          <div class="wa">WhatsApp · (11) 98877-1200</div>
+        </div>
+        <span class="chip-status st-visita" style="margin-left:auto">Visita</span>
+      </div>
+      <div class="body">
+        <div class="metric"><b>R$ 480 mil</b>Orçamento</div>
+        <div class="metric"><b>3</b>Imóveis vistos</div>
+        <div class="metric"><b>2 dias</b>Sem contato</div>
+      </div>
+      <div class="foot">
+        <span class="next">Próxima ação: <b>confirmar visita de sábado</b></span>
+        <button class="btn btn-accent" style="min-height:0;padding:7px 12px;font-size:13px">Abrir</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Componentes 06</div>
+    <h2 class="sec-title">Os quatro estados de tela</h2>
+    <p class="sec-desc">Regra inegociável do produto: toda lista trata carregando, vazio, erro e sucesso. O estado vazio nunca é um beco sem saída, sempre orienta o próximo passo.</p>
+    <div class="grid states" style="margin-top:26px">
+      <div class="state loading">
+        <div class="spinner"></div>
+        <div class="ln" style="margin-top:8px"></div>
+        <div class="ln s"></div>
+        <p style="margin-top:4px">Carregando seus leads…</p>
+      </div>
+      <div class="state">
+        <div class="ic" style="background:var(--accent-soft);color:var(--accent)">＋</div>
+        <h4>Nenhum lead ainda</h4>
+        <p>Cadastre o primeiro em segundos. Só nome e WhatsApp.</p>
+        <button class="btn btn-accent">Cadastrar lead</button>
+      </div>
+      <div class="state">
+        <div class="ic" style="background:var(--danger-soft);color:var(--danger-fg)">!</div>
+        <h4>Não foi possível carregar</h4>
+        <p>Verifique a conexão e tente de novo.</p>
+        <button class="btn btn-ghost">Tentar de novo</button>
+      </div>
+      <div class="state">
+        <div class="ic" style="background:var(--success-soft);color:var(--success-fg)">✓</div>
+        <h4>Lead salvo</h4>
+        <p>Marina Prado entrou no funil como Novo.</p>
+        <button class="btn btn-ghost">Ver ficha</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wordmark">nex<span class="lar">lar</span></div>
+  Soluções inteligentes, futuro conectado. · Design System v1.0
+</footer>
+
+<script>
+  const tg = document.getElementById('tg');
+  const root = document.documentElement;
+  const labels = { auto:'Tema: auto', light:'Tema: claro', dark:'Tema: escuro' };
+  let mode = 'auto';
+  tg.addEventListener('click', () => {
+    mode = mode === 'auto' ? 'light' : mode === 'light' ? 'dark' : 'auto';
+    if (mode === 'auto') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', mode);
+    tg.textContent = labels[mode];
+  });
+</script>

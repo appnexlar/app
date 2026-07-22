@@ -1,0 +1,58 @@
+# Nexlar — ambiente de desenvolvimento local.
+# Sobe Postgres 16 e MinIO (S3-compatível) sem depender de conta em nuvem.
+# Uso: docker compose up -d  (depois: pnpm --filter @nexlar/api db:migrate)
+services:
+  postgres:
+    image: postgres:16
+    container_name: nexlar-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nexlar
+      POSTGRES_PASSWORD: nexlar
+      POSTGRES_DB: nexlar_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - nexlar_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexlar -d nexlar_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: nexlar-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: nexlar
+      MINIO_ROOT_PASSWORD: nexlar-secret
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # console web
+    volumes:
+      - nexlar_minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Cria o bucket privado de documentos na primeira subida.
+  minio-setup:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 nexlar nexlar-secret;
+      mc mb --ignore-existing local/nexlar-documents;
+      mc anonymous set none local/nexlar-documents;
+      exit 0;
+      "
+
+volumes:
+  nexlar_pg:
+  nexlar_minio:

@@ -1,0 +1,82 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import { LoginPage } from "./features/auth/LoginPage";
+import { RegisterPage } from "./features/auth/RegisterPage";
+import { ForgotPasswordPage } from "./features/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "./features/auth/ResetPasswordPage";
+import { ConfirmEmailPage } from "./features/auth/ConfirmEmailPage";
+import { GuestRoute, ProtectedRoute, EmailGateRoute } from "./features/auth/ProtectedRoute";
+import { SessionExpiryHandler } from "./features/auth/SessionExpiryHandler";
+import { AppLayout } from "./features/shell/AppLayout";
+import { DashboardPage } from "./features/dashboard/DashboardPage";
+import { ProfilePage } from "./features/profile/ProfilePage";
+import { LeadsPage } from "./features/leads/LeadsPage";
+import { LeadDetailPage } from "./features/leads/LeadDetailPage";
+import { LeadSharesPage } from "./features/sharing/LeadSharesPage";
+import { PropertiesPage } from "./features/properties/PropertiesPage";
+import { PropertyWizard } from "./features/properties/PropertyWizard";
+import { PropertyDetailPage } from "./features/properties/PropertyDetailPage";
+import { FunnelPage } from "./features/funnel/FunnelPage";
+import { ClientsPage } from "./features/clients/ClientsPage";
+import { ClientDetailPage } from "./features/clients/ClientDetailPage";
+import { AgendaPage } from "./features/agenda/AgendaPage";
+import {
+  DocumentsPage,
+  SimulationsPage,
+  VisitsPage,
+} from "./features/placeholders/modules";
+import { TermsPage } from "./features/legal/TermsPage";
+import { PrivacyPage } from "./features/legal/PrivacyPage";
+import { PublicSharePage } from "./features/sharing/PublicSharePage";
+
+export function App() {
+  return (
+    <>
+      <SessionExpiryHandler />
+      <Routes>
+        {/* Páginas legais: públicas. */}
+        <Route path="/termos" element={<TermsPage />} />
+        <Route path="/privacidade" element={<PrivacyPage />} />
+
+        {/* Imóvel compartilhado: página pública, sem login. */}
+        <Route path="/imovel-compartilhado/:token" element={<PublicSharePage />} />
+
+        {/* Telas de autenticação: só para quem não está logado. */}
+        <Route element={<GuestRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/criar-conta" element={<RegisterPage />} />
+          <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
+          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+        </Route>
+
+        {/* Gate de confirmação de e-mail. */}
+        <Route element={<EmailGateRoute />}>
+          <Route path="/confirmar-email" element={<ConfirmEmailPage />} />
+        </Route>
+
+        {/* Área logada: layout-base + módulos. */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/leads" element={<LeadsPage />} />
+            <Route path="/leads/:id" element={<LeadDetailPage />} />
+            <Route path="/leads/:id/imoveis-enviados" element={<LeadSharesPage />} />
+            <Route path="/funil" element={<FunnelPage />} />
+            <Route path="/clientes" element={<ClientsPage />} />
+            <Route path="/clientes/:id" element={<ClientDetailPage />} />
+            <Route path="/agenda" element={<AgendaPage />} />
+            <Route path="/visitas" element={<VisitsPage />} />
+            <Route path="/imoveis" element={<PropertiesPage />} />
+            <Route path="/imoveis/novo" element={<PropertyWizard />} />
+            <Route path="/imoveis/:id" element={<PropertyDetailPage />} />
+            <Route path="/imoveis/:id/editar" element={<PropertyWizard />} />
+            <Route path="/documentos" element={<DocumentsPage />} />
+            <Route path="/simulacoes" element={<SimulationsPage />} />
+            <Route path="/perfil" element={<ProfilePage />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </>
+  );
+}

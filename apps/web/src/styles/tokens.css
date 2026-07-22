@@ -1,0 +1,187 @@
+/**
+ * Nexlar Design System — tokens (fonte única)
+ * Derivado do Brand Book v1.0. Cores da marca fixas; escalas e semânticos
+ * construídos a partir delas. Mobile-first, referência HIG (Apple).
+ *
+ * Ordem de leitura: 1) primitivos (marca + escalas)  2) semânticos (papéis de uso)
+ * Componentes e telas SEMPRE consomem os semânticos, nunca os primitivos.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- */
+  /* 1. PRIMITIVOS — marca                                            */
+  /* ---------------------------------------------------------------- */
+
+  /* Azul Noite — cor primária (#243746) */
+  --brand-navy-50:  #f2f5f6;
+  --brand-navy-100: #e1e7eb;
+  --brand-navy-200: #c3cfd7;
+  --brand-navy-300: #97abb9;
+  --brand-navy-400: #6b889c;
+  --brand-navy-500: #4a6b82;
+  --brand-navy-600: #3b586d;
+  --brand-navy-700: #2f4759;
+  --brand-navy-800: #243746; /* base — Azul Noite */
+  --brand-navy-900: #1c2c39;
+  --brand-navy-950: #16222c;
+
+  /* Laranja Nexlar — cor de acento (#D2502E) */
+  --brand-orange-50:  #fcefea;
+  --brand-orange-100: #f8dcd2;
+  --brand-orange-200: #f1b8a5;
+  --brand-orange-300: #e89376;
+  --brand-orange-400: #de6e51;
+  --brand-orange-500: #d2502e; /* base — Laranja Nexlar */
+  --brand-orange-600: #c04327;
+  --brand-orange-700: #a83920;
+  --brand-orange-800: #872f1e;
+  --brand-orange-900: #6f281b;
+
+  /* Neutros quentes — Branco #FAFAF8 / Areia #EEECEA / Cinza #BCBAB5 */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #fafaf8; /* Branco — fundo principal */
+  --neutral-100: #eeecea; /* Areia — fundo secundário */
+  --neutral-200: #e2dfdb;
+  --neutral-300: #d0ccc6;
+  --neutral-400: #bcbab5; /* Cinza — texto/borda secundária */
+  --neutral-500: #9a9791;
+  --neutral-600: #78756f;
+  --neutral-700: #565450;
+  --neutral-800: #3a3936;
+  --neutral-900: #22211f;
+
+  /* Semânticos de sistema (harmonizados com a marca) */
+  --green-50:  #e7f4ee;  --green-500: #1f9d6b;  --green-700: #12764e;
+  --amber-50:  #fbf1da;  --amber-500: #e0a400;  --amber-700: #8a5a00;
+  --red-50:    #fbeae7;  --red-500:   #c42d1c;  --red-700:   #971d0f;
+  --blue-50:   #e7eff7;  --blue-500:  #2e6fad;  --blue-700:  #1f4f7f;
+
+  /* ---------------------------------------------------------------- */
+  /* 2. SEMÂNTICOS — papéis de uso (consumir estes)                   */
+  /* ---------------------------------------------------------------- */
+
+  /* Superfícies e fundo */
+  --bg:              var(--neutral-50);   /* fundo da página */
+  --surface:         var(--neutral-0);    /* cards, painéis */
+  --surface-sunken:  var(--neutral-100);  /* áreas recuadas, listas agrupadas */
+  --surface-hover:   var(--neutral-100);
+  --overlay:         rgba(22, 34, 44, 0.55);
+
+  /* Texto */
+  --text:            var(--neutral-900);  /* corpo principal */
+  --text-muted:      var(--neutral-600);  /* secundário */
+  --text-subtle:     var(--neutral-500);  /* terciário, placeholders */
+  --text-on-brand:   var(--neutral-0);    /* sobre navy/laranja */
+  --text-inverse:    var(--neutral-50);
+
+  /* Bordas e divisores */
+  --border:          var(--neutral-200);
+  --border-strong:   var(--neutral-300);
+  --border-focus:    var(--brand-orange-500);
+
+  /* Primária (navy) — navegação, cabeçalhos, ações estruturais */
+  --primary:         var(--brand-navy-800);
+  --primary-hover:   var(--brand-navy-900);
+  --primary-active:  var(--brand-navy-950);
+  --primary-soft:    var(--brand-navy-50);
+  --primary-on:      var(--neutral-0);
+
+  /* Acento (laranja) — CTA principal, foco, destaque de ação */
+  --accent:          var(--brand-orange-500);
+  --accent-hover:    var(--brand-orange-600);
+  --accent-active:   var(--brand-orange-700);
+  --accent-soft:     var(--brand-orange-50);
+  --accent-on:       var(--neutral-0);
+
+  /* Estados semânticos (para as 4 telas de estado e feedback) */
+  --success:      var(--green-500);  --success-fg: var(--green-700);  --success-soft: var(--green-50);
+  --warning:      var(--amber-500);  --warning-fg: var(--amber-700);  --warning-soft: var(--amber-50);
+  --danger:       var(--red-500);    --danger-fg:  var(--red-700);    --danger-soft:  var(--red-50);
+  --info:         var(--blue-500);   --info-fg:    var(--blue-700);   --info-soft:    var(--blue-50);
+
+  /* Destaque informativo (azul claro da escala navy da marca).
+     Para realces que pedem atenção sem alarme: contagens, cartões de foco.
+     Atraso e erro usam danger; warning fica restrito a avisos reais. */
+  --highlight:        var(--brand-navy-600);
+  --highlight-fg:     var(--brand-navy-700);
+  --highlight-soft:   var(--brand-navy-50);
+  --highlight-strong: var(--brand-navy-100);
+  --highlight-border: var(--brand-navy-200);
+
+  /* ---------------------------------------------------------------- */
+  /* Tipografia — Plus Jakarta Sans                                   */
+  /* ---------------------------------------------------------------- */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* Escala tipográfica (mobile-first; ver design-system/typography) */
+  --text-display: 2.25rem;   /* 36px */
+  --text-h1:      1.75rem;   /* 28px */
+  --text-h2:      1.375rem;  /* 22px */
+  --text-h3:      1.125rem;  /* 18px */
+  --text-body-lg: 1.0625rem; /* 17px */
+  --text-body:    1rem;      /* 16px */
+  --text-body-sm: 0.875rem;  /* 14px */
+  --text-label:   0.8125rem; /* 13px */
+  --text-caption: 0.75rem;   /* 12px */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em; /* rótulos em caixa alta */
+
+  /* ---------------------------------------------------------------- */
+  /* Espaçamento — base 4px                                           */
+  /* ---------------------------------------------------------------- */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4  */
+  --space-2: 0.5rem;   /* 8  */
+  --space-3: 0.75rem;  /* 12 */
+  --space-4: 1rem;     /* 16 */
+  --space-5: 1.25rem;  /* 20 */
+  --space-6: 1.5rem;   /* 24 */
+  --space-8: 2rem;     /* 32 */
+  --space-10: 2.5rem;  /* 40 */
+  --space-12: 3rem;    /* 48 */
+  --space-16: 4rem;    /* 64 */
+
+  /* Raios */
+  --radius-sm: 0.375rem;  /* 6  — chips, tags */
+  --radius-md: 0.625rem;  /* 10 — inputs, botões */
+  --radius-lg: 0.875rem;  /* 14 — cards */
+  --radius-xl: 1.25rem;   /* 20 — folhas, modais */
+  --radius-2xl: 1.75rem;  /* 28 — destaques */
+  --radius-full: 9999px;
+
+  /* Sombras — suaves, referência HIG */
+  --shadow-xs: 0 1px 2px rgba(22, 34, 44, 0.06);
+  --shadow-sm: 0 1px 3px rgba(22, 34, 44, 0.08), 0 1px 2px rgba(22, 34, 44, 0.04);
+  --shadow-md: 0 4px 12px rgba(22, 34, 44, 0.10);
+  --shadow-lg: 0 12px 28px rgba(22, 34, 44, 0.14);
+  --shadow-focus: 0 0 0 3px rgba(210, 80, 46, 0.28);
+
+  /* Camadas */
+  --z-header: 100;
+  --z-sheet: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+
+  /* Layout mobile-first */
+  --container-max: 480px;   /* coluna principal no celular */
+  --tap-target-min: 44px;   /* alvo de toque mínimo (HIG) */
+}

@@ -1,0 +1,1048 @@
+// Nexlar — schema de dados (docs/02). Tabelas/colunas em snake_case por
+// convenção de banco; campos do client em camelCase via @map.
+// Isolamento por corretor (broker_id) é aplicado pela API, não por RLS.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+enum LeadSource {
+  instagram
+  tiktok
+  whatsapp
+  indicacao
+  site
+  outro
+
+  @@map("lead_source")
+}
+
+enum LeadIntent {
+  comprar
+  financiar
+  investir
+  vender
+  pesquisar
+
+  @@map("lead_intent")
+}
+
+enum LeadAudience {
+  brasil
+  exterior
+
+  @@map("lead_audience")
+}
+
+/// Etapas da jornada comercial (docs/02 §2.9). O status É a etapa do funil.
+enum LeadStatus {
+  novo
+  em_atendimento
+  preferencias_definidas
+  selecao_em_preparacao
+  imoveis_enviados
+  avaliando_imoveis
+  visita_solicitada
+  visita_agendada
+  visitando_imoveis
+  imovel_prioritario
+  aguardando_decisao
+  convertida_em_cliente
+  perdida
+  reativar_futuro
+
+  @@map("lead_status")
+}
+
+enum ActivityType {
+  nota
+  mudanca_status
+  contato
+  tarefa_criada
+  tarefa_concluida
+  visita
+  documento
+  simulacao
+  selecao
+  conversao
+
+  @@map("activity_type")
+}
+
+enum DocumentType {
+  comprovante_endereco
+  contracheque
+  ir
+  doc_dependente
+  doc_subsidio
+  doc_exterior
+  contrato
+  outro
+
+  @@map("document_type")
+}
+
+enum DocumentStage {
+  etapa_1_registro
+  etapa_2_analise
+
+  @@map("document_stage")
+}
+
+enum DocumentStatus {
+  pendente
+  recebido
+  validado
+  recusado
+
+  @@map("document_status")
+}
+
+enum PropertyPurpose {
+  venda
+  locacao
+  venda_locacao
+  temporada
+
+  @@map("property_purpose")
+}
+
+enum PropertyCategory {
+  residencial
+  comercial
+  industrial
+  terreno
+  rural
+  empreendimento
+
+  @@map("property_category")
+}
+
+enum PropertyStatus {
+  rascunho
+  disponivel
+  temporariamente_indisponivel
+  reservado
+  em_negociacao
+  vendido
+  alugado
+  arquivado
+
+  @@map("property_status")
+}
+
+enum PropertyOrigin {
+  captacao_propria
+  proprietario_particular
+  imobiliaria
+  corretor_parceiro
+  construtora
+  indicacao
+  banco_leilao
+  outro
+
+  @@map("property_origin")
+}
+
+enum AddressDisplayMode {
+  completo
+  aproximado
+  sem_numero
+  bairro_cidade
+
+  @@map("address_display_mode")
+}
+
+enum PropertyContactRole {
+  proprietario
+  corretor_captador
+  corretor_parceiro
+  imobiliaria_responsavel
+  construtora
+  administradora_locacao
+  responsavel_chaves
+  contato_agendamento
+  outro
+
+  @@map("property_contact_role")
+}
+
+enum MediaKind {
+  foto
+  video
+  planta
+  documento
+  link_externo
+
+  @@map("media_kind")
+}
+
+enum MediaOrigin {
+  corretor
+  imobiliaria
+  proprietario
+  parceiro
+  link_externo
+  outro
+
+  @@map("media_origin")
+}
+
+enum MediaStatus {
+  enviando
+  processando
+  pronto
+  falhou
+  removido
+
+  @@map("media_status")
+}
+
+enum PhotoRoom {
+  fachada
+  sala
+  cozinha
+  quarto
+  banheiro
+  area_externa
+  garagem
+  condominio
+  planta
+  vista
+  outro
+
+  @@map("photo_room")
+}
+
+enum VisitStatus {
+  agendada
+  realizada
+  cancelada
+  remarcada
+
+  @@map("visit_status")
+}
+
+enum SimulationStatus {
+  pendente
+  realizada
+
+  @@map("simulation_status")
+}
+
+// ---------------------------------------------------------------------------
+// broker — corretor e conta de autenticação
+// ---------------------------------------------------------------------------
+model Broker {
+  id           String   @id @default(uuid()) @db.Uuid
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  email        String   @unique
+  phone        String?
+  creci        String?
+  agencyName   String?  @map("agency_name")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  leads         Lead[]
+  activities    LeadActivity[]
+  agendaEvents  AgendaEvent[]
+  documents     Document[]
+  properties    Property[]
+  visits        Visit[]
+  simulations   Simulation[]
+  selections    PropertySelection[]
+  selectionItems SelectionItem[]
+  conversions   Conversion[]
+  consents      Consent[]
+  auditLogs     AuditLog[]
+  clientProfiles     ClientProfile[]
+  clientNegotiations ClientNegotiation[]
+  clientFinancials   ClientFinancial[]
+  clientParticipants ClientParticipant[]
+  deletionRequests   DataDeletionRequest[]
+  refreshTokens RefreshToken[]
+  resetTokens   PasswordResetToken[]
+
+  @@map("broker")
+}
+
+// ---------------------------------------------------------------------------
+// Tabelas de infraestrutura de autenticação
+// ---------------------------------------------------------------------------
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  brokerId  String    @map("broker_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@map("refresh_token")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  brokerId  String    @map("broker_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@map("password_reset_token")
+}
+
+// ---------------------------------------------------------------------------
+// lead — entidade central
+// ---------------------------------------------------------------------------
+model Lead {
+  id            String        @id @default(uuid()) @db.Uuid
+  brokerId      String        @map("broker_id") @db.Uuid
+  fullName      String        @map("full_name")
+  whatsapp      String
+  email         String?
+  cpf           String?
+  source        LeadSource?
+  intent        LeadIntent?
+  audience      LeadAudience?
+  region        String?
+  budgetMin     Decimal?      @map("budget_min") @db.Decimal(14, 2)
+  budgetMax     Decimal?      @map("budget_max") @db.Decimal(14, 2)
+  status        LeadStatus    @default(novo)
+  isClient      Boolean       @default(false) @map("is_client")
+  convertedAt   DateTime?     @map("converted_at") @db.Timestamptz(6)
+  notes         String?
+  lastContactAt DateTime?     @map("last_contact_at") @db.Timestamptz(6)
+  nextActionAt  DateTime?     @map("next_action_at") @db.Timestamptz(6)
+  lostReason    String?       @map("lost_reason")
+  reactivateAt  DateTime?     @map("reactivate_at") @db.Date
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker      Broker         @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  activities  LeadActivity[]
+  agendaEvents AgendaEvent[]
+  documents   Document[]
+  visits      Visit[]
+  simulations Simulation[]
+  selections  PropertySelection[]
+  conversion  Conversion?
+  consents    Consent[]
+  clientProfile     ClientProfile?
+  clientNegotiation ClientNegotiation?
+  clientFinancial   ClientFinancial?
+  participants      ClientParticipant[]
+  deletionRequests  DataDeletionRequest[]
+
+  @@index([brokerId])
+  @@index([status])
+  @@index([isClient])
+  @@index([nextActionAt])
+  @@index([lastContactAt])
+  @@map("lead")
+}
+
+// ---------------------------------------------------------------------------
+// lead_activity — timeline imutável
+// ---------------------------------------------------------------------------
+model LeadActivity {
+  id          String       @id @default(uuid()) @db.Uuid
+  brokerId    String       @map("broker_id") @db.Uuid
+  leadId      String       @map("lead_id") @db.Uuid
+  type        ActivityType
+  description String
+  metadata    Json?
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("lead_activity")
+}
+
+// ---------------------------------------------------------------------------
+// Conversão de lead em cliente (docs/02 §2.16). Lead e cliente são a MESMA
+// pessoa: a conversão nunca duplica o cadastro. Existe no máximo uma por lead.
+// ---------------------------------------------------------------------------
+enum ConversionReason {
+  inicio_financiamento
+  solicitacao_documentos
+  analise_cadastral
+  preparacao_proposta
+  negociacao_formal
+  processo_locacao
+  outro
+
+  @@map("conversion_reason")
+}
+
+enum ConversionNextStep {
+  coletar_dados
+  solicitar_documentos
+  registrar_simulacao
+  preparar_proposta
+  iniciar_analise_cadastral
+  iniciar_negociacao
+
+  @@map("conversion_next_step")
+}
+
+enum ClientPurpose {
+  compra
+  locacao
+
+  @@map("client_purpose")
+}
+
+model Conversion {
+  id          String             @id @default(uuid()) @db.Uuid
+  brokerId    String             @map("broker_id") @db.Uuid
+  leadId      String             @unique @map("lead_id") @db.Uuid
+  convertedAt DateTime           @default(now()) @map("converted_at") @db.Timestamptz(6)
+  reason      ConversionReason
+  reasonDetail String?           @map("reason_detail")
+  nextStep    ConversionNextStep @map("next_step")
+  purpose     ClientPurpose
+  propertyId  String?            @map("property_id") @db.Uuid
+  consentGiven Boolean           @default(false) @map("consent_given")
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker   Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead     Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  property Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@index([brokerId])
+  @@map("conversion")
+}
+
+// ---------------------------------------------------------------------------
+// Perfil de cliente (fatia 2). Dados pessoais fora da tabela lead, coletados
+// de forma progressiva: nenhum campo é obrigatório de cara; valida-se quando
+// preenchido. Dados financeiros ficam em tabela própria (fatia 3).
+// ---------------------------------------------------------------------------
+enum MaritalStatus {
+  solteiro
+  casado
+  uniao_estavel
+  divorciado
+  viuvo
+  outro
+
+  @@map("marital_status")
+}
+
+enum PaymentMethod {
+  a_vista
+  financiamento
+  fgts_mais_financiamento
+  permuta
+  outro
+
+  @@map("payment_method")
+}
+
+model ClientProfile {
+  id               String         @id @default(uuid()) @db.Uuid
+  brokerId         String         @map("broker_id") @db.Uuid
+  leadId           String         @unique @map("lead_id") @db.Uuid
+  cpf              String?
+  rg               String?
+  birthDate        DateTime?      @map("birth_date") @db.Date
+  maritalStatus    MaritalStatus? @map("marital_status")
+  nationality      String?
+  residenceCountry String?        @map("residence_country")
+  cep              String?
+  street           String?
+  addressNumber    String?        @map("address_number")
+  complement       String?
+  neighborhood     String?
+  city             String?
+  state            String?
+  altPhone         String?        @map("alt_phone")
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@map("client_profile")
+}
+
+// Estado atual da negociação (mutável). A conversão (2.16) é o registro
+// histórico; aqui vive o que o corretor atualiza ao longo do atendimento.
+model ClientNegotiation {
+  id             String         @id @default(uuid()) @db.Uuid
+  brokerId       String         @map("broker_id") @db.Uuid
+  leadId         String         @unique @map("lead_id") @db.Uuid
+  propertyValue  Decimal?       @map("property_value") @db.Decimal(14, 2)
+  interestDate   DateTime?      @map("interest_date") @db.Date
+  expectedTerm   String?        @map("expected_term")
+  paymentMethod  PaymentMethod? @map("payment_method")
+  needsFinancing Boolean?       @map("needs_financing")
+  notes          String?
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@map("client_negotiation")
+}
+
+// ---------------------------------------------------------------------------
+// Dados financeiros do cliente (fatia 3). Sensíveis por natureza: NUNCA em
+// listas, Dashboard, URLs ou logs. Tabela própria, separada do perfil.
+// ---------------------------------------------------------------------------
+enum IncomeType {
+  assalariado
+  autonomo
+  empresario
+  aposentado
+  profissional_liberal
+  outro
+
+  @@map("income_type")
+}
+
+model ClientFinancial {
+  id                   String      @id @default(uuid()) @db.Uuid
+  brokerId             String      @map("broker_id") @db.Uuid
+  leadId               String      @unique @map("lead_id") @db.Uuid
+  incomeType           IncomeType? @map("income_type")
+  monthlyIncome        Decimal?    @map("monthly_income") @db.Decimal(14, 2)
+  occupation           String?
+  activityTime         String?     @map("activity_time")
+  downPayment          Decimal?    @map("down_payment") @db.Decimal(14, 2)
+  hasFgts              Boolean?    @map("has_fgts")
+  preferredBank        String?     @map("preferred_bank")
+  hasIncomeComposition Boolean?    @map("has_income_composition")
+  dependentsCount      Int?        @map("dependents_count")
+  notes                String?
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@map("client_financial")
+}
+
+// Participantes adicionais da operação (cônjuge, fiador, dependente...).
+enum ParticipantRelation {
+  conjuge
+  comprador_conjunto
+  locatario_conjunto
+  fiador
+  dependente
+  procurador
+  outro
+
+  @@map("participant_relation")
+}
+
+model ClientParticipant {
+  id        String              @id @default(uuid()) @db.Uuid
+  brokerId  String              @map("broker_id") @db.Uuid
+  leadId    String              @map("lead_id") @db.Uuid
+  relation  ParticipantRelation
+  fullName  String              @map("full_name")
+  cpf       String?
+  phone     String?
+  email     String?
+  notes     String?
+  createdAt DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("client_participant")
+}
+
+// Solicitação de exclusão de dados (LGPD). Nesta fase é o REGISTRO da
+// solicitação (não apaga automaticamente): há dados sob retenção obrigatória
+// que exigem análise antes de excluir/anonimizar.
+enum DeletionStatus {
+  solicitada
+  em_analise
+  concluida
+  negada
+
+  @@map("deletion_status")
+}
+
+model DataDeletionRequest {
+  id          String         @id @default(uuid()) @db.Uuid
+  brokerId    String         @map("broker_id") @db.Uuid
+  leadId      String         @map("lead_id") @db.Uuid
+  status      DeletionStatus @default(solicitada)
+  reason      String?
+  requestedAt DateTime       @default(now()) @map("requested_at") @db.Timestamptz(6)
+  handledAt   DateTime?      @map("handled_at") @db.Timestamptz(6)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("data_deletion_request")
+}
+
+// Registro de consentimento LGPD. Não é um checkbox genérico: guarda a
+// finalidade, a versão do texto apresentado e quem registrou.
+model Consent {
+  id          String   @id @default(uuid()) @db.Uuid
+  brokerId    String   @map("broker_id") @db.Uuid
+  leadId      String   @map("lead_id") @db.Uuid
+  purpose     String
+  textVersion String   @map("text_version")
+  acceptedAt  DateTime @default(now()) @map("accepted_at") @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("consent")
+}
+
+// Trilha de auditoria de ações sensíveis. NUNCA guarda conteúdo sensível
+// (CPF, renda, documento, token): só quem fez, quando, o quê e sobre qual
+// entidade, mais metadados não sensíveis.
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  brokerId   String   @map("broker_id") @db.Uuid
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id") @db.Uuid
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([entityType, entityId])
+  @@map("audit_log")
+}
+
+// ---------------------------------------------------------------------------
+// task — próxima ação / follow-up
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// agenda_event — evento unificado da agenda do corretor
+// ---------------------------------------------------------------------------
+// Um só registro para tarefa, visita, compromisso geral, bloqueio de horário e
+// "ocupado" vindo do Google. O Nexlar é a fonte principal: eventos nascem aqui
+// e depois são enviados ao Google (sync_status). Os campos google_* ficam
+// preparados para a Fatia 2 (integração). Datas sempre em UTC no banco.
+enum AgendaEventType {
+  tarefa
+  visita
+  compromisso
+  bloqueio
+  google_ocupado
+
+  @@map("agenda_event_type")
+}
+
+enum AgendaEventSource {
+  nexlar
+  google
+
+  @@map("agenda_event_source")
+}
+
+enum AgendaSyncStatus {
+  nao_sincronizado
+  pendente
+  sincronizado
+  alterado
+  erro
+  desconectado
+
+  @@map("agenda_sync_status")
+}
+
+// Status cobre todos os tipos. Tarefa usa pendente/concluida/cancelada;
+// compromisso e bloqueio usam agendado; visita usa o ciclo próprio
+// (solicitada..aguardando_feedback), consumido a partir da sub-fatia B.
+enum AgendaEventStatus {
+  pendente
+  concluida
+  cancelada
+  agendado
+  solicitada
+  aguardando_confirmacao
+  confirmada
+  realizada
+  remarcada
+  nao_compareceu
+  aguardando_feedback
+
+  @@map("agenda_event_status")
+}
+
+model AgendaEvent {
+  id          String            @id @default(uuid()) @db.Uuid
+  brokerId    String            @map("broker_id") @db.Uuid
+  type        AgendaEventType
+  leadId      String?           @map("lead_id") @db.Uuid
+  propertyId  String?           @map("property_id") @db.Uuid
+  title       String
+  description String?
+  location    String?
+  startAt     DateTime          @map("start_at") @db.Timestamptz(6)
+  endAt       DateTime?         @map("end_at") @db.Timestamptz(6)
+  allDay      Boolean           @default(false) @map("all_day")
+  status      AgendaEventStatus @default(agendado)
+  taskKind    String?           @map("task_kind")
+  reminderMinutes Int?          @map("reminder_minutes")
+  recurrence  String?
+  completedAt DateTime?         @map("completed_at") @db.Timestamptz(6)
+  source      AgendaEventSource @default(nexlar)
+  syncStatus  AgendaSyncStatus  @default(nao_sincronizado) @map("sync_status")
+  googleCalendarId String?      @map("google_calendar_id")
+  googleEventId    String?      @map("google_event_id")
+  googleUpdatedAt  DateTime?    @map("google_updated_at") @db.Timestamptz(6)
+  lastSyncAt       DateTime?    @map("last_sync_at") @db.Timestamptz(6)
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker   Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead     Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  property Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@index([propertyId])
+  @@index([brokerId, startAt])
+  @@map("agenda_event")
+}
+
+// ---------------------------------------------------------------------------
+// document — documentos por etapa
+// ---------------------------------------------------------------------------
+model Document {
+  id        String         @id @default(uuid()) @db.Uuid
+  brokerId  String         @map("broker_id") @db.Uuid
+  leadId    String         @map("lead_id") @db.Uuid
+  docType   DocumentType   @map("doc_type")
+  stage     DocumentStage
+  filePath  String?        @map("file_path")
+  fileName  String?        @map("file_name")
+  status    DocumentStatus @default(pendente)
+  notes     String?
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("document")
+}
+
+// ---------------------------------------------------------------------------
+// property — cadastro leve de imóvel
+// ---------------------------------------------------------------------------
+// O imóvel é um registro PRIVADO na carteira do corretor (broker_id = quem
+// controla). Imobiliária, proprietário e parceiros são apenas a origem,
+// registrados em origin/originDetails e nos contatos. Campos específicos por
+// tipo (quartos, docas, frente...) vivem em details (Json) validado no shared.
+model Property {
+  id       String @id @default(uuid()) @db.Uuid
+  brokerId String @map("broker_id") @db.Uuid
+  code     Int    @unique @default(autoincrement())
+
+  title    String
+  purpose  PropertyPurpose
+  category PropertyCategory
+  type     String
+  status   PropertyStatus  @default(rascunho)
+
+  description   String?
+  internalNotes String? @map("internal_notes")
+  externalCode  String? @map("external_code")
+  externalLink  String? @map("external_link")
+
+  origin        PropertyOrigin
+  originDetails Json?          @map("origin_details")
+
+  // Localização
+  zip            String?
+  street         String?
+  addressNumber  String?            @map("address_number")
+  complement     String?
+  neighborhood   String?
+  city           String?
+  state          String?
+  country        String             @default("Brasil")
+  latitude       Float?
+  longitude      Float?
+  reference      String?
+  condoName      String?            @map("condo_name")
+  addressDisplay AddressDisplayMode @default(completo) @map("address_display")
+
+  // Valores (venda)
+  salePrice        Decimal? @map("sale_price") @db.Decimal(14, 2)
+  acceptsFinancing Boolean? @map("accepts_financing")
+  acceptsFgts      Boolean? @map("accepts_fgts")
+  acceptsTrade     Boolean? @map("accepts_trade")
+  priceNegotiable  Boolean? @map("price_negotiable")
+  commissionNotes  String?  @map("commission_notes")
+
+  // Valores (locação)
+  rentPrice      Decimal?  @map("rent_price") @db.Decimal(14, 2)
+  condoFee       Decimal?  @map("condo_fee") @db.Decimal(14, 2)
+  iptu           Decimal?  @db.Decimal(14, 2)
+  otherFees      String?   @map("other_fees")
+  guaranteeTypes String?   @map("guarantee_types")
+  minTermMonths  Int?      @map("min_term_months")
+  furnished      Boolean?
+  availableFrom  DateTime? @map("available_from") @db.Date
+  rentNotes      String?   @map("rent_notes")
+
+  // Campos específicos do tipo + comodidades
+  details  Json?
+  features String[] @default([])
+
+  // Disponibilidade operacional (separada do status do anúncio)
+  availabilityConfirmed    Boolean   @default(false) @map("availability_confirmed")
+  availabilityConfirmedAt  DateTime? @map("availability_confirmed_at") @db.Timestamptz(6)
+  availabilityConfirmedBy  String?   @map("availability_confirmed_by")
+  availabilityNextReviewAt DateTime? @map("availability_next_review_at") @db.Date
+  availabilityNote         String?   @map("availability_note")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker          Broker            @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  visitProperties VisitProperty[]
+  agendaEvents    AgendaEvent[]
+  conversions     Conversion[]
+  contacts        PropertyContact[]
+  media           PropertyMedia[]
+  sharedItems     SelectionItem[]
+
+  @@index([brokerId])
+  @@index([brokerId, status])
+  @@index([brokerId, city])
+  @@index([externalCode])
+  @@map("property")
+}
+
+// Pessoas envolvidas no imóvel. Uma pessoa pode ter vários papéis.
+model PropertyContact {
+  id         String                @id @default(uuid()) @db.Uuid
+  brokerId   String                @map("broker_id") @db.Uuid
+  propertyId String                @map("property_id") @db.Uuid
+  name       String
+  roles      PropertyContactRole[]
+  phone      String?
+  whatsapp   String?
+  email      String?
+  creci      String?
+  agencyName String?               @map("agency_name")
+  notes      String?
+  createdAt  DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([propertyId])
+  @@map("property_contact")
+}
+
+// Fotos, vídeos, plantas e links do imóvel. A mídia pertence ao cadastro do
+// corretor mesmo quando a origem é externa; authorized registra a confirmação
+// de autorização de uso. Arquivos ficam em área privada:
+// brokers/{broker_id}/properties/{property_id}/{images|videos}/{media_id}
+model PropertyMedia {
+  id          String      @id @default(uuid()) @db.Uuid
+  brokerId    String      @map("broker_id") @db.Uuid
+  propertyId  String      @map("property_id") @db.Uuid
+  kind        MediaKind
+  origin      MediaOrigin @default(corretor)
+  authorized  Boolean     @default(false)
+  status      MediaStatus @default(pronto)
+  storagePath String?     @map("storage_path")
+  externalUrl String?     @map("external_url")
+  mimeType    String?     @map("mime_type")
+  sizeBytes   Int?        @map("size_bytes")
+  caption     String?
+  room        PhotoRoom?
+  isCover     Boolean     @default(false) @map("is_cover")
+  sortOrder   Int         @default(0) @map("sort_order")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([propertyId])
+  @@map("property_media")
+}
+
+// ---------------------------------------------------------------------------
+// visit — visitas
+// ---------------------------------------------------------------------------
+model Visit {
+  id          String      @id @default(uuid()) @db.Uuid
+  brokerId    String      @map("broker_id") @db.Uuid
+  leadId      String      @map("lead_id") @db.Uuid
+  scheduledAt DateTime    @map("scheduled_at") @db.Timestamptz(6)
+  status      VisitStatus @default(agendada)
+  feedback    String?
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker     Broker          @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead       Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  properties VisitProperty[]
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("visit")
+}
+
+// ---------------------------------------------------------------------------
+// visit_property — N:N entre visita e imóveis apresentados
+// ---------------------------------------------------------------------------
+model VisitProperty {
+  visitId    String @map("visit_id") @db.Uuid
+  propertyId String @map("property_id") @db.Uuid
+
+  visit    Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@id([visitId, propertyId])
+  @@index([propertyId])
+  @@map("visit_property")
+}
+
+// ---------------------------------------------------------------------------
+// simulation — registro de simulação bancária
+// ---------------------------------------------------------------------------
+model Simulation {
+  id                 String           @id @default(uuid()) @db.Uuid
+  brokerId           String           @map("broker_id") @db.Uuid
+  leadId             String           @map("lead_id") @db.Uuid
+  bank               String           @default("Caixa")
+  propertyValue      Decimal?         @map("property_value") @db.Decimal(14, 2)
+  downPayment        Decimal?         @map("down_payment") @db.Decimal(14, 2)
+  financedAmount     Decimal?         @map("financed_amount") @db.Decimal(14, 2)
+  termMonths         Int?             @map("term_months")
+  monthlyInstallment Decimal?         @map("monthly_installment") @db.Decimal(14, 2)
+  subsidy            Decimal?         @db.Decimal(14, 2)
+  status             SimulationStatus @default(pendente)
+  resultNotes        String?          @map("result_notes")
+  simulatedAt        DateTime?        @map("simulated_at") @db.Date
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("simulation")
+}
+
+// ---------------------------------------------------------------------------
+// property_selection — envio/compartilhamento de imóveis para uma lead.
+// Um envio de um único imóvel é uma seleção com um item (ver docs/02 2.13).
+// ---------------------------------------------------------------------------
+enum SelectionStatus {
+  criada
+  enviada
+  visualizada
+  revogada
+  expirada
+
+  @@map("selection_status")
+}
+
+enum SelectionResponse {
+  nao_visualizado
+  visualizado
+  tenho_interesse
+  talvez
+  sem_interesse
+  quero_visitar
+
+  @@map("selection_response")
+}
+
+model PropertySelection {
+  id          String          @id @default(uuid()) @db.Uuid
+  brokerId    String          @map("broker_id") @db.Uuid
+  leadId      String          @map("lead_id") @db.Uuid
+  publicToken String          @unique @map("public_token")
+  status      SelectionStatus @default(criada)
+  message     String?
+  sentAt      DateTime?       @map("sent_at") @db.Timestamptz(6)
+  viewedAt    DateTime?       @map("viewed_at") @db.Timestamptz(6)
+  lastAccessAt DateTime?      @map("last_access_at") @db.Timestamptz(6)
+  viewCount   Int             @default(0) @map("view_count")
+  resendCount Int             @default(0) @map("resend_count")
+  expiresAt   DateTime?       @map("expires_at") @db.Timestamptz(6)
+  revokedAt   DateTime?       @map("revoked_at") @db.Timestamptz(6)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker          @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  items  SelectionItem[]
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("property_selection")
+}
+
+model SelectionItem {
+  id               String            @id @default(uuid()) @db.Uuid
+  brokerId         String            @map("broker_id") @db.Uuid
+  selectionId      String            @map("selection_id") @db.Uuid
+  propertyId       String            @map("property_id") @db.Uuid
+  position         Int               @default(0)
+  response         SelectionResponse @default(nao_visualizado)
+  respondedAt      DateTime?         @map("responded_at") @db.Timestamptz(6)
+  comment          String?
+  visitRequestedAt DateTime?         @map("visit_requested_at") @db.Timestamptz(6)
+  isPriority       Boolean           @default(false) @map("is_priority")
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker    Broker            @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  selection PropertySelection @relation(fields: [selectionId], references: [id], onDelete: Cascade)
+  property  Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@index([selectionId])
+  @@index([propertyId])
+  @@map("selection_item")
+}

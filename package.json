@@ -1,0 +1,21 @@
+{
+  "name": "nexlar",
+  "private": true,
+  "version": "0.0.0",
+  "description": "CRM imobiliário enxuto para corretores. Monorepo pnpm.",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @nexlar/web --filter @nexlar/api dev",
+    "dev:web": "pnpm --filter @nexlar/web dev",
+    "dev:api": "pnpm --filter @nexlar/api dev",
+    "build": "pnpm --filter @nexlar/shared build && pnpm --filter @nexlar/api build && pnpm --filter @nexlar/web build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @nexlar/api db:migrate",
+    "db:up": "docker compose up -d"
+  }
+}

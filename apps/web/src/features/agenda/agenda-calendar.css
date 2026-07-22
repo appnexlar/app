@@ -1,0 +1,109 @@
+/*
+ * FullCalendar vestido com o Design System do Nexlar. Não usamos a aparência
+ * padrão: tudo aponta para os tokens (--surface, --border, --text...), então o
+ * calendário acompanha tema claro/escuro e a tipografia do app.
+ */
+.agenda-calendar {
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: var(--surface-sunken);
+  --fc-today-bg-color: color-mix(in srgb, var(--accent) 8%, transparent);
+  --fc-now-indicator-color: var(--danger);
+  --fc-list-event-hover-bg-color: var(--surface-sunken);
+  --fc-event-bg-color: transparent;
+  --fc-event-border-color: transparent;
+  --fc-highlight-color: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.agenda-calendar .fc {
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+}
+
+/* Cabeçalhos de colunas, eixos e dias da lista */
+.agenda-calendar .fc-col-header-cell-cushion,
+.agenda-calendar .fc .fc-timegrid-axis-cushion,
+.agenda-calendar .fc .fc-list-day-text,
+.agenda-calendar .fc .fc-list-day-side-text {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--text-caption);
+  text-transform: capitalize;
+}
+
+.agenda-calendar .fc .fc-daygrid-day-number {
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 6px 8px;
+}
+.agenda-calendar .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  color: var(--accent-active);
+  font-weight: 700;
+}
+
+.agenda-calendar .fc-theme-standard td,
+.agenda-calendar .fc-theme-standard th,
+.agenda-calendar .fc-theme-standard .fc-scrollgrid {
+  border-color: var(--border);
+}
+
+.agenda-calendar .fc .fc-timegrid-slot-label-cushion,
+.agenda-calendar .fc .fc-timegrid-axis-cushion {
+  color: var(--text-subtle);
+  font-size: var(--text-caption);
+}
+
+/* Eventos: sem a moldura padrão, o visual mora no nosso eventContent */
+.agenda-calendar .fc-event,
+.agenda-calendar .fc-event:hover {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+.agenda-calendar .fc-event .fc-event-main {
+  padding: 0;
+  color: var(--text);
+}
+.agenda-calendar .fc-daygrid-event {
+  margin-top: 2px;
+  white-space: normal;
+}
+.agenda-calendar .fc .fc-event:focus-visible,
+.agenda-calendar .fc .fc-list-event:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+
+/* Lista */
+.agenda-calendar .fc-theme-standard .fc-list {
+  border-color: var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.agenda-calendar .fc .fc-list-day-cushion {
+  background: var(--surface-sunken);
+}
+.agenda-calendar .fc-list-event td {
+  cursor: pointer;
+}
+.agenda-calendar .fc .fc-list-event-time {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.agenda-calendar .fc .fc-list-empty {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+/* Indicador de "agora" e linha de horário atual */
+.agenda-calendar .fc .fc-timegrid-now-indicator-arrow {
+  border-color: var(--danger);
+}
+
+/* Scrollbars discretas dentro da grade */
+.agenda-calendar .fc-scroller {
+  scrollbar-width: thin;
+}
