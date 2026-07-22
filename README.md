@@ -20,7 +20,7 @@ Este repositório contém a especificação completa do MVP (core), escrita para
 
 | Peça | Onde | Configuração |
 |---|---|---|
-| API (NestJS) | Railway, região US East | [`railway.json`](railway.json) |
+| API (NestJS) | Railway, região US East, em [`nexlar-api-production.up.railway.app`](https://nexlar-api-production.up.railway.app/api/health) | [`railway.json`](railway.json) |
 | Front (Vite) | Vercel, site estático | [`vercel.json`](vercel.json) |
 | Banco (Postgres 17) | Supabase, região `us-east-1` | `apps/api/.env.production`, fora do git |
 
