@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @nexlar/shared build && pnpm --filter @nexlar/web build",
   "outputDirectory": "apps/web/dist",
