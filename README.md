@@ -16,6 +16,18 @@ Este repositório contém a especificação completa do MVP (core), escrita para
 | [`docs/06-arquitetura-tecnica.md`](docs/06-arquitetura-tecnica.md) | Arquitetura oficial do produto: front, back, banco, storage, deploy e operação |
 | [`CLAUDE.md`](CLAUDE.md) | Instruções operacionais para o agente que vai construir |
 
+## Onde o Nexlar roda
+
+| Peça | Onde | Configuração |
+|---|---|---|
+| API (NestJS) | Railway, região US East | [`railway.json`](railway.json) |
+| Front (Vite) | Vercel, site estático | [`vercel.json`](vercel.json) |
+| Banco (Postgres 17) | Supabase, região `us-east-1` | `apps/api/.env.production`, fora do git |
+
+O front chama a API pelo caminho relativo `/api`. Em desenvolvimento quem resolve isso é o proxy do Vite; publicado, é o rewrite declarado no `vercel.json`, que encaminha para o Railway. Por isso não existe variável de ambiente com a URL da API no front.
+
+Migration em produção é ato deliberado, nunca efeito colateral de deploy. O comando de start do Railway só sobe a API.
+
 ## Escopo desta versão
 
 Core do MVP (Fase 1): cadastro/login do corretor, CRM de leads, funil de atendimento, ficha do lead, follow-up e próximas ações, documentos por etapa, visitas e imóveis apresentados, registro de simulação bancária e dashboard de métricas.
