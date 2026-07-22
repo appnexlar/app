@@ -15,7 +15,7 @@ A primeira versão da spec propunha o front conversando direto com o Supabase, s
 | ORM / migrações | Prisma | Migrações versionadas, tipos gerados do schema, produtividade alta |
 | Banco | PostgreSQL 16 | Escolha da equipe (e a minha): maduro, gratuito, perfeito pra SaaS multi-tenant |
 | Autenticação | JWT próprio (access + refresh), senha com Argon2 | Controle total do fluxo, sem dependência de terceiro |
-| Storage de documentos | S3-compatível (AWS S3 ou Cloudflare R2), URLs assinadas | Padrão de mercado, barato, portável entre fornecedores |
+| Storage de mídia e documentos | Bucket privado compatível com S3, servido pela API | Padrão de mercado, portável entre fornecedores; acesso sempre validado pela API (ver 6.8) |
 | API | REST com OpenAPI (Swagger) gerado | Contrato claro entre front e back, documentação automática |
 | Infra | Docker em tudo; front em CDN, API em container, Postgres gerenciado | Deploy previsível e barato no início, com caminho de crescimento |
 
@@ -36,12 +36,12 @@ A primeira versão da spec propunha o front conversando direto com o Supabase, s
    └─ Prisma (ORM)
         |                          \
         v                           v
-[ PostgreSQL 16 ]            [ S3/R2: documentos ]
-  gerenciado (backup           bucket privado,
-  automático)                  URLs assinadas
+[ PostgreSQL ]               [ Bucket S3: midia ]
+  gerenciado (backup           privado, sem URL
+  automatico)                  publica
 ```
 
-O front nunca fala com o banco nem com o storage diretamente. Tudo passa pela API. Pra upload e download de documentos, a API gera URLs assinadas de curta duração e o navegador envia o arquivo direto ao bucket, sem o arquivo transitar pelo servidor da API.
+O front nunca fala com o banco nem com o storage diretamente. Tudo passa pela API, inclusive os arquivos: o navegador envia a foto para a API, que valida e grava no bucket, e para ler pede à API, que confere a posse e devolve o conteúdo. Detalhe e justificativa em 6.8.
 
 ## 6.4 Frontend
 
@@ -95,17 +95,34 @@ E-mail transacional (recuperação de senha, boas-vindas) via serviço dedicado:
 
 ## 6.7 Banco de dados
 
-PostgreSQL 16, gerenciado (Neon, Supabase-somente-banco, RDS ou equivalente; o código não sabe nem precisa saber qual, é uma connection string). O modelo de dados é exatamente o de `docs/02`: mesmas tabelas, colunas, enums e índices. O que muda é onde a regra de acesso mora: em vez de políticas RLS no banco, o isolamento por `broker_id` é aplicado pela API (6.5). O banco continua tendo as foreign keys, constraints e enums como defesa de integridade.
+PostgreSQL gerenciado, hoje o Supabase usado **só como banco** (o código não sabe qual é, é uma connection string). A API conecta pelo pooler; migration usa a conexão direta, declarada como `directUrl` no Prisma, porque o pooler não aceita comandos de alteração de estrutura. O modelo de dados é exatamente o de `docs/02`: mesmas tabelas, colunas, enums e índices. O que muda é onde a regra de acesso mora: em vez de políticas RLS no banco, o isolamento por `broker_id` é aplicado pela API (6.5). O banco continua tendo as foreign keys, constraints e enums como defesa de integridade.
 
 Migrações: Prisma Migrate, versionadas no repositório, aplicadas por pipeline (nunca na mão em produção). O schema Prisma é a fonte da verdade e gera os tipos usados no back.
 
 Backup: diário automático do provedor gerenciado, com teste de restauração documentado antes do lançamento. Dados sensíveis (CPF, documentos) pedem isso por LGPD, não é opcional.
 
-## 6.8 Documentos (storage)
+## 6.8 Mídia e documentos (storage)
 
-Bucket privado em S3 ou Cloudflare R2 (R2 é mais barato em egress; a API usa o SDK S3 nos dois casos, trocar depois é config). Fluxo de upload: o front pede à API uma URL assinada de upload pra um `document` específico; o navegador envia o arquivo direto ao bucket; o front confirma à API, que valida (tipo PDF/imagem, tamanho máximo) e marca o documento como recebido. Download é o espelho: URL assinada de leitura com expiração curta, gerada só pro corretor dono.
+Implementado em 22/07/2026. Bucket privado compatível com S3, hoje o Storage do Supabase, no mesmo projeto do banco.
 
-Exclusão de lead apaga os objetos do bucket na mesma operação (requisito LGPD de `docs/04`). Chaves de objeto nunca são adivinháveis: `broker_id/lead_id/uuid`.
+**O arquivo sempre passa pela API.** O navegador envia para a API, que valida e grava no bucket; para ler, o navegador pede à API, que confere a posse e devolve o conteúdo. Nenhum arquivo tem URL pública, e o bucket não é acessível de fora.
+
+Isso diverge do desenho original desta seção, que previa URL assinada e upload direto do navegador para o bucket. A escolha foi deliberada, por três razões: o modelo de segurança do produto já está na API (`broker_id` do token, ver 6.6), a validação de tipo e tamanho precisa acontecer antes de o arquivo existir, e o front não precisa conhecer o bucket. O custo é que o arquivo trafega duas vezes, o que é irrelevante no volume de hoje.
+
+URL assinada continua sendo o caminho para quando isso pesar, e a troca é localizada: só o `StorageService` muda.
+
+**Dois modos, escolhidos pela variável `STORAGE_DRIVER`:**
+
+| Modo | Onde grava | Uso |
+|---|---|---|
+| `local` | disco, em `STORAGE_DIR` | desenvolvimento |
+| `s3` | bucket compatível com S3 | produção, obrigatório |
+
+O caminho do objeto é idêntico nos dois modos, `brokers/{broker_id}/properties/{property_id}/{images\|videos}/{media_id}.{ext}`, então o `storage_path` gravado no banco não muda e trocar de modo não exige migração de dados.
+
+Em produção o modo `local` não serve: o disco do servidor é recriado a cada publicação e os arquivos seriam perdidos. A validação de ambiente falha na subida, e não no primeiro upload, se `STORAGE_DRIVER=s3` vier sem as credenciais do bucket.
+
+Excluir apaga o objeto de verdade, no mesmo fluxo que marca o registro como removido (requisito LGPD de `docs/04`). Chaves de objeto não são adivinháveis, e mesmo que fossem não haveria acesso sem passar pela API.
 
 ## 6.9 API: convenções
 
@@ -125,23 +142,32 @@ nexlar/
 ├─ packages/
 │  └─ shared/       (tipos e validações Zod compartilhados quando fizer sentido)
 ├─ docs/            (esta especificação)
-├─ docker-compose.yml   (dev local: Postgres + MinIO simulando S3)
+├─ railway.json         (build e start da API em produção)
+├─ vercel.json          (build do front e rewrite de /api para a API)
 └─ .github/workflows/   (CI)
 ```
 
-Desenvolvimento local sobe tudo com `docker compose up`: Postgres, MinIO (S3 local) e as duas apps em modo dev. Ninguém precisa de conta em nuvem pra desenvolver.
+Desenvolvimento local roda com Postgres na máquina e storage em disco. Não precisa de conta em nuvem nem de Docker para desenvolver.
 
-Três ambientes: desenvolvimento (local), staging (espelho de produção, dados fictícios) e produção. Toda configuração por variável de ambiente, com `.env.example` versionado e segredos fora do repositório.
+**Dois ambientes hoje**, não três: desenvolvimento (local) e produção. Staging ainda não existe e só passa a fazer sentido quando houver corretor de verdade usando, porque hoje quebrar produção não afeta ninguém. Toda configuração por variável de ambiente, com `.env.example` e `.env.production.example` versionados e segredos sempre fora do repositório.
 
-CI (GitHub Actions): a cada push, lint, typecheck, testes e build dos dois apps. Deploy de staging automático na main; produção por tag ou aprovação manual.
+Deploy é por git: publicar na `main` publica os dois. Migration de banco **não** roda no deploy, é ato deliberado, para que uma alteração de estrutura em produção nunca seja efeito colateral de uma publicação.
 
-## 6.11 Hospedagem (início de vida do produto)
+## 6.11 Hospedagem
 
-Custo baixo e zero manutenção de servidor no começo:
+No ar desde 22/07/2026.
 
-Front em Vercel ou Cloudflare Pages (CDN global, deploy por git). API em container no Railway, Render ou Fly.io (deploy por git, escala vertical simples, logs prontos). Postgres gerenciado (Neon tem plano gratuito generoso pra começar). R2 ou S3 pros documentos. Domínio com TLS automático nas duas pontas.
+| Peça | Onde | Configuração |
+|---|---|---|
+| Front | Vercel, site estático | `vercel.json` |
+| API | Railway, container | `railway.json` |
+| Banco e storage | Supabase, região `us-east-1` | fora do repositório |
 
-Esse conjunto sai por poucos dólares mensais até os primeiros clientes pagantes e não trava nada: como tudo é Docker + connection string + S3 API, migrar pra AWS/GCP inteira mais tarde é mudança de infra, não de código.
+**O front chama a API pelo caminho relativo `/api`.** Em desenvolvimento quem resolve isso é o proxy do Vite; publicado, é o rewrite declarado no `vercel.json`, que encaminha para o Railway. Como o redirecionamento acontece no servidor, o navegador enxerga tudo na mesma origem, então não há CORS envolvido e o front não precisa de variável com a URL da API.
+
+**API e banco ficam na mesma região, sempre.** Uma tela faz várias consultas ao banco e uma só viagem até o corretor, então distância entre API e banco custa muito mais caro que distância até o usuário. O Railway não tem região na América do Sul (só Singapura, Amsterdã, US East e US West), por isso os dois ficam em US East. Se um dia mudar para plataforma com região no Brasil, mover os dois de uma vez, nunca um só.
+
+Migrar de provedor mais tarde é mudança de infraestrutura, não de código: o banco é Postgres por connection string, o storage é protocolo S3, e a API é um processo Node comum.
 
 ## 6.12 Observabilidade e qualidade
 
