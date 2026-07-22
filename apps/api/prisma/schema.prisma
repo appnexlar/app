@@ -6,9 +6,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// url: conexão que a aplicação usa no dia a dia. Em produção aponta para o
+// pooler do Supabase, que aguenta muitas conexões curtas.
+// directUrl: conexão direta, usada só pelo Prisma para rodar migration. O
+// pooler não suporta os comandos de DDL que a migration precisa.
+// Em desenvolvimento as duas apontam para o mesmo Postgres local.
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------------------------------------------------------------------

@@ -4,10 +4,12 @@ build/
 coverage/
 .turbo/
 
-# env
+# env: ignora qualquer .env, inclusive .env.production, e libera so os
+# arquivos de exemplo, que nunca tem valor real dentro.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!.env.*.example
 
 # logs
 *.log
