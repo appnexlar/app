@@ -1,4 +1,3 @@
-import { createReadStream } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { resolve } from "node:path";
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
@@ -16,6 +15,7 @@ import type {
 import { LEAD_STATUSES } from "@nexlar/shared";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { StorageService } from "../storage/storage.service";
 import { STATUS_LABELS } from "../leads/status-labels";
 
 type SelectionWithRelations = Prisma.PropertySelectionGetPayload<{
@@ -30,6 +30,7 @@ export class SharingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly storage: StorageService,
   ) {}
 
   /**
@@ -405,7 +406,7 @@ export class SharingService {
     });
     if (!media?.storagePath) throw new NotFoundException("Imagem não disponível.");
     return {
-      stream: createReadStream(this.absolute(media.storagePath)),
+      stream: await this.storage.getStream(media.storagePath),
       mimeType: media.mimeType ?? "application/octet-stream",
     };
   }
@@ -499,7 +500,4 @@ export class SharingService {
     return cityState || null;
   }
 
-  private absolute(relativePath: string): string {
-    return resolve(this.config.get("STORAGE_DIR", { infer: true }) as string, relativePath);
-  }
 }

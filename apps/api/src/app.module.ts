@@ -4,6 +4,7 @@ import { JwtModule } from "@nestjs/jwt";
 import { APP_FILTER, APP_GUARD } from "@nestjs/core";
 import { validateEnv } from "./config/env";
 import { PrismaModule } from "./prisma/prisma.module";
+import { StorageModule } from "./storage/storage.module";
 import { EmailModule } from "./email/email.module";
 import { AuthModule } from "./auth/auth.module";
 import { LeadsModule } from "./leads/leads.module";
@@ -23,6 +24,7 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
     }),
     JwtModule.register({ global: true }),
     PrismaModule,
+    StorageModule,
     EmailModule,
     AuthModule,
     LeadsModule,

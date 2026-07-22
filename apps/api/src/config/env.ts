@@ -15,14 +15,37 @@ const envSchema = z.object({
   JWT_REFRESH_TTL: z.string().default("30d"),
   WEB_ORIGIN: z.string().default("http://localhost:5173"),
   WEB_APP_URL: z.string().default("http://localhost:5173"),
-  // Storage privado de mídia. Local em dev; S3-compatível na infra (docs/06).
+  // Storage privado de mídia.
+  // local: disco, para desenvolvimento.
+  // s3: bucket compatível com S3, obrigatório em produção, porque o disco do
+  // servidor é apagado a cada publicação e as fotos sumiriam.
+  STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
   STORAGE_DIR: z.string().default("./storage"),
+  S3_ENDPOINT: z.string().default(""),
+  S3_REGION: z.string().default("us-east-1"),
+  S3_BUCKET: z.string().default("nexlar-media"),
+  S3_ACCESS_KEY: z.string().default(""),
+  S3_SECRET_KEY: z.string().default(""),
   // Limites de mídia configuráveis: nada de valor fixo espalhado no código.
   MEDIA_MAX_PHOTO_MB: z.coerce.number().default(15),
   MEDIA_MAX_VIDEO_MB: z.coerce.number().default(200),
   MEDIA_MAX_PHOTOS_PER_PROPERTY: z.coerce.number().default(40),
   MEDIA_MAX_VIDEOS_PER_PROPERTY: z.coerce.number().default(5),
-});
+})
+  // Falha na subida, e não na primeira foto enviada, se o modo s3 estiver
+  // escolhido sem as credenciais do bucket.
+  .superRefine((env, ctx) => {
+    if (env.STORAGE_DRIVER !== "s3") return;
+    for (const chave of ["S3_ENDPOINT", "S3_ACCESS_KEY", "S3_SECRET_KEY"] as const) {
+      if (!env[chave]) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [chave],
+          message: `${chave} é obrigatória quando STORAGE_DRIVER=s3`,
+        });
+      }
+    }
+  });
 
 export type Env = z.infer<typeof envSchema>;
 

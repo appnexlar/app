@@ -1,6 +1,4 @@
-import { createReadStream } from "node:fs";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import { dirname, extname, join, resolve } from "node:path";
+import { join } from "node:path";
 import {
   BadRequestException,
   Injectable,
@@ -17,6 +15,7 @@ import type {
 import type { MediaKind, PropertyMedia } from "@prisma/client";
 import type { Env } from "../config/env";
 import { PrismaService } from "../prisma/prisma.service";
+import { StorageService } from "../storage/storage.service";
 
 const PHOTO_MIMES: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -51,6 +50,7 @@ export class PropertyMediaService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService<Env, true>,
+    private readonly storage: StorageService,
   ) {}
 
   /**
@@ -126,11 +126,8 @@ export class PropertyMediaService {
       folder,
       `${media.id}${ext}`,
     );
-    const absolutePath = this.absolute(relativePath);
-
     try {
-      await mkdir(dirname(absolutePath), { recursive: true });
-      await writeFile(absolutePath, input.buffer);
+      await this.storage.put(relativePath, input.buffer, input.mimeType);
     } catch {
       await this.prisma.propertyMedia.update({
         where: { id: media.id },
@@ -205,7 +202,7 @@ export class PropertyMediaService {
   async removeMedia(brokerId: string, propertyId: string, mediaId: string): Promise<void> {
     const media = await this.getOwnedMedia(brokerId, propertyId, mediaId);
     if (media.storagePath) {
-      await unlink(this.absolute(media.storagePath)).catch(() => undefined);
+      await this.storage.remove(media.storagePath);
     }
     await this.prisma.propertyMedia.update({
       where: { id: mediaId },
@@ -219,9 +216,7 @@ export class PropertyMediaService {
       where: { brokerId, propertyId, storagePath: { not: null } },
       select: { storagePath: true },
     });
-    await Promise.all(
-      all.map((m) => unlink(this.absolute(m.storagePath as string)).catch(() => undefined)),
-    );
+    await Promise.all(all.map((m) => this.storage.remove(m.storagePath as string)));
   }
 
   /** Stream do arquivo, sempre validando a posse (isolamento por corretor). */
@@ -231,13 +226,9 @@ export class PropertyMediaService {
       throw new NotFoundException("Arquivo não disponível.");
     }
     return {
-      stream: createReadStream(this.absolute(media.storagePath)),
+      stream: await this.storage.getStream(media.storagePath),
       mimeType: media.mimeType ?? "application/octet-stream",
     };
-  }
-
-  private absolute(relativePath: string): string {
-    return resolve(this.config.get("STORAGE_DIR", { infer: true }), relativePath);
   }
 
   private async getOwnedProperty(brokerId: string, propertyId: string) {
