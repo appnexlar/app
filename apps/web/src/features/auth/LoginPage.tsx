@@ -19,6 +19,9 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionExpired = searchParams.get("sessao") === "expirada";
+  // Suspensão descoberta no meio do uso: o corretor foi trazido para cá e
+  // precisa entender por que, senão vai achar que é bug e tentar de novo.
+  const contaSuspensa = searchParams.get("conta") === "suspensa";
 
   const {
     register,
@@ -64,7 +67,15 @@ export function LoginPage() {
 
       <OrDivider />
 
-      {sessionExpired && !bannerMessage && (
+      {contaSuspensa && !bannerMessage && (
+        <div className="mb-5">
+          <Banner variant="danger">
+            Esta conta está suspensa. Fale com o suporte do Nexlar para reativar.
+          </Banner>
+        </div>
+      )}
+
+      {sessionExpired && !contaSuspensa && !bannerMessage && (
         <div className="mb-5">
           <Banner variant="info">Sua sessão expirou. Entre novamente para continuar.</Banner>
         </div>

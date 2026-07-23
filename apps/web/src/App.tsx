@@ -4,7 +4,7 @@ import { RegisterPage } from "./features/auth/RegisterPage";
 import { ForgotPasswordPage } from "./features/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "./features/auth/ResetPasswordPage";
 import { ConfirmEmailPage } from "./features/auth/ConfirmEmailPage";
-import { GuestRoute, ProtectedRoute, EmailGateRoute } from "./features/auth/ProtectedRoute";
+import { GuestRoute, ProtectedRoute } from "./features/auth/ProtectedRoute";
 import { SessionExpiryHandler } from "./features/auth/SessionExpiryHandler";
 import { AppLayout } from "./features/shell/AppLayout";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
@@ -48,10 +48,11 @@ export function App() {
           <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
         </Route>
 
-        {/* Gate de confirmação de e-mail. */}
-        <Route element={<EmailGateRoute />}>
-          <Route path="/confirmar-email" element={<ConfirmEmailPage />} />
-        </Route>
+        {/* Confirmação de e-mail. Sem guarda de rota de propósito: o link do
+            e-mail costuma ser aberto no celular, num navegador onde a pessoa
+            nunca entrou. A própria tela decide o que mostrar e para onde
+            mandar, conforme tenha token na URL e sessão aberta. */}
+        <Route path="/confirmar-email" element={<ConfirmEmailPage />} />
 
         {/* Área logada: layout-base + módulos. */}
         <Route element={<ProtectedRoute />}>

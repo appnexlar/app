@@ -41,12 +41,11 @@ export function ResetPasswordPage() {
 
   const mutation = useMutation({ mutationFn: resetPassword });
 
+  // A tela de sucesso só aparece se a API confirmar. Link vencido ou já usado
+  // volta como erro, em vez de dizer que a senha mudou quando não mudou.
   const onSubmit = (data: ResetFormValues) => {
     if (!token) return;
-    mutation.mutate({ token, password: data.password });
-    // TODO(backend): quando a API existir, condicionar o sucesso à resposta
-    // para tratar token expirado/inválido.
-    setDone(true);
+    mutation.mutate({ token, password: data.password }, { onSuccess: () => setDone(true) });
   };
 
   // Link aberto sem token: não dá para redefinir.
@@ -93,7 +92,7 @@ export function ResetPasswordPage() {
     );
   }
 
-  const bannerMessage = authErrorMessage(mutation.error, "login");
+  const bannerMessage = authErrorMessage(mutation.error, "reset");
 
   return (
     <AuthLayout>

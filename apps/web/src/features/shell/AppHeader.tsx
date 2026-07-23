@@ -78,50 +78,13 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
               <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </button>
-          {/* Mobile: marca nas seções, título da tela nas internas. */}
-          {isSection ? (
-            <img src="/logo-wordmark.svg" alt="Nexlar" className="h-7 w-auto object-contain object-left sm:hidden" />
-          ) : (
-            <h1 className="truncate text-h3 text-text sm:hidden">{current.label}</h1>
-          )}
-
-          {/* Caminho de pão a partir do tablet. */}
-          <nav aria-label="Caminho de pão" className="hidden min-w-0 sm:block">
-            <ol className="flex items-center gap-1.5 text-body-sm">
-              {crumbs.map((crumb, index) => {
-                const isLast = index === crumbs.length - 1;
-                return (
-                  <li key={`${crumb.label}-${index}`} className="flex min-w-0 items-center gap-1.5">
-                    {index > 0 && (
-                      <svg
-                        className="h-3.5 w-3.5 shrink-0 text-text-subtle"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden="true"
-                      >
-                        <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    {isLast || !crumb.to ? (
-                      <span
-                        aria-current={isLast ? "page" : undefined}
-                        className="truncate font-semibold text-text"
-                      >
-                        {crumb.label}
-                      </span>
-                    ) : (
-                      <Link
-                        to={crumb.to}
-                        className="truncate text-text-muted transition-colors hover:text-text"
-                      >
-                        {crumb.label}
-                      </Link>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-          </nav>
+          {/* A barra carrega só a marca. Quem diz em que página você está é o
+              bloco de identidade abaixo, igual em qualquer largura. */}
+          <img
+            src="/logo-wordmark.svg"
+            alt="Nexlar"
+            className="h-7 w-auto object-contain object-left lg:hidden"
+          />
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -155,25 +118,72 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
       </div>
       </header>
 
-      {/* Título grande no mobile, estilo app. Só nas telas de seção. O voltar
-          (quando você chegou navegando) fica acima do título. */}
-      {isSection && (
-        <div className="px-4 pt-4 pb-1 sm:hidden">
-          {!isHome && (
+      {/* Identidade da página: caminho de pão + título grande, sempre abaixo da
+          barra e igual em celular, tablet e desktop. Alinha com o <main>. */}
+      {/* Na Home quem dá nome à página é a saudação do próprio conteúdo, então
+          o bloco de identidade não aparece para não repetir. */}
+      <div className={"mx-auto w-full max-w-6xl px-4 pt-5 sm:px-6 sm:pt-7" + (isHome ? " hidden" : "")}>
+        {isSection ? (
+          !isHome && (
             <button
               type="button"
               onClick={goHome}
-              className="-ml-1 mb-1 inline-flex items-center gap-1 text-body-sm font-semibold text-text-muted transition-colors hover:text-text"
+              className="-ml-1 mb-1 inline-flex items-center gap-1 text-body-sm font-semibold text-text-muted transition-colors hover:text-text lg:hidden"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               Voltar
             </button>
-          )}
-          <h1 className="text-h1 text-text">{title}</h1>
-        </div>
-      )}
+          )
+        ) : (
+          <nav aria-label="Caminho de pão" className="mb-1">
+            <ol className="flex min-w-0 items-center gap-1.5 text-body-sm">
+              {crumbs.slice(0, -1).map((crumb, index) => (
+                <li key={`${crumb.label}-${index}`} className="flex min-w-0 items-center gap-1.5">
+                  {index > 0 && <Chevron />}
+                  {crumb.to ? (
+                    <Link
+                      to={crumb.to}
+                      className="truncate text-text-muted transition-colors hover:text-text"
+                    >
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span className="truncate text-text-muted">{crumb.label}</span>
+                  )}
+                </li>
+              ))}
+              <li className="flex min-w-0 items-center gap-1.5">
+                <Chevron />
+                <span aria-current="page" className="truncate font-semibold text-text">
+                  {current.label}
+                </span>
+              </li>
+            </ol>
+          </nav>
+        )}
+        <h1 className="truncate text-h1 text-text">{isSection ? title : current.label}</h1>
+      </div>
     </>
+  );
+}
+
+function Chevron() {
+  return (
+    <svg
+      className="h-3.5 w-3.5 shrink-0 text-text-subtle"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M9 6l6 6-6 6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

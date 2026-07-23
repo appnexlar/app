@@ -6,12 +6,14 @@ import { Link } from "react-router-dom";
 import { forgotPasswordSchema, type ForgotPasswordDto } from "@nexlar/shared";
 import { Button } from "../../components/ui/Button";
 import { TextField } from "../../components/ui/TextField";
+import { Banner } from "../../components/ui/Banner";
 import { AuthLayout } from "./AuthLayout";
 import { BackToLogin } from "./BackToLogin";
-import { forgotPassword } from "./api";
+import { authErrorMessage, forgotPassword } from "./api";
 
 export function ForgotPasswordPage() {
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
 
   const {
     register,
@@ -24,12 +26,14 @@ export function ForgotPasswordPage() {
 
   const mutation = useMutation({ mutationFn: forgotPassword });
 
-  // Resposta sempre neutra (não revela se o e-mail existe). Mostra a
-  // confirmação assim que o pedido é enviado, disparando a API em segundo plano.
+  // A confirmação só aparece depois que a API responde. A resposta é a mesma
+  // exista ou não a conta, então esperar não revela nada, e evita prometer um
+  // e-mail que não saiu (limite de tentativas, API fora do ar).
   const onSubmit = (data: ForgotPasswordDto) => {
-    mutation.mutate(data);
-    setSentTo(data.email);
+    mutation.mutate(data, { onSuccess: () => setSentTo(data.email) });
   };
+
+  const errorMessage = authErrorMessage(mutation.error, "forgot");
 
   if (sentTo) {
     return (
@@ -47,6 +51,17 @@ export function ForgotPasswordPage() {
             e também o spam.
           </p>
 
+          {errorMessage && (
+            <div className="mt-5">
+              <Banner variant="danger">{errorMessage}</Banner>
+            </div>
+          )}
+          {resent && !errorMessage && (
+            <div className="mt-5">
+              <Banner variant="success">Link reenviado. Confira a caixa de entrada.</Banner>
+            </div>
+          )}
+
           <div className="mt-8 flex flex-col gap-3">
             <Link to="/login" className="w-full">
               <Button variant="accent" fullWidth type="button">
@@ -55,10 +70,22 @@ export function ForgotPasswordPage() {
             </Link>
             <button
               type="button"
-              onClick={() => mutation.mutate({ email: sentTo })}
-              className="text-body-sm text-text-muted transition-colors hover:text-text"
+              disabled={mutation.isPending}
+              onClick={() =>
+                mutation.mutate(
+                  { email: sentTo },
+                  { onSuccess: () => setResent(true) },
+                )
+              }
+              className="text-body-sm text-text-muted transition-colors hover:text-text disabled:opacity-60"
             >
-              Não recebeu? <span className="font-semibold text-accent">Reenviar link</span>
+              {mutation.isPending ? (
+                "Reenviando..."
+              ) : (
+                <>
+                  Não recebeu? <span className="font-semibold text-accent">Reenviar link</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -76,6 +103,12 @@ export function ForgotPasswordPage() {
           Informe seu e-mail e enviaremos um link para você criar uma nova senha.
         </p>
       </header>
+
+      {errorMessage && (
+        <div className="mb-5">
+          <Banner variant="danger">{errorMessage}</Banner>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
         <TextField

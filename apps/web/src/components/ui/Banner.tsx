@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 
-type Variant = "danger" | "info";
+type Variant = "danger" | "info" | "success";
 
 const styles: Record<Variant, string> = {
   danger: "border-danger bg-danger-soft text-[var(--danger-fg)]",
   info: "border-info bg-info-soft text-[var(--info-fg)]",
+  success: "border-success bg-success-soft text-[var(--success-fg)]",
 };
 
 const icons: Record<Variant, ReactNode> = {
@@ -20,6 +21,18 @@ const icons: Record<Variant, ReactNode> = {
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
       <path d="M12 11v5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
       <circle cx="12" cy="8" r="1" fill="currentColor" />
+    </>
+  ),
+  success: (
+    <>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M8.5 12.3l2.4 2.4 4.6-4.9"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </>
   ),
 };

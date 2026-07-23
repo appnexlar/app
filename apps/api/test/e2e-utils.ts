@@ -42,7 +42,13 @@ export interface TestBroker {
   accessToken: string;
 }
 
-/** Registra um corretor pela rota pública e devolve o token da sessão. */
+/**
+ * Registra um corretor pela rota pública e devolve o token da sessão.
+ *
+ * Marca o e-mail como confirmado logo em seguida, direto no banco: conta nova
+ * nasce presa no gate de confirmação, e os testes de domínio (leads, imóveis,
+ * isolamento) não são sobre isso. Quem cobre o gate é o auth.e2e.spec.
+ */
 export async function registerBroker(
   app: NestFastifyApplication,
   fullName: string,
@@ -51,12 +57,18 @@ export async function registerBroker(
   const response = await app.inject({
     method: "POST",
     url: "/api/auth/register",
-    payload: { fullName, email, password: "SenhaForte123" },
+    payload: { fullName, email, password: "SenhaForte123", acceptTerms: true },
   });
   if (response.statusCode !== 201) {
     throw new Error(`Falha ao registrar ${email}: ${response.statusCode} ${response.body}`);
   }
   const body = response.json();
+
+  await app.get(PrismaService).broker.update({
+    where: { id: body.broker.id },
+    data: { emailVerifiedAt: new Date() },
+  });
+
   return { brokerId: body.broker.id, accessToken: body.tokens.accessToken };
 }
 

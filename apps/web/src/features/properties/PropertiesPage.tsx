@@ -13,8 +13,10 @@ import {
 import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { Select } from "../../components/ui/Select";
+import { SearchField } from "../../components/ui/SearchField";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { ApiError } from "../../lib/http";
+import { useDebounced } from "../../lib/useDebounced";
 import {
   AVAILABLE_STATUS_ACTIONS,
   changePropertyStatus,
@@ -46,7 +48,6 @@ export function PropertiesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [q, setQ] = useState("");
-  const [appliedQ, setAppliedQ] = useState("");
   const [purpose, setPurpose] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
@@ -58,8 +59,15 @@ export function PropertiesPage() {
   const [toDelete, setToDelete] = useState<PropertySummary | null>(null);
   const [toSend, setToSend] = useState<PropertySummary | null>(null);
 
+  // Busca ao vivo: o campo responde na hora e a chamada sai quando a digitação
+  // para. Termo novo sempre volta para a primeira página.
+  const debouncedQ = useDebounced(q.trim());
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedQ]);
+
   const filters: PropertyFilters = {
-    q: appliedQ || undefined,
+    q: debouncedQ || undefined,
     purpose: purpose || undefined,
     category: category || undefined,
     status: status || undefined,
@@ -104,7 +112,7 @@ export function PropertiesPage() {
     },
   });
 
-  const hasFilters = Boolean(appliedQ || purpose || category || status || origin);
+  const hasFilters = Boolean(debouncedQ || purpose || category || status || origin);
   const activeFilters = [purpose, category, status, origin].filter(Boolean).length;
   const resetPage = () => setPage(1);
 
@@ -147,66 +155,33 @@ export function PropertiesPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-3.5 shadow-sm">
-        <form
-          className="flex flex-col gap-2 sm:flex-row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setAppliedQ(q.trim());
-            resetPage();
-          }}
-        >
-          <div className="relative flex-1">
-            <svg
-              className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-text-subtle"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
-              <path d="M20 20l-3.2-3.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        {/* Sem botão "Buscar": a lista responde enquanto digita, igual em Leads
+            e Clientes. Imóveis mantém o painel porque filtra por cinco campos,
+            o que não cabe em chips. */}
+        <div className="flex gap-2">
+          <SearchField
+            label="Buscar imóvel por título, código ou endereço"
+            placeholder="Buscar por título, código ou endereço"
+            value={q}
+            onChange={setQ}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            aria-expanded={showFilters}
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar por título, código ou endereço"
-              aria-label="Buscar imóveis"
-              className="min-h-[var(--tap-target-min)] w-full min-w-0 rounded-md border border-border bg-surface pl-10 pr-9 text-body text-text placeholder:text-text-subtle focus-visible:border-[var(--border-focus)] focus-visible:shadow-focus"
-            />
-            {q && (
-              <button
-                type="button"
-                onClick={() => setQ("")}
-                aria-label="Limpar busca"
-                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-subtle transition-colors hover:bg-surface-sunken hover:text-text"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              </button>
+            Filtros
+            {activeFilters > 0 && (
+              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent px-1 text-caption font-bold text-accent-on">
+                {activeFilters}
+              </span>
             )}
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit" variant="accent" className="flex-1 sm:flex-none">
-              Buscar
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              aria-expanded={showFilters}
-              onClick={() => setShowFilters((v) => !v)}
-            >
-              <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-              Filtros
-              {activeFilters > 0 && (
-                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent px-1 text-caption font-bold text-accent-on">
-                  {activeFilters}
-                </span>
-              )}
-            </Button>
-          </div>
-        </form>
+          </Button>
+        </div>
 
         {showFilters && (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -277,7 +252,6 @@ export function PropertiesPage() {
             className="mt-5"
             onClick={() => {
               setQ("");
-              setAppliedQ("");
               setPurpose("");
               setCategory("");
               setStatus("");

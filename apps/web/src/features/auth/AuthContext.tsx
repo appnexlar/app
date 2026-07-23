@@ -1,34 +1,36 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { AuthResponse, BrokerProfile } from "@nexlar/shared";
 import { refreshAccessToken, setAccessToken, setRefreshHandler } from "../../lib/http";
 import { clearSession, loadSession, saveSession, type StoredSession } from "./storage";
+import { logout } from "./api";
 
-interface AuthState {
+interface AuthContextValue {
   broker: BrokerProfile | null;
-  emailVerified: boolean;
-}
-
-interface AuthContextValue extends AuthState {
   isAuthenticated: boolean;
+  /** Vem do servidor, em `broker.emailVerified`. O navegador não decide isto. */
+  emailVerified: boolean;
+  signIn: (session: AuthResponse) => void;
   /**
-   * Guarda a sessão recém-criada. `emailVerified` default true (login de
-   * conta existente); o cadastro novo passa false para cair no gate de e-mail.
+   * Busca o estado atual da conta no servidor. É assim que a tela do gate
+   * descobre que o e-mail acabou de ser confirmado em outra aba ou no celular.
+   * Retorna true quando o e-mail já está confirmado.
    */
-  signIn: (session: AuthResponse, emailVerified?: boolean) => void;
-  /** Marca o e-mail como confirmado (após o gate). */
-  confirmEmail: () => void;
-  signOut: () => void;
+  recarregarConta: () => Promise<boolean>;
+  /** Grava um perfil recém-atualizado (ex.: após editar os dados de contato). */
+  atualizarBroker: (broker: BrokerProfile) => void;
+  /** Encerra a sessão aqui e no servidor. */
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 // Restaura a sessão de forma síncrona, antes do primeiro render.
-function restoreInitialState(): AuthState {
+function restoreInitialBroker(): BrokerProfile | null {
   const stored = loadSession();
-  if (!stored) return { broker: null, emailVerified: false };
+  if (!stored) return null;
   setAccessToken(stored.tokens.accessToken);
-  return { broker: stored.broker, emailVerified: stored.emailVerified };
+  return stored.broker;
 }
 
 /**
@@ -47,7 +49,7 @@ async function refreshSession(): Promise<string | null> {
     });
     if (!response.ok) return null;
     const session = (await response.json()) as AuthResponse;
-    saveSession({ ...stored, broker: session.broker, tokens: session.tokens });
+    saveSession({ broker: session.broker, tokens: session.tokens });
     setAccessToken(session.tokens.accessToken);
     return session.tokens.accessToken;
   } catch {
@@ -57,7 +59,23 @@ async function refreshSession(): Promise<string | null> {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(restoreInitialState);
+  const [broker, setBroker] = useState<BrokerProfile | null>(restoreInitialBroker);
+
+  /**
+   * Identidade estável, e isso não é preciosismo: como ela chama setBroker,
+   * qualquer efeito que a tivesse nas dependências e a chamasse entraria em
+   * laço infinito, renovando a sessão sem parar. Ela não precisa de nada do
+   * render, só de localStorage e do renovador, então mora fora do useMemo.
+   */
+  const recarregarConta = useCallback(async () => {
+    // A renovação devolve o perfil atualizado junto com o novo par de tokens,
+    // então não precisa de rota separada só para reler a conta.
+    const novoToken = await refreshAccessToken();
+    if (!novoToken) return false;
+    const atualizado = loadSession();
+    if (atualizado) setBroker(atualizado.broker);
+    return atualizado?.broker.emailVerified ?? false;
+  }, []);
 
   // Renovação silenciosa: o cliente http chama isto ao receber 401.
   // Além disso, renova ao abrir o app e periodicamente (antes do access
@@ -67,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // paralelo com a renovação disparada por um 401.
   useEffect(() => {
     setRefreshHandler(refreshSession);
-    if (state.broker) {
+    if (broker) {
       void refreshAccessToken();
       const interval = setInterval(() => void refreshAccessToken(), 10 * 60 * 1000);
       return () => {
@@ -77,32 +95,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     return () => setRefreshHandler(null);
     // Reinicia o ciclo quando muda o corretor logado (login/logout).
-  }, [state.broker?.id]);
+  }, [broker?.id]);
 
   const value = useMemo<AuthContextValue>(() => {
     const persist = (session: StoredSession) => {
       saveSession(session);
       setAccessToken(session.tokens.accessToken);
-      setState({ broker: session.broker, emailVerified: session.emailVerified });
+      setBroker(session.broker);
     };
 
     return {
-      broker: state.broker,
-      emailVerified: state.emailVerified,
-      isAuthenticated: state.broker !== null,
-      signIn: (session, emailVerified = true) =>
-        persist({ ...session, emailVerified }),
-      confirmEmail: () => {
-        const stored = loadSession();
-        if (stored) persist({ ...stored, emailVerified: true });
+      broker,
+      isAuthenticated: broker !== null,
+      emailVerified: broker?.emailVerified ?? false,
+      signIn: (session) => persist({ broker: session.broker, tokens: session.tokens }),
+      recarregarConta,
+
+      atualizarBroker: (novo) => {
+        // Reaproveita os tokens da sessão atual, trocando só o perfil.
+        const atual = loadSession();
+        if (!atual) return;
+        saveSession({ ...atual, broker: novo });
+        setBroker(novo);
       },
-      signOut: () => {
+
+      signOut: async () => {
+        // Pega o refresh token antes de limpar, revoga no servidor e só então
+        // apaga daqui. Se a rede falhar, o local é limpo do mesmo jeito: a
+        // pessoa clicou em sair e tem que sair.
+        const refreshToken = loadSession()?.tokens.refreshToken;
+        try {
+          if (refreshToken) await logout(refreshToken);
+        } catch {
+          // Sessão já revogada ou sem conexão: seguir com a saída local.
+        }
         clearSession();
         setAccessToken(null);
-        setState({ broker: null, emailVerified: false });
+        setBroker(null);
       },
     };
-  }, [state]);
+  }, [broker, recarregarConta]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

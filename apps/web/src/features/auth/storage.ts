@@ -4,13 +4,14 @@ const STORAGE_KEY = "nexlar.session";
 
 /**
  * Sessão persistida entre recarregamentos.
- * `emailVerified` é mantido no cliente nesta fase. TODO(backend): passar a ler
- * de `broker.emailVerified` quando a API tiver o campo; remover este flag.
+ *
+ * Não existe mais flag de e-mail confirmado aqui: ela vive em
+ * `broker.emailVerified`, que vem do servidor a cada login e a cada renovação.
+ * Antes ficava solta no navegador, onde a própria pessoa podia ligar sozinha.
  */
 export interface StoredSession {
   broker: AuthResponse["broker"];
   tokens: AuthResponse["tokens"];
-  emailVerified: boolean;
 }
 
 export function loadSession(): StoredSession | null {

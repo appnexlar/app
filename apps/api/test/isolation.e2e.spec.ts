@@ -236,4 +236,236 @@ describe("Isolamento por corretor", () => {
       expect(aindaExiste.statusCode).toBe(200);
     });
   });
+
+  // --- Clientes -------------------------------------------------------------
+  describe("/clients", () => {
+    let clienteAna: string;
+    let clienteBruno: string;
+
+    const conversao = {
+      reason: "inicio_financiamento",
+      nextStep: "coletar_dados",
+      purpose: "compra",
+      consent: true,
+    };
+
+    beforeAll(async () => {
+      // Cliente nasce de uma lead convertida, então cada corretor precisa da
+      // sua própria lead antes.
+      const leads = await Promise.all(
+        [ana, bruno].map((corretor, i) =>
+          requestAs(app, corretor, {
+            method: "POST",
+            url: "/api/leads",
+            payload: { fullName: `Convertida ${i}`, whatsapp: `1198888000${i}` },
+          }),
+        ),
+      );
+      const convertidos = await Promise.all(
+        [ana, bruno].map((corretor, i) =>
+          requestAs(app, corretor, {
+            method: "POST",
+            url: `/api/leads/${leads[i].json().id}/convert`,
+            payload: conversao,
+          }),
+        ),
+      );
+      for (const r of convertidos) expect([200, 201]).toContain(r.statusCode);
+      clienteAna = leads[0].json().id;
+      clienteBruno = leads[1].json().id;
+    });
+
+    it("list devolve só os clientes do corretor autenticado", async () => {
+      const listAna = (await requestAs(app, ana, { method: "GET", url: "/api/clients" })).json();
+      const listBruno = (await requestAs(app, bruno, { method: "GET", url: "/api/clients" })).json();
+
+      expect(listAna.map((c: { id: string }) => c.id)).toEqual([clienteAna]);
+      expect(listBruno.map((c: { id: string }) => c.id)).toEqual([clienteBruno]);
+    });
+
+    it("ficha de cliente alheio responde 404", async () => {
+      const cruzado = await requestAs(app, ana, {
+        method: "GET",
+        url: `/api/clients/${clienteBruno}`,
+      });
+      expect(cruzado.statusCode).toBe(404);
+    });
+
+    it("editar dados pessoais de cliente alheio responde 404 e não altera nada", async () => {
+      const cruzado = await requestAs(app, ana, {
+        method: "PATCH",
+        url: `/api/clients/${clienteBruno}/profile`,
+        payload: { cpf: "39053344705" },
+      });
+      expect(cruzado.statusCode).toBe(404);
+
+      const ficha = await requestAs(app, bruno, {
+        method: "GET",
+        url: `/api/clients/${clienteBruno}`,
+      });
+      expect(ficha.json().profile?.cpf ?? null).toBeNull();
+    });
+
+    it("editar o financeiro de cliente alheio responde 404", async () => {
+      // A seção mais sensível da ficha: renda e capacidade de pagamento.
+      const cruzado = await requestAs(app, ana, {
+        method: "PATCH",
+        url: `/api/clients/${clienteBruno}/financial`,
+        payload: { monthlyIncome: 99999 },
+      });
+      expect(cruzado.statusCode).toBe(404);
+    });
+
+    it("pedir exclusão de dados de cliente alheio responde 404", async () => {
+      const cruzado = await requestAs(app, ana, {
+        method: "POST",
+        url: `/api/clients/${clienteBruno}/deletion-request`,
+        payload: { reason: "pedido do titular" },
+      });
+      expect(cruzado.statusCode).toBe(404);
+    });
+  });
+
+  // --- Agenda ---------------------------------------------------------------
+  describe("/agenda", () => {
+    let eventoAna: string;
+    let eventoBruno: string;
+
+    const evento = (title: string) => ({
+      type: "tarefa",
+      title,
+      startAt: "2026-08-10T13:00:00.000Z",
+      taskKind: "retorno",
+    });
+
+    beforeAll(async () => {
+      const criados = await Promise.all([
+        requestAs(app, ana, { method: "POST", url: "/api/agenda", payload: evento("Tarefa da Ana") }),
+        requestAs(app, bruno, { method: "POST", url: "/api/agenda", payload: evento("Tarefa do Bruno") }),
+      ]);
+      for (const r of criados) expect(r.statusCode).toBe(201);
+      eventoAna = criados[0].json().id;
+      eventoBruno = criados[1].json().id;
+    });
+
+    it("list devolve só os eventos do corretor autenticado", async () => {
+      const listAna = (
+        await requestAs(app, ana, {
+          method: "GET",
+          url: "/api/agenda?from=2026-08-01T00:00:00.000Z&to=2026-08-31T23:59:59.000Z",
+        })
+      ).json();
+      const ids = (Array.isArray(listAna) ? listAna : listAna.items).map((e: { id: string }) => e.id);
+      expect(ids).toContain(eventoAna);
+      expect(ids).not.toContain(eventoBruno);
+    });
+
+    it("abrir evento alheio responde 404", async () => {
+      const cruzado = await requestAs(app, ana, {
+        method: "GET",
+        url: `/api/agenda/${eventoBruno}`,
+      });
+      expect(cruzado.statusCode).toBe(404);
+    });
+
+    it("editar evento alheio responde 404 e não altera nada", async () => {
+      const cruzado = await requestAs(app, ana, {
+        method: "PATCH",
+        url: `/api/agenda/${eventoBruno}`,
+        payload: { title: "Titulo invadido" },
+      });
+      expect(cruzado.statusCode).toBe(404);
+
+      const ficha = await requestAs(app, bruno, {
+        method: "GET",
+        url: `/api/agenda/${eventoBruno}`,
+      });
+      expect(ficha.json().title).toBe("Tarefa do Bruno");
+    });
+
+    it("apagar evento alheio responde 404 e o evento continua existindo", async () => {
+      const cruzado = await requestAs(app, ana, {
+        method: "DELETE",
+        url: `/api/agenda/${eventoBruno}`,
+      });
+      expect(cruzado.statusCode).toBe(404);
+
+      const aindaExiste = await requestAs(app, bruno, {
+        method: "GET",
+        url: `/api/agenda/${eventoBruno}`,
+      });
+      expect(aindaExiste.statusCode).toBe(200);
+    });
+  });
+
+  // --- Compartilhamento de imóveis -----------------------------------------
+  describe("/shares", () => {
+    let shareBruno: string;
+    let tokenPublicoBruno: string;
+
+    beforeAll(async () => {
+      const lead = await requestAs(app, bruno, {
+        method: "POST",
+        url: "/api/leads",
+        payload: { fullName: "Lead do envio", whatsapp: "11977770001" },
+      });
+      const imovel = await requestAs(app, bruno, {
+        method: "POST",
+        url: "/api/properties",
+        payload: {
+          title: "Imóvel enviado",
+          purpose: "venda",
+          category: "residencial",
+          type: "apartamento",
+          origin: "captacao_propria",
+        },
+      });
+      const envio = await requestAs(app, bruno, {
+        method: "POST",
+        url: `/api/properties/${imovel.json().id}/shares`,
+        payload: { leadId: lead.json().id },
+      });
+      expect(envio.statusCode).toBe(201);
+      shareBruno = envio.json().id;
+      tokenPublicoBruno = envio.json().token ?? envio.json().publicToken;
+    });
+
+    it("revogar envio alheio responde 404 e o link continua valendo", async () => {
+      const cruzado = await requestAs(app, ana, {
+        method: "POST",
+        url: `/api/shares/${shareBruno}/revoke`,
+      });
+      expect(cruzado.statusCode).toBe(404);
+
+      if (tokenPublicoBruno) {
+        const publico = await app.inject({
+          method: "GET",
+          url: `/api/public/shares/${tokenPublicoBruno}`,
+        });
+        expect(publico.statusCode).toBe(200);
+      }
+    });
+
+    it("registrar resposta em envio alheio responde 404", async () => {
+      const cruzado = await requestAs(app, ana, {
+        method: "POST",
+        url: `/api/shares/${shareBruno}/response`,
+        payload: { response: "tenho_interesse" },
+      });
+      expect(cruzado.statusCode).toBe(404);
+    });
+
+    it("o link público não expõe dado do corretor nem da lead", async () => {
+      if (!tokenPublicoBruno) return;
+      const publico = await app.inject({
+        method: "GET",
+        url: `/api/public/shares/${tokenPublicoBruno}`,
+      });
+      // Página aberta na internet: não pode carregar contato nem identificador
+      // interno de ninguém.
+      expect(publico.body).not.toContain("bruno.isolamento@teste.com");
+      expect(publico.body).not.toContain("11977770001");
+      expect(publico.body).not.toContain(bruno.brokerId);
+    });
+  });
 });
