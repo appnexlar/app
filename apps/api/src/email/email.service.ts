@@ -11,11 +11,18 @@ export interface WelcomeEmail {
   fullName: string;
 }
 
+export interface EmailVerificationEmail {
+  to: string;
+  fullName: string;
+  verifyUrl: string;
+}
+
 /**
- * Contrato de envio de e-mail. No MVP só dois e-mails transacionais
- * (boas-vindas e recuperação de senha). Trocável por Resend/SES depois.
+ * Contrato de envio de e-mail. Três transacionais: confirmação de cadastro,
+ * boas-vindas (depois de confirmado) e recuperação de senha.
  */
 export abstract class EmailService {
+  abstract sendEmailVerification(email: EmailVerificationEmail): Promise<void>;
   abstract sendPasswordReset(email: PasswordResetEmail): Promise<void>;
   abstract sendWelcome(email: WelcomeEmail): Promise<void>;
 }
@@ -24,6 +31,12 @@ export abstract class EmailService {
 @Injectable()
 export class ConsoleEmailService extends EmailService {
   private readonly logger = new Logger("EmailService");
+
+  async sendEmailVerification({ to, fullName, verifyUrl }: EmailVerificationEmail): Promise<void> {
+    this.logger.log(
+      `[confirmação de e-mail] Para: ${to} (${fullName})\n  Link de confirmação: ${verifyUrl}`,
+    );
+  }
 
   async sendPasswordReset({ to, fullName, resetUrl }: PasswordResetEmail): Promise<void> {
     this.logger.log(

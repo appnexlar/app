@@ -103,6 +103,48 @@ export class TokenService {
     });
   }
 
+  // --- Confirmação de e-mail ------------------------------------------------
+  /**
+   * Prazo longo de propósito: o corretor pode se cadastrar no fim do dia e só
+   * abrir o e-mail no dia seguinte. Diferente da senha, aqui não há urgência,
+   * e um link vencido cedo demais vira suporte.
+   */
+  async createEmailVerificationToken(brokerId: string): Promise<string> {
+    const raw = randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 dias
+    await this.prisma.emailVerificationToken.create({
+      data: { brokerId, tokenHash: sha256(raw), expiresAt },
+    });
+    return raw;
+  }
+
+  /** Consome um token de confirmação de uso único. Retorna o brokerId ou null. */
+  async consumeEmailVerificationToken(rawToken: string): Promise<string | null> {
+    const record = await this.prisma.emailVerificationToken.findUnique({
+      where: { tokenHash: sha256(rawToken) },
+    });
+    if (!record || record.usedAt || record.expiresAt.getTime() < Date.now()) {
+      return null;
+    }
+    await this.prisma.emailVerificationToken.update({
+      where: { id: record.id },
+      data: { usedAt: new Date() },
+    });
+    return record.brokerId;
+  }
+
+  /**
+   * Invalida os links de confirmação ainda abertos do corretor. Chamado antes
+   * de emitir um novo, para o reenvio não deixar vários links válidos soltos
+   * em caixas de e-mail diferentes.
+   */
+  async revokeEmailVerificationTokens(brokerId: string): Promise<void> {
+    await this.prisma.emailVerificationToken.updateMany({
+      where: { brokerId, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+  }
+
   // --- Recuperação de senha -------------------------------------------------
   async createPasswordResetToken(brokerId: string): Promise<string> {
     const raw = randomBytes(32).toString("hex");

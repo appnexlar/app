@@ -19,19 +19,17 @@ import { useGoogleAuth } from "../useGoogleAuth";
 import { useAuth } from "../AuthContext";
 import { authErrorMessage, register as registerAccount } from "../api";
 import {
-  maskCardNumber,
   maskCnpj,
   maskCpf,
-  maskExpiry,
   maskPhone,
   onlyDigits,
 } from "../../../lib/masks";
 import { PLANS, formatBRL, type Plan, type PlanId } from "./plans";
 
 /**
- * Cadastro do corretor em 4 etapas: conta, perfil profissional, plano e
- * pagamento. O pagamento é só interface (demonstração): nenhuma cobrança
- * acontece; o gateway entra numa fatia futura.
+ * Cadastro do corretor em 4 etapas: conta, perfil profissional, escolha do
+ * plano e confirmação. Não há cobrança nem coleta de dados de cartão: o
+ * gateway entra numa fatia futura, com campo hospedado pelo provedor.
  *
  * TODO(backend): persistir creci, cpf/cnpj e plano escolhido quando a API
  * ganhar esses campos (migração + DTO em @nexlar/shared). Hoje a API grava
@@ -83,21 +81,6 @@ const profileSchema = z
   });
 type ProfileValues = z.infer<typeof profileSchema>;
 
-const cardSchema = z.object({
-  cardNumber: z.string().refine((v) => {
-    const n = onlyDigits(v).length;
-    return n >= 13 && n <= 19;
-  }, "Número do cartão incompleto"),
-  cardName: z.string().trim().min(3, "Informe o nome impresso no cartão"),
-  expiry: z
-    .string()
-    .regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Validade em MM/AA"),
-  cvv: z.string().refine((v) => {
-    const n = onlyDigits(v).length;
-    return n === 3 || n === 4;
-  }, "CVV inválido"),
-});
-type CardValues = z.infer<typeof cardSchema>;
 
 // --- Assistente -------------------------------------------------------------
 
@@ -105,7 +88,7 @@ const STEP_TITLES: { title: string; subtitle: string }[] = [
   { title: "Criar sua conta", subtitle: "Comece em poucos minutos." },
   { title: "Seu perfil profissional", subtitle: "Conte quem você é como corretor." },
   { title: "Escolha seu plano", subtitle: "Sem fidelidade. Cancele quando quiser." },
-  { title: "Pagamento", subtitle: "Revise e conclua seu cadastro." },
+  { title: "Confirmar plano", subtitle: "Revise e conclua seu cadastro." },
 ];
 
 export function RegisterWizard() {
@@ -124,22 +107,26 @@ export function RegisterWizard() {
   const mutation = useMutation({
     mutationFn: registerAccount,
     onSuccess: (session) => {
-      // E-mail ainda não confirmado: cai no gate de confirmação, não no Dashboard.
-      signIn(session, false);
+      // Quem diz se o e-mail está confirmado é o servidor, em
+      // session.broker.emailVerified. Conta recém-criada vem com false, então
+      // o ProtectedRoute manda para o gate sozinho.
+      signIn(session);
       navigate("/confirmar-email", { replace: true });
     },
   });
 
   const finish = () => {
     if (!account || !profile) return;
-    // TODO(backend): enviar também creci, creciUf, personType/document, planId,
-    // o aceite dos termos (data + versão) e o opt-in de marketing.
+    // TODO(backend): enviar também creci, creciUf, personType/document e planId
+    // quando a API ganhar esses campos. O aceite dos termos e o opt-in já vão.
     mutation.mutate({
       fullName: account.fullName,
       email: account.email,
       password: account.password,
       phone: profile.phone,
       agencyName: profile.agencyName ?? "",
+      acceptTerms: account.acceptTerms as true,
+      marketingOptIn: account.marketingOptIn,
     });
   };
 
@@ -558,8 +545,20 @@ function PlanStep({
   );
 }
 
-// --- Etapa 4: pagamento (front de demonstração) -----------------------------
+// --- Etapa 4: plano ---------------------------------------------------------
 
+/**
+ * Confirmação do plano, sem cobrança.
+ *
+ * O formulário de cartão saiu daqui. Ele estava honestamente marcado como
+ * demonstração e não mandava nada para lugar nenhum, mas continuava sendo um
+ * campo de número de cartão numa página real: gerenciador de senha preenche,
+ * extensão lê, e um relatório de erro do navegador pode acabar carregando o
+ * valor junto. Coletar dado de cartão que ninguém vai usar é risco sem troco.
+ *
+ * Quando o pagamento entrar de verdade, o certo é usar o campo hospedado do
+ * provedor (Stripe, Pagar.me), em que o número nunca passa pelo nosso código.
+ */
 function PaymentStep({
   plan,
   submitting,
@@ -571,22 +570,6 @@ function PaymentStep({
   errorMessage: string | null;
   onFinish: () => void;
 }) {
-  const [method, setMethod] = useState<"cartao" | "pix">("cartao");
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CardValues>({
-    resolver: zodResolver(cardSchema),
-    defaultValues: { cardNumber: "", cardName: "", expiry: "", cvv: "" },
-  });
-
-  const cardNumberField = register("cardNumber");
-  const expiryField = register("expiry");
-
-  const submitLabel = submitting ? "Concluindo..." : "Concluir cadastro";
-
   return (
     <div className="flex flex-col gap-5">
       {/* Resumo do plano. */}
@@ -601,111 +584,22 @@ function PaymentStep({
       </div>
 
       <Banner variant="info">
-        Demonstração: nenhuma cobrança será feita agora. O pagamento será
-        ativado numa próxima etapa.
+        Nenhuma cobrança agora. Sua conta começa liberada e a forma de pagamento
+        será pedida quando o período de uso terminar.
       </Banner>
 
       {errorMessage && <Banner variant="danger">{errorMessage}</Banner>}
 
-      {/* Forma de pagamento. */}
-      <div className="grid grid-cols-2 rounded-md bg-surface-sunken p-1">
-        {(
-          [
-            { value: "cartao", label: "Cartão de crédito" },
-            { value: "pix", label: "Pix" },
-          ] as const
-        ).map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            aria-pressed={method === opt.value}
-            onClick={() => setMethod(opt.value)}
-            className={
-              "rounded-[calc(var(--radius-md)-2px)] px-3 py-2 text-body-sm font-semibold transition-colors duration-fast " +
-              (method === opt.value
-                ? "bg-surface text-text shadow-xs"
-                : "text-text-muted hover:text-text")
-            }
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-
-      {method === "cartao" ? (
-        <form onSubmit={handleSubmit(onFinish)} noValidate className="flex flex-col gap-5">
-          <TextField
-            label="Número do cartão"
-            inputMode="numeric"
-            autoComplete="cc-number"
-            placeholder="0000 0000 0000 0000"
-            error={errors.cardNumber?.message}
-            {...cardNumberField}
-            onChange={(e) => {
-              e.target.value = maskCardNumber(e.target.value);
-              void cardNumberField.onChange(e);
-            }}
-          />
-          <TextField
-            label="Nome no cartão"
-            autoComplete="cc-name"
-            placeholder="Como está impresso"
-            error={errors.cardName?.message}
-            {...register("cardName")}
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <TextField
-              label="Validade"
-              inputMode="numeric"
-              autoComplete="cc-exp"
-              placeholder="MM/AA"
-              error={errors.expiry?.message}
-              {...expiryField}
-              onChange={(e) => {
-                e.target.value = maskExpiry(e.target.value);
-                void expiryField.onChange(e);
-              }}
-            />
-            <TextField
-              label="CVV"
-              inputMode="numeric"
-              autoComplete="cc-csc"
-              placeholder="000"
-              maxLength={4}
-              error={errors.cvv?.message}
-              {...register("cvv")}
-            />
-          </div>
-          <Button type="submit" variant="accent" fullWidth loading={submitting} className="mt-1">
-            {submitLabel}
-          </Button>
-        </form>
-      ) : (
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border-strong bg-surface px-6 py-10 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface-sunken">
-              <svg className="h-8 w-8 text-text-subtle" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect x="4" y="4" width="7" height="7" rx="1.2" stroke="currentColor" strokeWidth="1.8" />
-                <rect x="13" y="4" width="7" height="7" rx="1.2" stroke="currentColor" strokeWidth="1.8" />
-                <rect x="4" y="13" width="7" height="7" rx="1.2" stroke="currentColor" strokeWidth="1.8" />
-                <path d="M13 13h3v3h-3zM17 17h3v3h-3z" stroke="currentColor" strokeWidth="1.8" />
-              </svg>
-            </div>
-            <p className="max-w-xs text-body-sm text-text-muted">
-              O código Pix aparecerá aqui quando o pagamento estiver ativo.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="accent"
-            fullWidth
-            loading={submitting}
-            onClick={onFinish}
-          >
-            {submitLabel}
-          </Button>
-        </div>
-      )}
+      <Button
+        type="button"
+        variant="accent"
+        fullWidth
+        loading={submitting}
+        onClick={onFinish}
+        className="mt-1"
+      >
+        {submitting ? "Concluindo..." : "Concluir cadastro"}
+      </Button>
     </div>
   );
 }

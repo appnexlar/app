@@ -13,6 +13,18 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16, "JWT_REFRESH_SECRET muito curto"),
   JWT_ACCESS_TTL: z.string().default("15m"),
   JWT_REFRESH_TTL: z.string().default("30d"),
+  // Quantos proxies existem na frente da API. O limite de tentativas por IP
+  // depende disso: com 0 atrás da Railway todo mundo vira o mesmo IP (o do
+  // proxy) e o limite prenderia o app inteiro; com um valor alto demais o IP
+  // passa a ser o que o cliente escrever no cabeçalho, e o limite não vale
+  // nada. Local é 0, Railway é 1.
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+  // Envio de e-mail. Sem a chave, os e-mails só vão para o log: o ambiente
+  // local roda sem conta no Resend e produção avisa alto que ninguém recebe.
+  RESEND_API_KEY: z.string().default(""),
+  // Remetente. O domínio precisa estar verificado no Resend, senão o e-mail
+  // cai no spam ou nem sai.
+  EMAIL_FROM: z.string().default("Nexlar <onboarding@resend.dev>"),
   WEB_ORIGIN: z.string().default("http://localhost:5173"),
   WEB_APP_URL: z.string().default("http://localhost:5173"),
   // Storage privado de mídia.

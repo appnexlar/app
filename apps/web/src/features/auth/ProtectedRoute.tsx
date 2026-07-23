@@ -16,10 +16,5 @@ export function GuestRoute() {
   return <Navigate to={emailVerified ? "/dashboard" : "/confirmar-email"} replace />;
 }
 
-/** Gate de confirmação de e-mail: logado, mas ainda não confirmou. */
-export function EmailGateRoute() {
-  const { isAuthenticated, emailVerified } = useAuth();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (emailVerified) return <Navigate to="/dashboard" replace />;
-  return <Outlet />;
-}
+// O gate de confirmação não é mais uma guarda de rota: a própria
+// ConfirmEmailPage decide, porque o link do e-mail precisa abrir sem sessão.

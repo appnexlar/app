@@ -5,7 +5,6 @@ import type { LeadDetail } from "@nexlar/shared";
 import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { initials } from "../../lib/name";
 import { usePageEntityLabel } from "../shell/ShellContext";
 import { LeadSharesSection } from "../sharing/LeadSharesSection";
 import { SendFromLeadModal } from "../sharing/SendFromLeadModal";
@@ -107,30 +106,23 @@ export function LeadDetailPage() {
       <header
         className={`animate-rise flex flex-col rounded-2xl border border-border bg-surface p-5 shadow-sm ${moreOpen ? "relative z-20" : ""}`}
       >
-        {/* Mobile: identidade centralizada (padrão Contatos). Desktop: linha
-            horizontal com o avatar ao lado do nome e os tiles à direita, para
-            a largura ser usada com propósito em vez de vazio no centro. */}
-        <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:items-start sm:gap-6 sm:text-left">
-          <div className="flex flex-col items-center sm:flex-row sm:items-center sm:gap-4">
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary-soft text-h2 font-bold text-primary">
-              {initials(lead.fullName)}
-            </span>
-            <div className="mt-3 sm:mt-0">
-              <h1 className="text-h2 text-text">{lead.fullName}</h1>
-              <div className="mt-1.5 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                <span
-                  className={`rounded-full px-2.5 py-0.5 text-caption font-semibold ${STATUS_TONE_CLASS[STATUS_TONE[lead.status]]}`}
-                >
-                  {STATUS_LABELS[lead.status]}
-                </span>
-                <span className="text-body-sm tabular-nums text-text-muted">
-                  {displayWhatsapp(lead.whatsapp)}
-                </span>
-              </div>
-              {meta.length > 0 && (
-                <p className="mt-1 text-body-sm text-text-subtle">{meta.join(" · ")}</p>
-              )}
+        {/* O nome já é o título da página, no cabeçalho. Aqui ficam só os dados
+            de contato e as ações, sem repetir identidade nem avatar. */}
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-caption font-semibold ${STATUS_TONE_CLASS[STATUS_TONE[lead.status]]}`}
+              >
+                {STATUS_LABELS[lead.status]}
+              </span>
+              <span className="text-body tabular-nums text-text">
+                {displayWhatsapp(lead.whatsapp)}
+              </span>
             </div>
+            {meta.length > 0 && (
+              <p className="mt-1 text-body-sm text-text-subtle">{meta.join(" · ")}</p>
+            )}
           </div>
 
           {/* Tiles de ação, estilo cartão de contato. */}

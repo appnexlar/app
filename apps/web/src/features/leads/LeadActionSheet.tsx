@@ -5,7 +5,6 @@ import type { LeadSummary } from "@nexlar/shared";
 import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
-import { initials } from "../../lib/name";
 import { deleteLead } from "./api";
 import {
   INTENT_LABELS,
@@ -91,22 +90,20 @@ export function LeadActionSheet({
         </div>
       ) : (
         <div className="flex flex-col">
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft text-body font-bold text-primary">
-              {initials(lead.fullName)}
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-body-sm text-text-muted">{displayWhatsapp(lead.whatsapp)}</p>
-              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-caption font-semibold ${STATUS_TONE_CLASS[STATUS_TONE[lead.status]]}`}
-                >
-                  {STATUS_LABELS[lead.status]}
-                </span>
-                {meta.length > 0 && (
-                  <span className="text-caption text-text-subtle">{meta.join(" · ")}</span>
-                )}
-              </div>
+          {/* O nome já é o título da folha; aqui só contato e etapa. */}
+          <div className="min-w-0">
+            <p className="truncate text-body tabular-nums text-text">
+              {displayWhatsapp(lead.whatsapp)}
+            </p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span
+                className={`rounded-full px-2 py-0.5 text-caption font-semibold ${STATUS_TONE_CLASS[STATUS_TONE[lead.status]]}`}
+              >
+                {STATUS_LABELS[lead.status]}
+              </span>
+              {meta.length > 0 && (
+                <span className="text-caption text-text-subtle">{meta.join(" · ")}</span>
+              )}
             </div>
           </div>
 

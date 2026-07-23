@@ -7,6 +7,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { StorageModule } from "./storage/storage.module";
 import { EmailModule } from "./email/email.module";
 import { AuthModule } from "./auth/auth.module";
+import { BrokersModule } from "./brokers/brokers.module";
 import { LeadsModule } from "./leads/leads.module";
 import { ClientsModule } from "./clients/clients.module";
 import { AgendaModule } from "./agenda/agenda.module";
@@ -14,6 +15,8 @@ import { PropertiesModule } from "./properties/properties.module";
 import { SharingModule } from "./sharing/sharing.module";
 import { HealthController } from "./health/health.controller";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
+import { RateLimitGuard } from "./common/rate-limit/rate-limit.guard";
+import { RateLimitModule } from "./common/rate-limit/rate-limit.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 
 @Module({
@@ -24,9 +27,11 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
     }),
     JwtModule.register({ global: true }),
     PrismaModule,
+    RateLimitModule,
     StorageModule,
     EmailModule,
     AuthModule,
+    BrokersModule,
     LeadsModule,
     ClientsModule,
     AgendaModule,
@@ -35,6 +40,9 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
   ],
   controllers: [HealthController],
   providers: [
+    // O limite de tentativas vem antes da autenticação: quem está de castigo
+    // não deve nem chegar a ter a senha conferida.
+    { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
   ],

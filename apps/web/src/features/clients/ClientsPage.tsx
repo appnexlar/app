@@ -1,70 +1,61 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import type { ClientPurpose, ListClientsQuery } from "@nexlar/shared";
+import type { ClientPurpose } from "@nexlar/shared";
 import { Banner } from "../../components/ui/Banner";
 import { Button } from "../../components/ui/Button";
+import { SearchField } from "../../components/ui/SearchField";
+import { FilterChips, type FilterChip } from "../../components/ui/FilterChips";
+import { useDebounced } from "../../lib/useDebounced";
 import { STATUS_LABELS, STATUS_TONE, STATUS_TONE_CLASS, displayWhatsapp } from "../leads/labels";
 import { fetchClients } from "./api";
 import { PURPOSE_LABELS, displayDate } from "./labels";
 
+/** Finalidade "todas" precisa de um valor, já que o chip é sempre uma escolha. */
+type PurposeFilter = ClientPurpose | "todas";
+
+const PURPOSE_CHIPS: FilterChip<PurposeFilter>[] = [
+  { value: "todas", label: "Todas" },
+  { value: "compra", label: "Compra" },
+  { value: "locacao", label: "Locação" },
+];
+
 export function ClientsPage() {
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
-  const [query, setQuery] = useState<ListClientsQuery>({});
+  const [purpose, setPurpose] = useState<PurposeFilter>("todas");
+
+  // A busca filtra no servidor, então espera a digitação parar antes de sair.
+  const debouncedTerm = useDebounced(term.trim());
+  const query = {
+    q: debouncedTerm || undefined,
+    purpose: purpose === "todas" ? undefined : purpose,
+  };
 
   const clientsQuery = useQuery({
     queryKey: ["clients", query],
     queryFn: () => fetchClients(query),
   });
 
-  function applySearch() {
-    setQuery((q) => ({ ...q, q: term.trim() || undefined }));
-  }
-
-  const purposeFilter = query.purpose;
-  function setPurpose(p: ClientPurpose | undefined) {
-    setQuery((q) => ({ ...q, purpose: p }));
-  }
-
   const clients = clientsQuery.data ?? [];
   const hasFilters = Boolean(query.q || query.purpose);
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">
-      {/* Busca + filtro de finalidade */}
+      {/* Busca + filtro de finalidade, mesmos componentes de Leads e Imóveis. */}
       <div className="flex flex-col gap-3">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-text-subtle">
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
-                <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-            </span>
-            <input
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && applySearch()}
-              placeholder="Buscar por nome, WhatsApp, e-mail ou CPF"
-              className="w-full min-h-[var(--tap-target-min)] rounded-md border border-border bg-surface pl-10 pr-3.5 text-body text-text placeholder:text-text-subtle focus-visible:shadow-focus focus-visible:border-[var(--border-focus)]"
-            />
-          </div>
-          <Button type="button" variant="accent" onClick={applySearch}>
-            Buscar
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <FilterChip active={!purposeFilter} onClick={() => setPurpose(undefined)}>
-            Todas
-          </FilterChip>
-          <FilterChip active={purposeFilter === "compra"} onClick={() => setPurpose("compra")}>
-            Compra
-          </FilterChip>
-          <FilterChip active={purposeFilter === "locacao"} onClick={() => setPurpose("locacao")}>
-            Locação
-          </FilterChip>
-        </div>
+        <SearchField
+          label="Buscar cliente por nome, WhatsApp, e-mail ou CPF"
+          placeholder="Buscar por nome, WhatsApp, e-mail ou CPF"
+          value={term}
+          onChange={setTerm}
+        />
+        <FilterChips
+          label="Filtrar por finalidade"
+          options={PURPOSE_CHIPS}
+          value={purpose}
+          onChange={setPurpose}
+        />
       </div>
 
       {clientsQuery.isPending ? (
@@ -133,29 +124,6 @@ export function ClientsPage() {
         </section>
       )}
     </div>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        "rounded-full border px-3.5 py-1.5 text-body-sm font-medium transition-colors " +
-        (active ? "border-accent bg-accent text-accent-on" : "border-border text-text-muted hover:bg-surface-sunken")
-      }
-    >
-      {children}
-    </button>
   );
 }
 

@@ -44,7 +44,9 @@ export function AppLayout() {
           onOpenDrawer={() => setDrawerOpen(true)}
           onNewLead={() => setNewLeadOpen(true)}
         />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        {/* O espaço de cima mora no bloco de identidade do AppHeader, por isso
+            o <main> só reserva o respiro entre o título e o conteúdo. */}
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-5">
           <Outlet
             context={
               { openNewLead: () => setNewLeadOpen(true), setEntityLabel } satisfies ShellContextValue

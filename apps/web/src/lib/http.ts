@@ -48,6 +48,22 @@ export function setUnauthorizedHandler(fn: (() => void) | null): void {
   onUnauthorized = fn;
 }
 
+/**
+ * Conta bloqueada no meio do uso: e-mail ainda não confirmado ou conta
+ * suspensa. Vem de um 403 com código, e não de comparação de texto, porque
+ * 403 também é usado por regra de negócio comum (compartilhamento, por
+ * exemplo) e ali não se deve mexer na sessão.
+ */
+export type AccountBlockCode = "email_nao_confirmado" | "conta_suspensa";
+
+let onAccountBlocked: ((code: AccountBlockCode) => void) | null = null;
+
+export function setAccountBlockedHandler(
+  fn: ((code: AccountBlockCode) => void) | null,
+): void {
+  onAccountBlocked = fn;
+}
+
 // Renovação silenciosa da sessão. A camada de auth registra a função que
 // troca o refresh token por um novo access token (retorna null se não der).
 let refreshHandler: (() => Promise<string | null>) | null = null;
@@ -111,6 +127,14 @@ async function request<T>(
       onUnauthorized?.();
     }
     const errorBody = (payload ?? {}) as ErrorBody;
+
+    if (response.status === 403 && !path.startsWith("/auth/")) {
+      const code = errorBody.details?.code;
+      if (code === "email_nao_confirmado" || code === "conta_suspensa") {
+        onAccountBlocked?.(code);
+      }
+    }
+
     throw new ApiError(
       response.status,
       errorBody.message ?? "Ocorreu um erro inesperado.",

@@ -1,8 +1,14 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { updateProfileSchema, type UpdateProfileDto } from "@nexlar/shared";
 import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
+import { TextField } from "../../components/ui/TextField";
 import { useAuth } from "../auth/AuthContext";
 import { initials } from "../../lib/name";
+import { updateMe } from "./api";
 
 /**
  * Status de validação do CRECI. O corretor NÃO altera o próprio status:
@@ -21,9 +27,10 @@ const STATUS_LABEL: Record<CreciStatus, string> = {
 export function ProfilePage() {
   const { broker } = useAuth();
 
-  // Prévia temporária do status (o real virá do backend). Começa em pendente,
-  // que é o estado logo após o cadastro.
-  const [status, setStatus] = useState<CreciStatus>("pendente");
+  // TODO(backend): o status real da validação do CRECI virá do servidor
+  // (broker.creciStatus), na fatia de onboarding. Até lá, "pendente", que é o
+  // estado logo após o cadastro.
+  const status = "pendente" as CreciStatus;
 
   if (!broker) return null;
 
@@ -59,45 +66,130 @@ export function ProfilePage() {
       {/* Status da validação. */}
       <StatusCard status={status} />
 
-      {/* Dados de contato. */}
-      <Card title="Dados de contato">
-        <Field label="Nome completo" value={broker.fullName} />
-        <Field label="E-mail" value={broker.email} />
-        <Field label="Telefone" value={broker.phone ?? "Não informado"} />
-        <Field label="Imobiliária" value={broker.agencyName ?? "Não informada"} />
-      </Card>
+      {/* Dados de contato: a única parte que o corretor edita. */}
+      <ContactCard />
 
-      {/* Registro profissional. */}
+      {/* Registro profissional: leitura. O CRECI passa por validação, então
+          não se edita por aqui. */}
       <Card title="Registro profissional">
         <Field label="Número do CRECI" value={broker.creci ?? "Não informado"} />
-        {/* TODO(backend): estado do CRECI virá de broker.creciUf. */}
-        <Field label="Estado do CRECI" value="—" />
         <Field label="Status da validação" value={STATUS_LABEL[status]} />
       </Card>
-
-      {/* Prévia temporária do status (removível com o backend). */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border-strong bg-surface-sunken px-3 py-2">
-        <span className="text-caption font-semibold uppercase tracking-wide text-text-subtle">
-          Prévia do status (temporário)
-        </span>
-        <div className="inline-flex rounded-full bg-surface p-1 shadow-xs">
-          {(["pendente", "aprovado", "recusado"] as CreciStatus[]).map((st) => (
-            <button
-              key={st}
-              type="button"
-              onClick={() => setStatus(st)}
-              aria-pressed={status === st}
-              className={
-                "rounded-full px-3 py-1 text-caption font-semibold transition-colors " +
-                (status === st ? "bg-primary text-primary-on shadow-xs" : "text-text-muted hover:text-text")
-              }
-            >
-              {STATUS_LABEL[st]}
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
+  );
+}
+
+/** Dados de contato com edição em linha, salvos no PATCH /brokers/me. */
+function ContactCard() {
+  const { broker, atualizarBroker } = useAuth();
+  const [editando, setEditando] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<UpdateProfileDto>({
+    resolver: zodResolver(updateProfileSchema),
+    values: {
+      fullName: broker?.fullName ?? "",
+      phone: broker?.phone ?? "",
+      agencyName: broker?.agencyName ?? "",
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: updateMe,
+    onSuccess: (atualizado) => {
+      atualizarBroker(atualizado);
+      setEditando(false);
+    },
+  });
+
+  const cancelar = () => {
+    reset();
+    mutation.reset();
+    setEditando(false);
+  };
+
+  if (!broker) return null;
+
+  if (!editando) {
+    return (
+      <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-h3 text-text">Dados de contato</h3>
+          <button
+            type="button"
+            onClick={() => setEditando(true)}
+            className="text-body-sm font-semibold text-accent transition-colors hover:text-accent-hover"
+          >
+            Editar
+          </button>
+        </div>
+        <dl className="flex flex-col divide-y divide-border">
+          <Field label="Nome completo" value={broker.fullName} />
+          {/* E-mail não entra na edição: trocar sem reconfirmar quebraria o
+              gate. Fica visível, sem ação. */}
+          <Field label="E-mail" value={broker.email} />
+          <Field label="Telefone" value={broker.phone ?? "Não informado"} />
+          <Field label="Imobiliária" value={broker.agencyName ?? "Não informada"} />
+        </dl>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+      <h3 className="mb-4 text-h3 text-text">Dados de contato</h3>
+      <form
+        onSubmit={handleSubmit((data) => mutation.mutate(data))}
+        noValidate
+        className="flex flex-col gap-4"
+      >
+        {mutation.isError && (
+          <Banner variant="danger">
+            Não foi possível salvar agora. Tente novamente em instantes.
+          </Banner>
+        )}
+
+        <TextField
+          label="Nome completo"
+          autoComplete="name"
+          error={errors.fullName?.message}
+          {...register("fullName")}
+        />
+        <TextField
+          label="Telefone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="(11) 90000-0000"
+          error={errors.phone?.message}
+          {...register("phone")}
+        />
+        <TextField
+          label="Imobiliária"
+          placeholder="Opcional"
+          error={errors.agencyName?.message}
+          {...register("agencyName")}
+        />
+
+        {/* E-mail fora do formulário, só para referência. */}
+        <p className="text-caption text-text-subtle">
+          E-mail: <span className="font-semibold text-text-muted">{broker.email}</span>
+        </p>
+
+        <div className="mt-1 flex gap-3">
+          <Button type="submit" variant="accent" loading={mutation.isPending}>
+            {mutation.isPending ? "Salvando..." : "Salvar"}
+          </Button>
+          <Button type="button" variant="ghost" onClick={cancelar} disabled={mutation.isPending}>
+            Cancelar
+          </Button>
+        </div>
+      </form>
+    </section>
   );
 }
 
