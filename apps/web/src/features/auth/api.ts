@@ -21,11 +21,11 @@ export function register(data: RegisterDto): Promise<AuthResponse> {
 }
 
 /**
- * Encerra a sessão no servidor, revogando o refresh token. Sem isto, sair do
- * app só apagaria o token do navegador e ele seguiria válido por 30 dias.
+ * Encerra a sessão no servidor: revoga o refresh token e apaga o cookie. Sem
+ * corpo, porque o token vive num cookie httpOnly e o JavaScript não o conhece.
  */
-export function logout(refreshToken: string): Promise<void> {
-  return http.post<void>("/auth/logout", { refreshToken });
+export function logout(): Promise<void> {
+  return http.post<void>("/auth/logout");
 }
 
 /** Confirma o e-mail com o token que veio no link. */

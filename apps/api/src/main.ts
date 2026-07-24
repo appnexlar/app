@@ -10,6 +10,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "@fastify/helmet";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
+import cookie from "@fastify/cookie";
 import { AppModule } from "./app.module";
 import type { Env } from "./config/env";
 
@@ -36,6 +37,8 @@ async function bootstrap(): Promise<void> {
   }
 
   await app.register(helmet);
+  // Necessário para ler e gravar o cookie httpOnly da sessão.
+  await app.register(cookie);
   await app.register(cors, {
     origin: config.get("WEB_ORIGIN", { infer: true }) as string,
     credentials: true,

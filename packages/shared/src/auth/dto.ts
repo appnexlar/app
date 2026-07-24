@@ -50,10 +50,8 @@ export const loginSchema = z.object({
 export type LoginDto = z.infer<typeof loginSchema>;
 
 // --- Refresh ----------------------------------------------------------------
-export const refreshSchema = z.object({
-  refreshToken: z.string().min(10, "Token de renovação ausente"),
-});
-export type RefreshDto = z.infer<typeof refreshSchema>;
+// Renovar e sair não têm corpo: o servidor lê o refresh token do cookie. O
+// cliente não conhece o valor e não teria como enviá-lo.
 
 // --- Recuperação de senha ---------------------------------------------------
 export const forgotPasswordSchema = z.object({
@@ -155,9 +153,13 @@ export interface BrokerProfile {
   updatedAt: string;
 }
 
+/**
+ * O refresh token NÃO vem aqui: ele viaja em cookie httpOnly, fora do alcance
+ * do JavaScript. O access token fica só em memória no cliente, nunca em
+ * localStorage nem sessionStorage.
+ */
 export interface AuthTokens {
   accessToken: string;
-  refreshToken: string;
   /** validade do access token em segundos */
   expiresIn: number;
 }

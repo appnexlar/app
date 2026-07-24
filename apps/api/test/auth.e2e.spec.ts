@@ -13,7 +13,7 @@ import {
 } from "../src/email/email.service";
 import { RateLimitStore } from "../src/common/rate-limit/rate-limit.store";
 import { PrismaService } from "../src/prisma/prisma.service";
-import { registerPlugins, resetDatabase } from "./e2e-utils";
+import { comCookie, refreshCookieDe, registerPlugins, resetDatabase } from "./e2e-utils";
 
 /**
  * Jornada 1 (autenticação), as três correções de prioridade zero:
@@ -107,11 +107,21 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
       acceptTerms: true,
     });
     expect(response.statusCode).toBe(201);
-    return response.json() as {
+    const corpo = response.json() as {
       broker: { id: string; emailVerified: boolean };
-      tokens: { accessToken: string; refreshToken: string };
+      tokens: { accessToken: string };
     };
+    // O refresh token não vem no corpo: ele mora no cookie httpOnly.
+    expect(corpo.tokens).not.toHaveProperty("refreshToken");
+    return { ...corpo, cookie: refreshCookieDe(response) };
   }
+
+  /** Renova a sessão mandando o cookie, como o navegador faria. */
+  const renovar = (cookie: string | null) =>
+    app.inject({ method: "POST", url: "/api/auth/refresh", headers: comCookie(cookie) });
+
+  const sair = (cookie: string | null) =>
+    app.inject({ method: "POST", url: "/api/auth/logout", headers: comCookie(cookie) });
 
 
   /**
@@ -313,24 +323,23 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
     const email = "logout@teste.com";
     const sessao = await criarConta(email);
 
-    const saida = await post("auth/logout", { refreshToken: sessao.tokens.refreshToken });
+    const saida = await sair(sessao.cookie);
     expect(saida.statusCode).toBe(204);
+    // O cookie é apagado na resposta, além de o token ser revogado no servidor.
+    expect(String(saida.headers["set-cookie"] ?? "")).toContain("nexlar_refresh=");
 
-    const renovar = await post("auth/refresh", { refreshToken: sessao.tokens.refreshToken });
-    expect(renovar.statusCode).toBe(401);
+    expect((await renovar(sessao.cookie)).statusCode).toBe(401);
   });
 
   it("logout é idempotente e não confirma se o token existia", async () => {
     const email = "logout.repetido@teste.com";
     const sessao = await criarConta(email);
-    const token = sessao.tokens.refreshToken;
 
-    expect((await post("auth/logout", { refreshToken: token })).statusCode).toBe(204);
-    expect((await post("auth/logout", { refreshToken: token })).statusCode).toBe(204);
-    expect(
-      (await post("auth/logout", { refreshToken: "token-que-nunca-existiu-0123456789" }))
-        .statusCode,
-    ).toBe(204);
+    expect((await sair(sessao.cookie)).statusCode).toBe(204);
+    expect((await sair(sessao.cookie)).statusCode).toBe(204);
+    expect((await sair("cookie-que-nunca-existiu")).statusCode).toBe(204);
+    // Sair sem cookie nenhum também é 204: sair é sempre idempotente.
+    expect((await sair(null)).statusCode).toBe(204);
   });
 
   // --- Fatia 3: recuperação de senha ---------------------------------------
@@ -363,8 +372,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
     // A nova vale.
     expect((await post("auth/login", { email, password: SENHA_NOVA })).statusCode).toBe(200);
     // E quem já estava dentro foi desconectado.
-    const renovar = await post("auth/refresh", { refreshToken: sessao.tokens.refreshToken });
-    expect(renovar.statusCode).toBe(401);
+    expect((await renovar(sessao.cookie)).statusCode).toBe(401);
   });
 
   it("recusa token de redefinição inválido ou já usado", async () => {
@@ -416,8 +424,8 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
     });
     expect(leads.statusCode).toBe(200);
 
-    // O mesmo token de sessão agora devolve o perfil com o e-mail confirmado.
-    const renovado = await post("auth/refresh", { refreshToken: sessao.tokens.refreshToken });
+    // A mesma sessão agora devolve o perfil com o e-mail confirmado.
+    const renovado = await renovar(sessao.cookie);
     expect(renovado.json().broker.emailVerified).toBe(true);
 
     // E as boas-vindas só saem depois da confirmação.
@@ -490,9 +498,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
     expect(leads.json().message).toMatch(/suspensa/);
 
     // Não renova a sessão.
-    expect(
-      (await post("auth/refresh", { refreshToken: sessao.tokens.refreshToken })).statusCode,
-    ).toBe(403);
+    expect((await renovar(sessao.cookie)).statusCode).toBe(403);
 
     // E não entra de novo, mesmo com a senha certa.
     const entrar = await post("auth/login", { email, password: SENHA });
@@ -654,5 +660,92 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
     // Nem verificado nem não verificado expõe dado interno do corretor.
     expect(depois.body).not.toContain(email);
     expect(depois.body).not.toContain(sessao.broker.id);
+  });
+
+  // --- SEC-07: sessão em cookie httpOnly ------------------------------------
+  it("o refresh token sai em cookie httpOnly, nunca no corpo", async () => {
+    const email = "cookie.httponly@teste.com";
+    const resposta = await post("auth/register", {
+      fullName: "Cookie Teste",
+      email,
+      password: SENHA,
+      acceptTerms: true,
+    });
+
+    const setCookie = String(resposta.headers["set-cookie"] ?? "");
+    expect(setCookie).toContain("nexlar_refresh=");
+    expect(setCookie).toContain("HttpOnly");
+    expect(setCookie).toContain("SameSite=Lax");
+    // Escopo estreito: o cookie não acompanha requisição que não precisa dele.
+    expect(setCookie).toContain("Path=/api/auth");
+
+    // O corpo entrega só o que o JavaScript pode ver.
+    expect(resposta.body).not.toContain("refreshToken");
+    expect(resposta.json().tokens).toHaveProperty("accessToken");
+  });
+
+  it("renova só com o cookie, sem nada no corpo, e rotaciona o token", async () => {
+    const email = "cookie.rotacao@teste.com";
+    const sessao = await criarConta(email);
+
+    const primeira = await renovar(sessao.cookie);
+    expect(primeira.statusCode).toBe(200);
+    const novoCookie = refreshCookieDe(primeira);
+
+    // Rotação: o cookie devolvido é diferente do que entrou.
+    expect(novoCookie).toBeTruthy();
+    expect(novoCookie).not.toBe(sessao.cookie);
+
+    // O novo funciona.
+    expect((await renovar(novoCookie)).statusCode).toBe(200);
+  });
+
+  it("sem cookie a renovação responde 401, que é como o app sabe que não há sessão", async () => {
+    const semNada = await renovar(null);
+    expect(semNada.statusCode).toBe(401);
+
+    const inventado = await renovar("cookie-invalido-que-ninguem-emitiu");
+    expect(inventado.statusCode).toBe(401);
+  });
+
+  it("reutilizar um refresh token antigo derruba todas as sessões do corretor", async () => {
+    const email = "cookie.reuso@teste.com";
+    const sessao = await criarConta(email);
+
+    // Duas sessões abertas, como dois aparelhos diferentes.
+    const outroLogin = await post("auth/login", { email, password: SENHA });
+    const cookieDoOutroAparelho = refreshCookieDe(outroLogin);
+
+    const renovada = await renovar(sessao.cookie);
+    const cookieAtual = refreshCookieDe(renovada);
+
+    // O token antigo é apresentado de novo depois da janela de corrida. Isso
+    // é assinatura de cópia roubada, e a resposta segura é derrubar tudo.
+    await app
+      .get(PrismaService)
+      .refreshToken.updateMany({
+        where: { brokerId: sessao.broker.id, revokedAt: { not: null } },
+        data: { revokedAt: new Date(Date.now() - 60_000) },
+      });
+
+    const reuso = await renovar(sessao.cookie);
+    expect(reuso.statusCode).toBe(401);
+
+    // Consequência: nem a sessão que estava valendo, nem a do outro aparelho.
+    expect((await renovar(cookieAtual)).statusCode).toBe(401);
+    expect((await renovar(cookieDoOutroAparelho)).statusCode).toBe(401);
+  });
+
+  it("redefinir a senha limpa o cookie e invalida a sessão aberta", async () => {
+    const email = "cookie.reset@teste.com";
+    const sessao = await criarConta(email);
+
+    await post("auth/forgot-password", { email });
+    const token = emails.lastTokenFor(email);
+    const reset = await post("auth/reset-password", { token, password: SENHA_NOVA });
+    expect(reset.statusCode).toBe(204);
+    expect(String(reset.headers["set-cookie"] ?? "")).toContain("nexlar_refresh=");
+
+    expect((await renovar(sessao.cookie)).statusCode).toBe(401);
   });
 });

@@ -27,10 +27,14 @@ import {
 import { TermsPage } from "./features/legal/TermsPage";
 import { PrivacyPage } from "./features/legal/PrivacyPage";
 import { PublicSharePage } from "./features/sharing/PublicSharePage";
+import { SessionBoot } from "./features/auth/SessionBoot";
 
 export function App() {
   return (
-    <>
+    // Nada é renderizado antes de o servidor confirmar (ou negar) a sessão pelo
+    // cookie. Decidir rota sem saber quem é faria o login piscar para quem já
+    // está logado.
+    <SessionBoot>
       <SessionExpiryHandler />
       <Routes>
         {/* Páginas legais: públicas. */}
@@ -78,6 +82,6 @@ export function App() {
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
-    </>
+    </SessionBoot>
   );
 }

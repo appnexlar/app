@@ -1,5 +1,6 @@
 import { Test } from "@nestjs/testing";
 import multipart from "@fastify/multipart";
+import cookie from "@fastify/cookie";
 import {
   FastifyAdapter,
   type NestFastifyApplication,
@@ -13,6 +14,7 @@ import { PrismaService } from "../src/prisma/prisma.service";
  * não é o mesmo do ar: upload de arquivo, por exemplo, responde 415.
  */
 export async function registerPlugins(app: NestFastifyApplication): Promise<void> {
+  await app.register(cookie);
   await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024, files: 5 } });
 }
 
@@ -30,6 +32,27 @@ export async function createTestApp(): Promise<NestFastifyApplication> {
   await app.init();
   await app.getHttpAdapter().getInstance().ready();
   return app;
+}
+
+
+/**
+ * Lê o cookie de sessão de uma resposta, para o teste poder devolvê-lo na
+ * chamada seguinte. O inject do Fastify não mantém sessão entre chamadas, então
+ * o cookie viaja na mão, que é justamente o que o navegador faz sozinho.
+ */
+export function refreshCookieDe(response: { headers: Record<string, unknown> }): string | null {
+  const bruto = response.headers["set-cookie"];
+  const linhas = Array.isArray(bruto) ? bruto : bruto ? [String(bruto)] : [];
+  for (const linha of linhas) {
+    const achado = /(^|;\s*)nexlar_refresh=([^;]*)/.exec(linha);
+    if (achado) return achado[2];
+  }
+  return null;
+}
+
+/** Monta o cabeçalho Cookie com a sessão. */
+export function comCookie(refreshToken: string | null): Record<string, string> {
+  return refreshToken ? { cookie: `nexlar_refresh=${refreshToken}` } : {};
 }
 
 /** Limpa todas as tabelas do banco de teste (menos o histórico de migrations). */
@@ -50,6 +73,8 @@ export async function resetDatabase(app: NestFastifyApplication): Promise<void> 
 export interface TestBroker {
   brokerId: string;
   accessToken: string;
+  /** Cookie de sessão devolvido no cadastro. */
+  refreshCookie: string | null;
 }
 
 /**
@@ -79,7 +104,11 @@ export async function registerBroker(
     data: { emailVerifiedAt: new Date() },
   });
 
-  return { brokerId: body.broker.id, accessToken: body.tokens.accessToken };
+  return {
+    brokerId: body.broker.id,
+    accessToken: body.tokens.accessToken,
+    refreshCookie: refreshCookieDe(response),
+  };
 }
 
 /** Requisição autenticada como um corretor específico. */

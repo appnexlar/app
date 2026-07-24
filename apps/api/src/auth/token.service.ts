@@ -22,6 +22,23 @@ function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+/**
+ * Quanto tempo depois de revogado um token ainda é tratado como corrida entre
+ * abas, e não como reuso malicioso. Curto de propósito: é o suficiente para
+ * duas requisições que saíram juntas, e curto demais para servir a um ataque.
+ */
+const CORRIDA_TOLERADA_MS = 15_000;
+
+/** Motivo pelo qual a renovação falhou. Só o servidor vê o detalhe. */
+export type RefreshFailure = "desconhecido" | "expirado" | "corrida" | "reuso";
+
+export class RefreshTokenError extends Error {
+  constructor(readonly motivo: RefreshFailure) {
+    super(`refresh_${motivo}`);
+    this.name = "RefreshTokenError";
+  }
+}
+
 export interface IssuedTokens {
   accessToken: string;
   refreshToken: string;
@@ -74,20 +91,49 @@ export class TokenService {
 
   /**
    * Valida o refresh token e faz a rotação: revoga o antigo e emite um novo par.
-   * Detecta reuso de token já revogado.
+   *
+   * Detecção de reuso: um token já revogado sendo apresentado de novo é sinal
+   * de que alguém guardou uma cópia. Não dá para saber quem é o legítimo, então
+   * a resposta segura é derrubar TODAS as sessões daquele corretor: quem for
+   * dono entra de novo com a senha, quem roubou fica sem nada.
+   *
+   * A exceção é a corrida honesta: duas abas do mesmo navegador renovando quase
+   * ao mesmo tempo. A que perde apresenta o token que a outra acabou de
+   * rotacionar, sem nenhum roubo envolvido. Por isso existe a janela de
+   * tolerância: dentro dela a chamada é recusada, mas ninguém é expulso, e o
+   * cliente tenta de novo já com o cookie novo.
    */
   async rotateRefreshToken(rawToken: string): Promise<IssuedTokens & { brokerId: string }> {
     const record = await this.prisma.refreshToken.findUnique({
       where: { tokenHash: sha256(rawToken) },
     });
 
-    if (!record || record.revokedAt || record.expiresAt.getTime() < Date.now()) {
-      throw new Error("refresh_invalido");
+    if (!record) throw new RefreshTokenError("desconhecido");
+
+    if (record.revokedAt) {
+      // Só rotação pode ser corrida. Logout e redefinição de senha são
+      // encerramentos deliberados: apresentar aquele token de novo nunca é
+      // aceitável, nem um segundo depois.
+      const foiRotacao = record.revokedReason === "rotacao";
+      const desdeRevogado = Date.now() - record.revokedAt.getTime();
+      if (foiRotacao && desdeRevogado <= CORRIDA_TOLERADA_MS) {
+        throw new RefreshTokenError("corrida");
+      }
+      if (foiRotacao) {
+        // Rotacionado há tempo e voltou: é cópia guardada. Derruba tudo.
+        await this.revokeAllSessions(record.brokerId, "reuso_detectado");
+        throw new RefreshTokenError("reuso");
+      }
+      throw new RefreshTokenError("expirado");
+    }
+
+    if (record.expiresAt.getTime() < Date.now()) {
+      throw new RefreshTokenError("expirado");
     }
 
     await this.prisma.refreshToken.update({
       where: { id: record.id },
-      data: { revokedAt: new Date() },
+      data: { revokedAt: new Date(), revokedReason: "rotacao" },
     });
 
     const tokens = await this.issueSession(record.brokerId);
@@ -99,7 +145,7 @@ export class TokenService {
     const hash = sha256(rawToken);
     await this.prisma.refreshToken.updateMany({
       where: { tokenHash: hash, revokedAt: null },
-      data: { revokedAt: new Date() },
+      data: { revokedAt: new Date(), revokedReason: "logout" },
     });
   }
 
@@ -170,11 +216,17 @@ export class TokenService {
     return record.brokerId;
   }
 
-  /** Ao redefinir a senha, revoga todas as sessões abertas do corretor. */
-  async revokeAllSessions(brokerId: string): Promise<void> {
+  /**
+   * Derruba todas as sessões abertas do corretor. Usada ao redefinir a senha e
+   * quando se detecta reuso de token.
+   */
+  async revokeAllSessions(
+    brokerId: string,
+    motivo: "senha_redefinida" | "reuso_detectado" = "senha_redefinida",
+  ): Promise<void> {
     await this.prisma.refreshToken.updateMany({
       where: { brokerId, revokedAt: null },
-      data: { revokedAt: new Date() },
+      data: { revokedAt: new Date(), revokedReason: motivo },
     });
   }
 }

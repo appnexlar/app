@@ -15,7 +15,6 @@ import type {
   BrokerProfile,
   ForgotPasswordDto,
   LoginDto,
-  RefreshDto,
   RegisterDto,
   ResendVerificationDto,
   ResetPasswordDto,
@@ -23,9 +22,19 @@ import type {
 } from "@nexlar/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { EmailService } from "../email/email.service";
-import { TokenService } from "./token.service";
+import { RefreshTokenError, TokenService } from "./token.service";
 import { LoginAttemptService } from "./login-attempt.service";
 import { CODIGO_CONTA_SUSPENSA } from "../common/guards/jwt-auth.guard";
+
+/**
+ * Resultado interno da autenticação. Diferente do AuthResponse público, ele
+ * carrega o refresh token, porque o controller precisa dele para gravar o
+ * cookie. Ele para ali e nunca chega ao corpo da resposta.
+ */
+export interface SessionResult {
+  broker: BrokerProfile;
+  tokens: { accessToken: string; refreshToken: string; expiresIn: number };
+}
 
 @Injectable()
 export class AuthService {
@@ -38,7 +47,7 @@ export class AuthService {
   ) {}
 
   /** Cria a conta do corretor e já devolve a sessão. */
-  async register(dto: RegisterDto): Promise<AuthResponse> {
+  async register(dto: RegisterDto): Promise<SessionResult> {
     const passwordHash = await this.hash(dto.password);
 
     let broker: Broker;
@@ -72,7 +81,7 @@ export class AuthService {
   }
 
   /** Autentica o corretor por e-mail e senha. */
-  async login(dto: LoginDto): Promise<AuthResponse> {
+  async login(dto: LoginDto): Promise<SessionResult> {
     // Conta em espera nem chega no banco.
     this.attempts.assertNotBlocked(dto.email);
 
@@ -108,16 +117,26 @@ export class AuthService {
    * Renova a sessão sem pedir a senha de novo: valida o refresh token,
    * rotaciona (o antigo é revogado) e devolve um novo par de tokens.
    */
-  async refresh(dto: RefreshDto): Promise<AuthResponse> {
+  async refresh(refreshToken: string | null): Promise<SessionResult> {
+    // Sem cookie não há sessão. É o caso normal de quem nunca entrou, e não
+    // um erro: o app usa esta resposta para saber que deve mostrar o login.
+    if (!refreshToken) throw new UnauthorizedException(SESSAO_ENCERRADA);
+
     let rotated: Awaited<ReturnType<TokenService["rotateRefreshToken"]>>;
     try {
-      rotated = await this.tokens.rotateRefreshToken(dto.refreshToken);
-    } catch {
-      throw new UnauthorizedException("Sessão expirada. Entre novamente.");
+      rotated = await this.tokens.rotateRefreshToken(refreshToken);
+    } catch (erro) {
+      // Corrida entre abas: a outra aba já renovou e este cookie ficou para
+      // trás. Não é sessão perdida, então o cliente pode tentar de novo, já
+      // com o cookie atualizado. Os demais casos são sessão encerrada mesmo.
+      if (erro instanceof RefreshTokenError && erro.motivo === "corrida") {
+        throw new ConflictException(RENOVACAO_EM_CURSO);
+      }
+      throw new UnauthorizedException(SESSAO_ENCERRADA);
     }
 
     const broker = await this.prisma.broker.findUnique({ where: { id: rotated.brokerId } });
-    if (!broker) throw new UnauthorizedException("Sessão expirada. Entre novamente.");
+    if (!broker) throw new UnauthorizedException(SESSAO_ENCERRADA);
 
     // Suspender uma conta tem que valer também para quem já estava dentro:
     // a renovação é o ponto por onde toda sessão passa.
@@ -133,8 +152,9 @@ export class AuthService {
    * token continuaria válido até vencer. Silencioso de propósito: token já
    * revogado, vencido ou inventado responde igual, sem confirmar nada.
    */
-  async logout(dto: RefreshDto): Promise<void> {
-    await this.tokens.revokeRefreshToken(dto.refreshToken);
+  async logout(refreshToken: string | null): Promise<void> {
+    if (!refreshToken) return;
+    await this.tokens.revokeRefreshToken(refreshToken);
   }
 
   /**
@@ -235,7 +255,7 @@ export class AuthService {
     return argon2.hash(password, { type: argon2.argon2id });
   }
 
-  private async buildSession(broker: Broker): Promise<AuthResponse> {
+  private async buildSession(broker: Broker): Promise<SessionResult> {
     const tokens = await this.tokens.issueSession(broker.id);
     return { broker: toProfile(broker), tokens };
   }
@@ -244,6 +264,14 @@ export class AuthService {
 /** Hash descartável para equalizar o tempo de resposta no login inválido. */
 const DUMMY_HASH =
   "$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHR2YWx1ZQ$3S2p1G0m2Yl0vJ0mQ2s4Xh1n8Z0aQ2s4Xh1n8Z0aQ2s";
+
+/** Resposta única para qualquer motivo de sessão inválida: cookie ausente,
+ * vencido, desconhecido ou reusado. O cliente não precisa saber qual foi, e
+ * detalhar ajudaria quem está sondando. */
+export const SESSAO_ENCERRADA = "Sessão expirada. Entre novamente.";
+
+/** Duas abas renovando ao mesmo tempo. Não é sessão perdida: dá para repetir. */
+export const RENOVACAO_EM_CURSO = "Renovação em andamento. Tente novamente.";
 
 /** Mensagem única de conta suspensa, usada no login e na renovação. */
 export const CONTA_SUSPENSA =
