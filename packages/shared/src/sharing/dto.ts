@@ -105,5 +105,18 @@ export interface PublicSharedProperty {
     features: string[];
     photos: { url: string; caption: string | null }[];
   } | null;
-  broker: { name: string; whatsapp: string | null; agencyName: string | null } | null;
+  /**
+   * Quem a lead vê do outro lado. `verified` é o selo de CRECI conferido: é o
+   * único sinal de confiança que ela tem numa página aberta na internet.
+   * Nunca inclui e-mail nem identificador interno do corretor.
+   */
+  broker: {
+    name: string;
+    whatsapp: string | null;
+    agencyName: string | null;
+    verified: boolean;
+    /** "12345-F" mais a UF, só quando verificado. */
+    creci: string | null;
+    creciUf: string | null;
+  } | null;
 }

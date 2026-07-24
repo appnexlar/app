@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidCpf } from "../common/documento";
 import type { LeadDetail } from "../leads/dto";
 
 /**
@@ -146,12 +147,16 @@ const optionalText = (max: number) =>
     .transform((v) => (v ? v : null))
     .nullable();
 
-/** CPF só com dígitos (11). Aceita entrada formatada e normaliza. */
+/**
+ * CPF opcional, guardado só com dígitos. Confere os dígitos verificadores, e
+ * não apenas o tamanho: número inventado que passa aqui só aparece como
+ * problema lá no financiamento, quando já é tarde.
+ */
 const cpfSchema = z
   .string()
   .trim()
   .transform((v) => v.replace(/\D/g, ""))
-  .refine((v) => v === "" || v.length === 11, "CPF precisa ter 11 dígitos")
+  .refine((v) => v === "" || isValidCpf(v), "CPF inválido. Confira os números.")
   .transform((v) => (v ? v : null))
   .optional()
   .nullable();
@@ -298,7 +303,7 @@ const participantCpf = z
   .string()
   .trim()
   .transform((v) => v.replace(/\D/g, ""))
-  .refine((v) => v === "" || v.length === 11, "CPF precisa ter 11 dígitos")
+  .refine((v) => v === "" || isValidCpf(v), "CPF inválido. Confira os números.")
   .transform((v) => (v ? v : null))
   .optional()
   .nullable();

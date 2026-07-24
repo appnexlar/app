@@ -317,11 +317,7 @@ export class SharingService {
         unavailableReason: propertyReason,
         propertyTitle: property.title,
         property: null,
-        broker: {
-          name: selection.broker.fullName,
-          whatsapp: selection.broker.phone,
-          agencyName: selection.broker.agencyName,
-        },
+        broker: brokerPublico(selection.broker),
       };
     }
 
@@ -373,11 +369,7 @@ export class SharingService {
         features: property.features,
         photos,
       },
-      broker: {
-        name: selection.broker.fullName,
-        whatsapp: selection.broker.phone,
-        agencyName: selection.broker.agencyName,
-      },
+      broker: brokerPublico(selection.broker),
     };
   }
 
@@ -500,4 +492,30 @@ export class SharingService {
     return cityState || null;
   }
 
+}
+
+/**
+ * O que a lead pode ver do corretor numa página aberta na internet: nome,
+ * WhatsApp, imobiliária e o selo. Nunca e-mail nem identificador interno.
+ *
+ * O número do CRECI só sai quando está verificado. Mostrar um CRECI que
+ * ninguém conferiu daria ao número uma autoridade que ele não tem.
+ */
+function brokerPublico(broker: {
+  fullName: string;
+  phone: string | null;
+  agencyName: string | null;
+  creci: string | null;
+  creciUf: string | null;
+  creciStatus: string;
+}) {
+  const verificado = broker.creciStatus === "aprovado";
+  return {
+    name: broker.fullName,
+    whatsapp: broker.phone,
+    agencyName: broker.agencyName,
+    verified: verificado,
+    creci: verificado ? broker.creci : null,
+    creciUf: verificado ? broker.creciUf : null,
+  };
 }

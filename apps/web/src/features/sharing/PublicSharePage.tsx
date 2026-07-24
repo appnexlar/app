@@ -76,7 +76,10 @@ export function PublicSharePage() {
             {data.broker && (
               <div className="mt-6 w-full rounded-2xl border border-black/10 bg-[#f9f8f6] p-4 text-left">
                 <p className="text-sm text-black/45">Fale com o corretor</p>
-                <p className="mt-0.5 font-semibold text-[#1a1a1a]">{data.broker.name}</p>
+                <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                  <p className="font-semibold text-[#1a1a1a]">{data.broker.name}</p>
+                  {data.broker.verified && <SeloVerificado />}
+                </div>
                 {data.broker.agencyName && (
                   <p className="text-sm text-black/55">{data.broker.agencyName}</p>
                 )}
@@ -178,8 +181,17 @@ export function PublicSharePage() {
 
         <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
           <p className="text-sm text-black/45">Fale com o corretor</p>
-          <p className="mt-0.5 text-lg font-semibold text-[#1a1a1a]">{broker.name}</p>
+          <div className="mt-0.5 flex flex-wrap items-center gap-2">
+            <p className="text-lg font-semibold text-[#1a1a1a]">{broker.name}</p>
+            {broker.verified && <SeloVerificado />}
+          </div>
           {broker.agencyName && <p className="text-sm text-black/55">{broker.agencyName}</p>}
+          {broker.verified && broker.creci && (
+            <p className="mt-0.5 text-sm text-black/55">
+              CRECI {broker.creci}
+              {broker.creciUf ? `/${broker.creciUf}` : ""}
+            </p>
+          )}
           {waLink ? (
             <a
               href={waLink}
@@ -218,5 +230,33 @@ function Unavailable({ text }: { text: string }) {
       </div>
       <p className="mt-4 text-[15px] leading-relaxed text-black/70">{text}</p>
     </div>
+  );
+}
+
+/**
+ * Selo de corretor verificado. Esta página é o único lugar em que a lead
+ * encontra o corretor, muitas vezes sem conhecê-lo: o selo é o sinal de que
+ * o CRECI foi conferido por gente, não apenas digitado por ele mesmo.
+ *
+ * Cores fixas em vez dos tokens do app de propósito: a página pública é
+ * servida sozinha e não herda o tema do sistema.
+ */
+function SeloVerificado() {
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full bg-[#e8f5ec] px-2 py-0.5 text-xs font-bold text-[#1c7c3f]"
+      title="CRECI conferido pela equipe do Nexlar"
+    >
+      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M20 6L9 17l-5-5"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Corretor verificado
+    </span>
   );
 }

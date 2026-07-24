@@ -13,7 +13,7 @@ import {
 } from "../src/email/email.service";
 import { RateLimitStore } from "../src/common/rate-limit/rate-limit.store";
 import { PrismaService } from "../src/prisma/prisma.service";
-import { resetDatabase } from "./e2e-utils";
+import { registerPlugins, resetDatabase } from "./e2e-utils";
 
 /**
  * Jornada 1 (autenticação), as três correções de prioridade zero:
@@ -77,6 +77,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
       .compile();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    await registerPlugins(app);
     app.setGlobalPrefix("api");
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
@@ -110,6 +111,47 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
       broker: { id: string; emailVerified: boolean };
       tokens: { accessToken: string; refreshToken: string };
     };
+  }
+
+
+  /**
+   * Envia o CRECI como multipart. Montado à mão porque o inject do Fastify não
+   * tem helper de formulário: campos de texto primeiro, arquivo por último,
+   * que é a ordem em que o servidor lê.
+   */
+  async function enviarCreci(
+    accessToken: string,
+    creci: string,
+    creciUf: string,
+    arquivo: { filename: string; contentType: string } = {
+      filename: "creci.png",
+      contentType: "image/png",
+    },
+  ) {
+    const boundary = "----NexlarTeste123456";
+    const campo = (nome: string, valor: string) =>
+      `--${boundary}\r\nContent-Disposition: form-data; name="${nome}"\r\n\r\n${valor}\r\n`;
+
+    const corpo = Buffer.concat([
+      Buffer.from(campo("creci", creci) + campo("creciUf", creciUf)),
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${arquivo.filename}"\r\n` +
+          `Content-Type: ${arquivo.contentType}\r\n\r\n`,
+      ),
+      // Conteúdo irrelevante: o que se testa aqui é a regra, não a imagem.
+      Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+
+    return app.inject({
+      method: "POST",
+      url: "/api/brokers/me/creci",
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        "content-type": `multipart/form-data; boundary=${boundary}`,
+      },
+      payload: corpo,
+    });
   }
 
   // --- Fatia 6: aceite de Termos (LGPD) ------------------------------------
@@ -485,5 +527,132 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
     expect((await post("auth/reset-password", { token, password: SENHA_NOVA })).statusCode).toBe(204);
 
     expect((await post("auth/login", { email, password: SENHA_NOVA })).statusCode).toBe(200);
+  });
+
+  // --- Verificação de CRECI -------------------------------------------------
+  it("conta nova nasce sem CRECI enviado, e isso não impede nada", async () => {
+    const email = "creci.novo@teste.com";
+    const sessao = await criarConta(email);
+    await post("auth/verify-email", { token: emails.lastVerificationFor(email) });
+
+    const perfil = await app.inject({
+      method: "GET",
+      url: "/api/brokers/me",
+      headers: { authorization: `Bearer ${sessao.tokens.accessToken}` },
+    });
+    expect(perfil.statusCode).toBe(200);
+    expect(perfil.json().creciStatus).toBe("nao_enviado");
+    expect(perfil.json().creci).toBeNull();
+
+    // Sem CRECI o corretor usa o sistema inteiro: o selo é prêmio, não pedágio.
+    const leads = await app.inject({
+      method: "GET",
+      url: "/api/leads",
+      headers: { authorization: `Bearer ${sessao.tokens.accessToken}` },
+    });
+    expect(leads.statusCode).toBe(200);
+  });
+
+  it("enviar o CRECI põe a conta em análise, e o corretor não se aprova sozinho", async () => {
+    const email = "creci.envio@teste.com";
+    const sessao = await criarConta(email);
+    await post("auth/verify-email", { token: emails.lastVerificationFor(email) });
+
+    const enviado = await enviarCreci(sessao.tokens.accessToken, "12345-F", "PR");
+    expect(enviado.statusCode).toBe(201);
+    expect(enviado.json().creciStatus).toBe("pendente");
+
+    // Reenviar durante a análise é recusado: não se troca o documento embaixo
+    // de quem está conferindo.
+    const denovo = await enviarCreci(sessao.tokens.accessToken, "99999-F", "SP");
+    expect(denovo.statusCode).toBe(400);
+    expect(denovo.json().message).toMatch(/já está em análise/);
+
+    // E não existe caminho para o próprio corretor virar "aprovado".
+    const tentativa = await app.inject({
+      method: "PATCH",
+      url: "/api/brokers/me",
+      headers: { authorization: `Bearer ${sessao.tokens.accessToken}` },
+      payload: { creciStatus: "aprovado", creci: "00000-X" },
+    });
+    const depois = await app.inject({
+      method: "GET",
+      url: "/api/brokers/me",
+      headers: { authorization: `Bearer ${sessao.tokens.accessToken}` },
+    });
+    expect([200, 400]).toContain(tentativa.statusCode);
+    expect(depois.json().creciStatus).toBe("pendente");
+    expect(depois.json().creci).toBe("12345-F");
+  });
+
+  it("recusa documento de tipo ou tamanho inválido", async () => {
+    const email = "creci.arquivo@teste.com";
+    const sessao = await criarConta(email);
+    await post("auth/verify-email", { token: emails.lastVerificationFor(email) });
+
+    const executavel = await enviarCreci(
+      sessao.tokens.accessToken,
+      "12345-F",
+      "PR",
+      { filename: "virus.exe", contentType: "application/x-msdownload" },
+    );
+    expect(executavel.statusCode).toBe(400);
+    expect(executavel.json().message).toMatch(/JPG, PNG ou WEBP/);
+  });
+
+  it("o selo só aparece na página pública depois de aprovado", async () => {
+    const email = "creci.selo@teste.com";
+    const sessao = await criarConta(email);
+    await post("auth/verify-email", { token: emails.lastVerificationFor(email) });
+    const auth = { authorization: `Bearer ${sessao.tokens.accessToken}` };
+
+    const lead = await app.inject({
+      method: "POST",
+      url: "/api/leads",
+      headers: auth,
+      payload: { fullName: "Lead do selo", whatsapp: "11966660001" },
+    });
+    const imovel = await app.inject({
+      method: "POST",
+      url: "/api/properties",
+      headers: auth,
+      payload: {
+        title: "Imóvel do selo",
+        purpose: "venda",
+        category: "residencial",
+        type: "apartamento",
+        origin: "captacao_propria",
+      },
+    });
+    const envio = await app.inject({
+      method: "POST",
+      url: `/api/properties/${imovel.json().id}/shares`,
+      headers: auth,
+      payload: { leadId: lead.json().id },
+    });
+    const token = envio.json().token ?? envio.json().publicToken;
+
+    await enviarCreci(sessao.tokens.accessToken, "12345-F", "PR");
+
+    // Pendente: sem selo, e o número do CRECI não vaza. Um CRECI que ninguém
+    // conferiu não pode aparecer como se tivesse autoridade.
+    const antes = await app.inject({ method: "GET", url: `/api/public/shares/${token}` });
+    expect(antes.json().broker.verified).toBe(false);
+    expect(antes.json().broker.creci).toBeNull();
+
+    // Aprovação é manual, direto no banco.
+    await app.get(PrismaService).broker.update({
+      where: { id: sessao.broker.id },
+      data: { creciStatus: "aprovado", creciReviewedAt: new Date() },
+    });
+
+    const depois = await app.inject({ method: "GET", url: `/api/public/shares/${token}` });
+    expect(depois.json().broker.verified).toBe(true);
+    expect(depois.json().broker.creci).toBe("12345-F");
+    expect(depois.json().broker.creciUf).toBe("PR");
+
+    // Nem verificado nem não verificado expõe dado interno do corretor.
+    expect(depois.body).not.toContain(email);
+    expect(depois.body).not.toContain(sessao.broker.id);
   });
 });

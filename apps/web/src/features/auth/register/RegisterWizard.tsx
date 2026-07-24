@@ -4,16 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { registerSchema } from "@nexlar/shared";
+import { isValidCnpj, isValidCpf, registerSchema } from "@nexlar/shared";
 import { Button } from "../../../components/ui/Button";
 import { TextField } from "../../../components/ui/TextField";
 import { PasswordField } from "../../../components/ui/PasswordField";
 import { GoogleButton } from "../../../components/ui/GoogleButton";
-import { FileUpload } from "../../../components/ui/FileUpload";
 import { Checkbox } from "../../../components/ui/Checkbox";
-import { Select } from "../../../components/ui/Select";
 import { Banner } from "../../../components/ui/Banner";
-import { UFS } from "../../../lib/brazil";
 import { AuthLayout, OrDivider } from "../AuthLayout";
 import { useGoogleAuth } from "../useGoogleAuth";
 import { useAuth } from "../AuthContext";
@@ -31,9 +28,13 @@ import { PLANS, formatBRL, type Plan, type PlanId } from "./plans";
  * plano e confirmação. Não há cobrança nem coleta de dados de cartão: o
  * gateway entra numa fatia futura, com campo hospedado pelo provedor.
  *
- * TODO(backend): persistir creci, cpf/cnpj e plano escolhido quando a API
- * ganhar esses campos (migração + DTO em @nexlar/shared). Hoje a API grava
- * nome, e-mail, senha, WhatsApp e imobiliária.
+ * O CRECI não entra aqui de propósito. Ele é opcional e serve para ganhar o
+ * selo de corretor verificado, que a lead vê na página pública do imóvel.
+ * Exigir carteira e documento na porta de entrada afasta quem só quer
+ * experimentar o sistema. Quem quiser o selo envia depois, em Perfil.
+ *
+ * TODO(backend): persistir cpf/cnpj e plano escolhido quando a API ganhar
+ * esses campos. Hoje a API grava nome, e-mail, senha, WhatsApp e imobiliária.
  */
 
 // --- Schemas por etapa ------------------------------------------------------
@@ -64,19 +65,18 @@ const profileSchema = z
       const n = onlyDigits(v).length;
       return n === 10 || n === 11;
     }, "Informe um WhatsApp válido com DDD"),
-    creci: z.string().trim().min(2, "Informe seu CRECI"),
-    creciUf: z.string().min(1, "Selecione o estado do CRECI"),
     personType: z.enum(["cpf", "cnpj"]),
     document: z.string().min(1, "Informe o documento"),
     agencyName: z.string().max(160).optional().or(z.literal("")),
   })
   .superRefine((data, ctx) => {
-    const n = onlyDigits(data.document).length;
-    if (data.personType === "cpf" && n !== 11) {
-      ctx.addIssue({ code: "custom", path: ["document"], message: "CPF incompleto" });
+    // Confere os dígitos verificadores, não só o tamanho: documento
+    // inventado que passa aqui vira problema no contrato lá na frente.
+    if (data.personType === "cpf" && !isValidCpf(data.document)) {
+      ctx.addIssue({ code: "custom", path: ["document"], message: "CPF inválido. Confira os números." });
     }
-    if (data.personType === "cnpj" && n !== 14) {
-      ctx.addIssue({ code: "custom", path: ["document"], message: "CNPJ incompleto" });
+    if (data.personType === "cnpj" && !isValidCnpj(data.document)) {
+      ctx.addIssue({ code: "custom", path: ["document"], message: "CNPJ inválido. Confira os números." });
     }
   });
 type ProfileValues = z.infer<typeof profileSchema>;
@@ -95,10 +95,6 @@ export function RegisterWizard() {
   const [step, setStep] = useState(0);
   const [account, setAccount] = useState<AccountValues | null>(null);
   const [profile, setProfile] = useState<ProfileValues | null>(null);
-  // Documento do CRECI anexado. Fica no navegador nesta fatia.
-  // TODO(backend): enviar para bucket privado (LGPD) via URL assinada e
-  // vincular ao corretor, junto da fatia de storage.
-  const [crecidoc, setCrecidoc] = useState<File | null>(null);
   const [planId, setPlanId] = useState<PlanId>("anual");
 
   const { signIn } = useAuth();
@@ -117,8 +113,8 @@ export function RegisterWizard() {
 
   const finish = () => {
     if (!account || !profile) return;
-    // TODO(backend): enviar também creci, creciUf, personType/document e planId
-    // quando a API ganhar esses campos. O aceite dos termos e o opt-in já vão.
+    // TODO(backend): enviar também personType/document e planId quando a API
+    // ganhar esses campos. O aceite dos termos e o opt-in já vão.
     mutation.mutate({
       fullName: account.fullName,
       email: account.email,
@@ -177,10 +173,8 @@ export function RegisterWizard() {
       {step === 1 && (
         <ProfileStep
           defaults={profile}
-          defaultDoc={crecidoc}
-          onNext={(values, doc) => {
+          onNext={(values) => {
             setProfile(values);
-            setCrecidoc(doc);
             setStep(2);
           }}
         />
@@ -317,15 +311,11 @@ function AccountStep({
 
 function ProfileStep({
   defaults,
-  defaultDoc,
   onNext,
 }: {
   defaults: ProfileValues | null;
-  defaultDoc: File | null;
-  onNext: (values: ProfileValues, doc: File) => void;
+  onNext: (values: ProfileValues) => void;
 }) {
-  const [doc, setDoc] = useState<File | null>(defaultDoc);
-  const [docError, setDocError] = useState<string>();
 
   const {
     register,
@@ -338,8 +328,6 @@ function ProfileStep({
     defaultValues:
       defaults ?? {
         phone: "",
-        creci: "",
-        creciUf: "",
         personType: "cpf",
         document: "",
         agencyName: "",
@@ -350,13 +338,7 @@ function ProfileStep({
   const phoneField = register("phone");
   const documentField = register("document");
 
-  const submit = (values: ProfileValues) => {
-    if (!doc) {
-      setDocError("Anexe o documento do seu CRECI para continuar.");
-      return;
-    }
-    onNext(values, doc);
-  };
+  const submit = (values: ProfileValues) => onNext(values);
 
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
@@ -373,36 +355,6 @@ function ProfileStep({
           e.target.value = maskPhone(e.target.value);
           void phoneField.onChange(e);
         }}
-      />
-
-      <div className="grid grid-cols-[1fr_auto] gap-3">
-        <TextField
-          label="Número do CRECI"
-          placeholder="Ex.: 123456-F"
-          error={errors.creci?.message}
-          {...register("creci")}
-        />
-        <div className="w-32">
-          <Select
-            label="Estado"
-            placeholder="UF"
-            options={UFS}
-            error={errors.creciUf?.message}
-            {...register("creciUf")}
-          />
-        </div>
-      </div>
-
-      <FileUpload
-        label="Documento do CRECI"
-        hint="Foto ou PDF da sua carteira/certidão do CRECI. Usado só para conferência."
-        file={doc}
-        onChange={(f) => {
-          setDoc(f);
-          setDocError(undefined);
-        }}
-        onValidationError={setDocError}
-        error={docError}
       />
 
       {/* Pessoa física ou jurídica. */}

@@ -269,7 +269,7 @@ Para reduzir atrito, os dados entram em dois momentos. Isso está refletido no c
 | Visitas | Criar visita, associar a um imóvel enviado, alterar status, registrar feedback |
 | Simulação | Registrar resultado de simulação, atalho para o simulador da Caixa (fase de cliente) |
 | Agenda / Tarefas | Todas as tarefas do corretor, foco no que vence hoje e no que está atrasado |
-| Perfil do corretor | Dados do corretor, CRECI (campo simples no MVP) |
+| Perfil do corretor | Dados do corretor e verificação de CRECI: número, UF, documento no bucket privado e `creci_status` (nao_enviado/pendente/aprovado/recusado) |
 
 O detalhamento de cada tela e o passo a passo de uso estão em `docs/03-jornadas.md`. A rota da ficha é `/leads/:id` e o título é sempre **Ficha da lead** antes da conversão.
 

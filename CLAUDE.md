@@ -35,7 +35,9 @@ Interface em português do Brasil, com datas e valores no formato brasileiro.
 
 Em fatias verticais que já funcionam, na ordem dos marcos de `docs/05`. Não construa módulo isolado sem tela. Cada marco termina com os critérios de aceite das jornadas cobertas passando num teste manual roteirizado.
 
-Escopo é só o core do MVP (Fase 1). Não construa validação de CRECI, página pública, formulário público, multiusuário ou integração bancária automática. Esses itens estão listados como fora de escopo em `docs/04` e servem só para orientar decisões de arquitetura.
+Escopo é só o core do MVP (Fase 1). Não construa página pública do corretor, formulário público, multiusuário ou integração bancária automática.
+
+Exceção decidida em 23 jul 2026: a **verificação de CRECI** entrou no MVP, numa versão enxuta. Enviar o CRECI é opcional e não bloqueia nada; quem envia passa por conferência manual e ganha o selo de corretor verificado, que a lead vê na página pública do imóvel. Não há consulta automática ao COFECI, e isso continua fora de escopo. Esses itens estão listados como fora de escopo em `docs/04` e servem só para orientar decisões de arquitetura.
 
 ## Antes de dizer que terminou
 

@@ -1,40 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { updateProfileSchema, type UpdateProfileDto } from "@nexlar/shared";
 import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { TextField } from "../../components/ui/TextField";
 import { useAuth } from "../auth/AuthContext";
 import { initials } from "../../lib/name";
-import { updateMe } from "./api";
-
-/**
- * Status de validação do CRECI. O corretor NÃO altera o próprio status:
- * quem aprova/recusa é um administrador (painel virá depois).
- * TODO(backend): ler o status real de broker.crecistatus + o motivo da recusa.
- */
-type CreciStatus = "nao_enviado" | "pendente" | "aprovado" | "recusado";
-
-const STATUS_LABEL: Record<CreciStatus, string> = {
-  nao_enviado: "Não enviado",
-  pendente: "Pendente de validação",
-  aprovado: "Aprovado",
-  recusado: "Recusado",
-};
+import { CreciCard, CRECI_STATUS_LABELS } from "./CreciCard";
+import { fetchMe, updateMe } from "./api";
 
 export function ProfilePage() {
-  const { broker } = useAuth();
+  const { broker: daSessao, atualizarBroker } = useAuth();
 
-  // TODO(backend): o status real da validação do CRECI virá do servidor
-  // (broker.creciStatus), na fatia de onboarding. Até lá, "pendente", que é o
-  // estado logo após o cadastro.
-  const status = "pendente" as CreciStatus;
+  /**
+   * Busca o perfil no servidor em vez de confiar só na sessão guardada no
+   * navegador. Coisas mudam fora daqui: a verificação do CRECI é aprovada por
+   * outra pessoa, e sem esta leitura a tela continuaria oferecendo "envie seu
+   * CRECI" para quem já está verificado. A sessão serve de dado inicial, para
+   * a tela não piscar vazia.
+   */
+  const consulta = useQuery({
+    queryKey: ["brokers", "me"],
+    queryFn: fetchMe,
+    initialData: daSessao ?? undefined,
+  });
+
+  const broker = consulta.data ?? daSessao;
+
+  // Mantém a sessão em dia com o que o servidor respondeu.
+  useEffect(() => {
+    if (consulta.data) atualizarBroker(consulta.data);
+  }, [consulta.data, atualizarBroker]);
 
   if (!broker) return null;
 
-  const validated = status === "aprovado";
+  const validated = broker.creciStatus === "aprovado";
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -55,7 +57,7 @@ export function ProfilePage() {
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Corretor validado
+                Corretor verificado
               </span>
             )}
           </div>
@@ -63,17 +65,24 @@ export function ProfilePage() {
         </div>
       </section>
 
-      {/* Status da validação. */}
-      <StatusCard status={status} />
+      {/* Verificação de CRECI: opcional, e o que dá o selo. */}
+      <CreciCard broker={broker} />
 
       {/* Dados de contato: a única parte que o corretor edita. */}
       <ContactCard />
 
-      {/* Registro profissional: leitura. O CRECI passa por validação, então
-          não se edita por aqui. */}
+      {/* Registro profissional: leitura. O CRECI passa por conferência
+          manual, então não se edita por aqui. */}
       <Card title="Registro profissional">
-        <Field label="Número do CRECI" value={broker.creci ?? "Não informado"} />
-        <Field label="Status da validação" value={STATUS_LABEL[status]} />
+        <Field
+          label="Número do CRECI"
+          value={
+            broker.creci
+              ? `${broker.creci}${broker.creciUf ? `/${broker.creciUf}` : ""}`
+              : "Não informado"
+          }
+        />
+        <Field label="Verificação" value={CRECI_STATUS_LABELS[broker.creciStatus]} />
       </Card>
     </div>
   );
@@ -193,48 +202,6 @@ function ContactCard() {
   );
 }
 
-function StatusCard({ status }: { status: CreciStatus }) {
-  if (status === "aprovado") {
-    return (
-      <Banner variant="info">
-        Seu CRECI foi validado. O selo de corretor validado está ativo no seu
-        perfil.
-      </Banner>
-    );
-  }
-  if (status === "recusado") {
-    return (
-      <div className="rounded-xl border border-danger bg-danger-soft p-5">
-        <div className="flex items-start gap-3">
-          <svg className="mt-0.5 h-5 w-5 flex-none text-[var(--danger-fg)]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-            <path d="M12 7.5v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-            <circle cx="12" cy="16" r="1" fill="currentColor" />
-          </svg>
-          <div>
-            <p className="text-body-sm font-semibold text-[var(--danger-fg)]">
-              Não foi possível validar o CRECI informado. Revise os dados e envie
-              novamente.
-            </p>
-            <p className="mt-1 text-caption text-[var(--danger-fg)]">
-              Motivo: número não localizado no conselho informado.
-            </p>
-            <Button variant="accent" type="button" className="mt-3" disabled>
-              Editar dados e reenviar
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  // pendente / não enviado
-  return (
-    <Banner variant="info">
-      Seu cadastro foi realizado. Estamos verificando seus dados profissionais.
-      Você já pode usar o Nexlar enquanto isso.
-    </Banner>
-  );
-}
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (

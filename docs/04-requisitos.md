@@ -9,7 +9,9 @@ Requisitos funcionais organizados por módulo, com identificador e critério de 
 | AUTH-01 | Criar conta com nome, e-mail e senha | Cria usuário e linha em `broker` |
 | AUTH-02 | Login e logout | Sessão persiste no aparelho |
 | AUTH-03 | Recuperar senha por e-mail | Recebe link e redefine |
-| AUTH-04 | Editar perfil (nome, telefone, imobiliária, CRECI, avatar) | Alterações salvam |
+| AUTH-04 | Editar perfil (nome, telefone, imobiliária, avatar) | Alterações salvam |
+| AUTH-06 | Enviar CRECI + documento para verificação (opcional) | Status vai para `pendente`; reenvio bloqueado durante a análise |
+| AUTH-07 | Selo de corretor verificado na página pública do imóvel | Só aparece com `creci_status = aprovado`; CRECI não verificado não é exibido |
 | AUTH-05 | Isolamento por corretor | Cada corretor só vê os próprios dados |
 
 ## 4.2 Leads e funil (LEAD)
@@ -221,7 +223,9 @@ Esta revisão estrutura a **fase de lead** (prospecção, seleção de imóveis,
 
 Estes itens não entram agora. Ficam registrados para orientar as decisões de arquitetura, não para construir.
 
-Fase 2, credibilidade e captação: validação de CRECI (pendente/aprovado/recusado), página pública do corretor com perfil e botão de contato, formulário público de captação de leads, SEO básico.
+Fase 2, credibilidade e captação: consulta automática do CRECI no COFECI, painel de administração para a fila de verificação (hoje a aprovação é manual, direto no banco), página pública do corretor com perfil e botão de contato, formulário público de captação de leads, SEO básico.
+
+> A verificação manual de CRECI (`nao_enviado → pendente → aprovado/recusado`) saiu do fora de escopo em 23 jul 2026 e está no MVP. Enviar é opcional: quem não envia usa o sistema inteiro, só não ganha o selo.
 
 Fase 3, financiamento e parceiros: gestão de parceiros (advogado, despachante, correspondente, tradutor), checklist por tipo de cliente, integração ou registro estruturado de simulações mais rico, documentação avançada, fluxos com correspondentes.
 

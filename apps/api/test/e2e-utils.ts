@@ -1,4 +1,5 @@
 import { Test } from "@nestjs/testing";
+import multipart from "@fastify/multipart";
 import {
   FastifyAdapter,
   type NestFastifyApplication,
@@ -6,6 +7,14 @@ import {
 import type { InjectOptions } from "fastify";
 import { AppModule } from "../src/app.module";
 import { PrismaService } from "../src/prisma/prisma.service";
+
+/**
+ * Plugins do Fastify que o main.ts registra no boot. Sem eles o app de teste
+ * não é o mesmo do ar: upload de arquivo, por exemplo, responde 415.
+ */
+export async function registerPlugins(app: NestFastifyApplication): Promise<void> {
+  await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024, files: 5 } });
+}
 
 /** Sobe a aplicação inteira (guard global, pipes, filtro) como em produção. */
 export async function createTestApp(): Promise<NestFastifyApplication> {
@@ -16,6 +25,7 @@ export async function createTestApp(): Promise<NestFastifyApplication> {
   const app = moduleRef.createNestApplication<NestFastifyApplication>(
     new FastifyAdapter(),
   );
+  await registerPlugins(app);
   app.setGlobalPrefix("api");
   await app.init();
   await app.getHttpAdapter().getInstance().ready();

@@ -3,6 +3,13 @@
  * cliente de e-mail ignora folha de estilo externa e flexbox, então tudo é
  * tabela e estilo na própria tag. Cada e-mail leva também uma versão em texto
  * puro, que é o que aparece em leitor de tela e em cliente antigo.
+ *
+ * O endereço completo, com o token, não aparece escrito na versão HTML: é uma
+ * parede de caracteres no meio do e-mail, e assusta mais do que ajuda. A
+ * alternativa ao botão é um segundo link, curto, para o caso de o cliente de
+ * e-mail estragar o botão em tabela. Quem não renderiza HTML nenhum recebe a
+ * versão em texto puro, e lá o endereço completo continua, porque ali ele é
+ * a única forma de chegar.
  */
 
 const LARANJA = "#d2502e";
@@ -41,10 +48,10 @@ function layout({ titulo, paragrafos, botao, rodape }: Corpo): string {
            <a href="${botao.url}" style="display:inline-block;padding:14px 28px;font-family:${FONTE};font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;">${botao.texto}</a>
          </td></tr>
        </table>
-       <p style="margin:0 0 8px;font-family:${FONTE};font-size:13px;line-height:1.6;color:${TEXTO_SUAVE};">
-         Se o botão não abrir, copie e cole este endereço no navegador:
-       </p>
-       <p style="margin:0 0 24px;font-family:${FONTE};font-size:13px;line-height:1.6;word-break:break-all;color:${TEXTO_SUAVE};">${botao.url}</p>`
+       <p style="margin:0 0 24px;font-family:${FONTE};font-size:13px;line-height:1.6;color:${TEXTO_SUAVE};">
+         Se o botão não funcionar,
+         <a href="${botao.url}" style="color:${LARANJA};font-weight:600;">abra por este link</a>.
+       </p>`
     : "";
 
   const aviso = rodape

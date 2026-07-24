@@ -247,6 +247,16 @@ enum SimulationStatus {
 // ---------------------------------------------------------------------------
 // broker — corretor e conta de autenticação
 // ---------------------------------------------------------------------------
+/// Selo de corretor verificado. Enviar o CRECI é opcional: quem não envia usa
+/// o sistema inteiro do mesmo jeito, só não ganha o selo que a lead vê na
+/// página pública do imóvel. É prêmio, não pedágio.
+enum BrokerCreciStatus {
+  nao_enviado
+  pendente
+  aprovado
+  recusado
+}
+
 /// Conta ativa entra normalmente. Conta suspensa continua existindo, com os
 /// dados intactos, mas não entra: é o oposto de excluir.
 enum BrokerStatus {
@@ -261,6 +271,15 @@ model Broker {
   email        String   @unique
   phone        String?
   creci        String?
+  creciUf      String?  @map("creci_uf")
+  creciStatus  BrokerCreciStatus @default(nao_enviado) @map("creci_status")
+  /// Chave do documento no bucket privado. Nunca vira URL pública: quem serve
+  /// é a API, e só para o dono ou para a conferência manual.
+  creciDocumentKey String?  @map("creci_document_key")
+  creciSubmittedAt DateTime? @map("creci_submitted_at") @db.Timestamptz(6)
+  creciReviewedAt  DateTime? @map("creci_reviewed_at") @db.Timestamptz(6)
+  /// Motivo da recusa, mostrado ao corretor para ele saber o que corrigir.
+  creciRejectionReason String? @map("creci_rejection_reason")
   agencyName   String?  @map("agency_name")
   avatarUrl    String?  @map("avatar_url")
   /// Nulo enquanto o corretor não clicar no link do e-mail de confirmação.

@@ -78,6 +78,42 @@ export const resendVerificationSchema = z.object({
 });
 export type ResendVerificationDto = z.infer<typeof resendVerificationSchema>;
 
+// --- Verificação de CRECI ---------------------------------------------------
+/**
+ * Enviar o CRECI é opcional. Quem envia entra numa fila de conferência manual
+ * e, aprovado, ganha o selo que a lead vê na página pública do imóvel. Quem
+ * não envia usa o sistema inteiro do mesmo jeito.
+ */
+export const BROKER_CRECI_STATUSES = [
+  "nao_enviado",
+  "pendente",
+  "aprovado",
+  "recusado",
+] as const;
+export type BrokerCreciStatus = (typeof BROKER_CRECI_STATUSES)[number];
+
+export const CRECI_STATUS_LABELS: Record<BrokerCreciStatus, string> = {
+  nao_enviado: "Não enviado",
+  pendente: "Em análise",
+  aprovado: "Verificado",
+  recusado: "Não aprovado",
+};
+
+/** Dados textuais do CRECI. O documento sobe à parte, como arquivo. */
+export const submitCreciSchema = z.object({
+  creci: z
+    .string()
+    .trim()
+    .min(2, "Informe o número do seu CRECI")
+    .max(30, "Número de CRECI longo demais"),
+  creciUf: z
+    .string()
+    .trim()
+    .length(2, "Selecione o estado do CRECI")
+    .transform((v) => v.toUpperCase()),
+});
+export type SubmitCreciDto = z.infer<typeof submitCreciSchema>;
+
 // --- Perfil (edição) --------------------------------------------------------
 /**
  * O corretor edita só o que é dele para editar. CRECI fica de fora de
@@ -104,6 +140,10 @@ export interface BrokerProfile {
   email: string;
   phone: string | null;
   creci: string | null;
+  creciUf: string | null;
+  creciStatus: BrokerCreciStatus;
+  /** Motivo da recusa, para o corretor saber o que corrigir e reenviar. */
+  creciRejectionReason: string | null;
   agencyName: string | null;
   avatarUrl: string | null;
   /**

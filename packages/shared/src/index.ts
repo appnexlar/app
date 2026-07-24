@@ -1,3 +1,4 @@
+export * from "./common/documento";
 export * from "./auth/dto";
 export * from "./agenda/dto";
 export * from "./clients/dto";
