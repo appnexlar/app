@@ -17,6 +17,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { StorageService } from "../storage/storage.service";
 import { STATUS_LABELS } from "../leads/status-labels";
+import { ProductEventService } from "../guidance/product-event.service";
 
 type SelectionWithRelations = Prisma.PropertySelectionGetPayload<{
   include: { lead: true; items: { include: { property: true } } };
@@ -31,6 +32,7 @@ export class SharingService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly storage: StorageService,
+    private readonly events: ProductEventService,
   ) {}
 
   /**
@@ -113,6 +115,24 @@ export class SharingService {
       });
       // Enviar imóvel move a lead para "Imóveis enviados" no funil.
       await this.promoteLeadStage(tx, brokerId, lead.id, "imoveis_enviados");
+      // Neste produto, uma ação só relaciona imóvel a lead (match), gera o
+      // link exclusivo e já o envia. Os três marcos coincidem; cada um
+      // deduplica pelo próprio tipo, então só a primeira vez conta.
+      await this.events.track(
+        brokerId,
+        { type: "FIRST_PROPERTY_MATCH_CREATED", source: "ui", entityType: "selection", entityId: created.id },
+        tx,
+      );
+      await this.events.track(
+        brokerId,
+        { type: "FIRST_PERSONALIZED_LINK_GENERATED", source: "ui", entityType: "selection", entityId: created.id },
+        tx,
+      );
+      await this.events.track(
+        brokerId,
+        { type: "FIRST_LINK_SENT", source: "ui", entityType: "selection", entityId: created.id },
+        tx,
+      );
       return created;
     });
 
@@ -207,6 +227,14 @@ export class SharingService {
         selection.leadId,
         dto.response === "quero_visitar" ? "visita_solicitada" : "avaliando_imoveis",
       );
+      // Manifestação de interesse da lead: quer visitar ou gostou do imóvel.
+      if (dto.response === "quero_visitar" || dto.response === "tenho_interesse") {
+        await this.events.track(
+          brokerId,
+          { type: "FIRST_INTEREST_RECEIVED", source: "api", entityType: "selection", entityId: shareId },
+          tx,
+        );
+      }
     });
   }
 

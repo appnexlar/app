@@ -16,10 +16,31 @@ import { CONSENT_VERSION } from "@nexlar/shared";
 import { STATUS_LABELS } from "./status-labels";
 import { Prisma, type Lead, type LeadActivity } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { ProductEventService } from "../guidance/product-event.service";
+
+/** Uma lead "tem preferências" quando traz ao menos um critério de busca. */
+function temPreferencias(dados: {
+  intent?: unknown;
+  audience?: unknown;
+  region?: unknown;
+  budgetMin?: unknown;
+  budgetMax?: unknown;
+}): boolean {
+  return Boolean(
+    dados.intent ||
+      dados.audience ||
+      dados.region ||
+      dados.budgetMin != null ||
+      dados.budgetMax != null,
+  );
+}
 
 @Injectable()
 export class LeadsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: ProductEventService,
+  ) {}
 
   /**
    * Cadastro rápido (J1). Duplicado = mesmo WhatsApp do mesmo corretor:
@@ -62,6 +83,20 @@ export class LeadsService {
           metadata: dto.source ? { source: dto.source } : undefined,
         },
       });
+      // Marcos da Jornada 2, dentro da mesma transação: ou nascem com a lead,
+      // ou nenhum nasce. Idempotentes, então a segunda lead não regrava.
+      await this.events.track(
+        brokerId,
+        { type: "FIRST_LEAD_CREATED", source: "ui", entityType: "lead", entityId: created.id },
+        tx,
+      );
+      if (temPreferencias(dto)) {
+        await this.events.track(
+          brokerId,
+          { type: "LEAD_PREFERENCES_ADDED", source: "ui", entityType: "lead", entityId: created.id },
+          tx,
+        );
+      }
       return created;
     });
 
@@ -251,6 +286,11 @@ export class LeadsService {
           metadata: { reason: dto.reason, nextStep: dto.nextStep },
         },
       });
+      await this.events.track(
+        brokerId,
+        { type: "FIRST_LEAD_CONVERTED", source: "ui", entityType: "lead", entityId: id },
+        tx,
+      );
       return next;
     });
 

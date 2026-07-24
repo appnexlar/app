@@ -323,6 +323,9 @@ model Broker {
   refreshTokens RefreshToken[]
   resetTokens   PasswordResetToken[]
   emailTokens   EmailVerificationToken[]
+  productEvents     ProductEvent[]
+  guidanceProgress  GuidanceProgress[]
+  onboardingProfile OnboardingProfile?
 
   @@map("broker")
 }
@@ -1124,4 +1127,122 @@ model SelectionItem {
   @@index([selectionId])
   @@index([propertyId])
   @@map("selection_item")
+}
+
+// ===========================================================================
+// Jornada 2 — Experiência guiada e inteligente
+// ---------------------------------------------------------------------------
+// Camada transversal que aprende com o que o corretor faz e aponta o próximo
+// passo. Três tabelas, todas isoladas por broker_id (o Nexlar é single-user
+// por corretor; não existe organization_id).
+// ===========================================================================
+
+/// Estado de uma orientação para um corretor. Fechar (dismissed) não é
+/// concluir: só o evento real da ação marca completed (regra GUI-04).
+enum GuidanceStatus {
+  available   // elegível, ainda não exibida
+  shown       // já apresentada
+  dismissed   // o corretor fechou
+  skipped     // o corretor deixou para depois
+  in_progress // iniciou a ação relacionada
+  completed   // concluiu a ação real
+  reopened    // reabriu uma orientação dispensada
+  expired     // perdeu relevância pela mudança de contexto
+
+  @@map("guidance_status")
+}
+
+/// Respostas do diagnóstico inicial. Enums pequenos e fechados; tudo opcional
+/// porque o diagnóstico pode ser pulado.
+enum WorkMode {
+  sozinho
+  imobiliaria
+
+  @@map("work_mode")
+}
+
+enum BusinessFocus {
+  venda
+  locacao
+  ambos
+
+  @@map("business_focus")
+}
+
+/// Log append-only de uso e aprendizado. É o "sistema nervoso" da jornada:
+/// espelha o molde imutável de lead_activity, mas cobre a conta inteira, não
+/// só uma lead. NUNCA guarda dado sensível de lead/cliente/imóvel, apenas
+/// referências (entityType + entityId) e metadados mínimos (regra da §9).
+///
+/// O `type` é String de propósito, não enum do Prisma: o catálogo de eventos
+/// cresce, e um enum obrigaria migration a cada evento novo. A validação mora
+/// no serviço, contra a lista de PRODUCT_EVENTS do pacote shared.
+///
+/// Idempotência (§27): eventos de "primeira vez" gravam um `dedupeKey` (o
+/// próprio tipo). O índice único (broker_id, dedupe_key) impede duplicar o
+/// marco. Eventos repetíveis (GUIDANCE_SHOWN) deixam dedupeKey nulo, e no
+/// Postgres nulos são distintos entre si, então repetem à vontade.
+model ProductEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  brokerId   String   @map("broker_id") @db.Uuid
+  type       String
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id")
+  source     String   @default("system")
+  dedupeKey  String?  @map("dedupe_key")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+
+  @@unique([brokerId, dedupeKey], name: "broker_dedupe")
+  @@index([brokerId])
+  @@index([brokerId, type])
+  @@map("product_event")
+}
+
+/// Estado por corretor de cada orientação. A chave da orientação
+/// (guidance_key) casa com o registry de definições que vive em código.
+model GuidanceProgress {
+  id          String         @id @default(uuid()) @db.Uuid
+  brokerId    String         @map("broker_id") @db.Uuid
+  guidanceKey String         @map("guidance_key")
+  status      GuidanceStatus @default(available)
+  showCount   Int            @default(0) @map("show_count")
+  firstShownAt DateTime?     @map("first_shown_at") @db.Timestamptz(6)
+  lastShownAt  DateTime?     @map("last_shown_at") @db.Timestamptz(6)
+  dismissedAt  DateTime?     @map("dismissed_at") @db.Timestamptz(6)
+  completedAt  DateTime?     @map("completed_at") @db.Timestamptz(6)
+  reopenedAt   DateTime?     @map("reopened_at") @db.Timestamptz(6)
+  expiresAt    DateTime?     @map("expires_at") @db.Timestamptz(6)
+  metadata    Json?
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+
+  @@unique([brokerId, guidanceKey], name: "broker_guidance")
+  @@index([brokerId])
+  @@map("guidance_progress")
+}
+
+/// Respostas do diagnóstico inicial, uma linha por corretor (1:1). Personaliza
+/// a priorização das recomendações. Tudo opcional: o diagnóstico é pulável.
+model OnboardingProfile {
+  id                    String         @id @default(uuid()) @db.Uuid
+  brokerId              String         @unique @map("broker_id") @db.Uuid
+  workMode              WorkMode?      @map("work_mode")
+  businessFocus         BusinessFocus? @map("business_focus")
+  hasExistingLeads      Boolean?       @map("has_existing_leads")
+  hasExistingProperties Boolean?       @map("has_existing_properties")
+  calendarProvider      String?        @map("calendar_provider")
+  diagnosisCompleted    Boolean        @default(false) @map("diagnosis_completed")
+  diagnosisSkipped      Boolean        @default(false) @map("diagnosis_skipped")
+  firstAccessAt         DateTime?      @map("first_access_at") @db.Timestamptz(6)
+  createdAt             DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+
+  @@map("onboarding_profile")
 }

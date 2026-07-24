@@ -428,3 +428,13 @@ Os dados pessoais sensíveis não moram na tabela `lead`.
 - Toda alteração sensível é auditada em `audit_log` só com nomes de campos (dados_financeiros_alterados, participante_adicionado, exclusao_solicitada), nunca valores.
 
 **Pendente (próximas etapas):** exclusão/anonimização efetiva com política de retenção, exportação de dados (portabilidade LGPD) e criptografia em repouso de campos sensíveis.
+
+## 2.20 Jornada 2: experiência guiada (product_event, guidance_progress, onboarding_profile)
+
+Camada transversal de ativação e adoção (ver `docs/07`). Três tabelas, todas isoladas por `broker_id` (a Nexlar é single-user por corretor; não há `organization_id`). Migração `20260724135826_jornada2_fundacao_guiada`, com RLS ligada nas três, como no resto do banco.
+
+- `product_event` (log append-only, imutável): broker_id, type (String, validada no serviço contra o catálogo do `shared`, não enum do Prisma porque o catálogo cresce), entity_type, entity_id, source (ui/api/system), dedupe_key, metadata (Json), created_at. Índice único `(broker_id, dedupe_key)` garante a idempotência dos marcos de "primeira vez". NUNCA guarda dado sensível: só referências e metadados mínimos.
+- `guidance_progress` (estado por orientação, 1 por chave por corretor): broker_id, guidance_key (casa com o registry em código), status (enum available/shown/dismissed/skipped/in_progress/completed/reopened/expired), show_count, timestamps (first_shown_at, last_shown_at, dismissed_at, completed_at, reopened_at, expires_at), metadata. Único por `(broker_id, guidance_key)`.
+- `onboarding_profile` (1:1 com broker): respostas do diagnóstico inicial (work_mode, business_focus, has_existing_leads, has_existing_properties, calendar_provider), diagnosis_completed, diagnosis_skipped, first_access_at. Tudo opcional: o diagnóstico é pulável.
+
+As definições de orientação e o conteúdo da ajuda contextual vivem em código (não em tabela): mudá-los é mudar o produto, o que passa por deploy, não por painel administrativo.

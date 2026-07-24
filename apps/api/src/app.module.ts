@@ -13,6 +13,7 @@ import { ClientsModule } from "./clients/clients.module";
 import { AgendaModule } from "./agenda/agenda.module";
 import { PropertiesModule } from "./properties/properties.module";
 import { SharingModule } from "./sharing/sharing.module";
+import { GuidanceModule } from "./guidance/guidance.module";
 import { HealthController } from "./health/health.controller";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import { RateLimitGuard } from "./common/rate-limit/rate-limit.guard";
@@ -28,6 +29,7 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
     JwtModule.register({ global: true }),
     PrismaModule,
     RateLimitModule,
+    GuidanceModule,
     StorageModule,
     EmailModule,
     AuthModule,

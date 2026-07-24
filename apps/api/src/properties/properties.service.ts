@@ -22,6 +22,7 @@ import {
 import { Prisma } from "@prisma/client";
 import type { Property, PropertyContact, PropertyMedia } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { ProductEventService } from "../guidance/product-event.service";
 
 type PropertyWithMedia = Property & { media: PropertyMedia[] };
 type PropertyFull = Property & { media: PropertyMedia[]; contacts: PropertyContact[] };
@@ -42,7 +43,10 @@ const SORT_ORDERS: Record<string, Prisma.PropertyOrderByWithRelationInput[]> = {
 
 @Injectable()
 export class PropertiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: ProductEventService,
+  ) {}
 
   /** Cria o rascunho (etapa 1). Nunca bloqueia por duplicidade: só avisa. */
   async create(brokerId: string, dto: CreatePropertyDto) {
@@ -58,6 +62,14 @@ export class PropertiesService {
         externalLink: dto.externalLink,
       },
       include: { media: true },
+    });
+    // Marco da Jornada 2. Fora de transação e sem derrubar o cadastro: se o
+    // registro do evento falhar, o imóvel já está salvo e é o que importa.
+    await this.events.trackSafe(brokerId, {
+      type: "FIRST_PROPERTY_CREATED",
+      source: "ui",
+      entityType: "property",
+      entityId: property.id,
     });
     return this.toSummary(property);
   }

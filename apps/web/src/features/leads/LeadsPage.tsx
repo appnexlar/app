@@ -5,6 +5,8 @@ import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { SearchField } from "../../components/ui/SearchField";
 import { FilterChips, type FilterChip } from "../../components/ui/FilterChips";
+import { SmartEmptyState } from "../../components/ui/SmartEmptyState";
+import { GuidanceInline } from "../guidance/GuidanceInline";
 import { useShell } from "../shell/ShellContext";
 import { LeadActionSheet } from "./LeadActionSheet";
 import { fetchLeads } from "./api";
@@ -102,6 +104,10 @@ export function LeadsPage() {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Orientação contextual da tela: preferências pendentes, follow-up
+          vencido. Some sozinha quando não há nada relevante aqui. */}
+      <GuidanceInline prefixos={["/leads"]} />
+
       <div className="flex flex-col gap-3">
         <div className="flex gap-2">
           <SearchField
@@ -223,8 +229,8 @@ const STATUS_TEXT_CLASS: Record<StatusTone, string> = {
 
 function CarteiraVazia({ onNew }: { onNew: () => void }) {
   return (
-    <section className="animate-rise mx-auto flex max-w-xl flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+    <SmartEmptyState
+      icon={
         <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
             d="M16 19v-1.5a3.5 3.5 0 00-3.5-3.5h-5A3.5 3.5 0 004 17.5V19M10 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM17 4.5a3.5 3.5 0 010 6.6M20 19v-1.5a3.5 3.5 0 00-2.5-3.35"
@@ -234,15 +240,12 @@ function CarteiraVazia({ onNew }: { onNew: () => void }) {
             strokeLinejoin="round"
           />
         </svg>
-      </div>
-      <h2 className="mt-5 text-h2 text-text">Nenhum lead cadastrado</h2>
-      <p className="mt-2 max-w-sm text-body text-text-muted">
-        Cadastre seu primeiro contato em segundos: só o nome e o WhatsApp são obrigatórios.
-      </p>
-      <Button type="button" variant="accent" className="mt-6" onClick={onNew}>
-        Cadastrar primeiro lead
-      </Button>
-    </section>
+      }
+      title="Seus leads começam aqui"
+      description="Cada lead é uma pessoa interessada nos seus imóveis. Cadastre o primeiro para acompanhar o atendimento até o fechamento."
+      action={{ label: "Cadastrar primeiro lead", onClick: onNew }}
+      hint="Só o nome e o WhatsApp são obrigatórios."
+    />
   );
 }
 

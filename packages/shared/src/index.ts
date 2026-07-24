@@ -6,3 +6,4 @@ export * from "./leads/dto";
 export * from "./properties/dto";
 export * from "./sharing/dto";
 export * from "./dashboard/dto";
+export * from "./guidance/dto";

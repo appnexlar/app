@@ -16,6 +16,7 @@ import { useShell } from "../shell/ShellContext";
 import { fetchDashboard, type PreviewMode } from "./api";
 import { ALERT_DEFS, FUNNEL_LABELS } from "./constants";
 import { formatTime } from "./format";
+import { GuidanceHome } from "../guidance/GuidanceHome";
 
 const longDateFmt = new Intl.DateTimeFormat("pt-BR", {
   weekday: "long",
@@ -96,7 +97,9 @@ export function DashboardPage() {
         </div>
       </section>
 
-      {summary && !isEmpty && <SmartFocus summary={summary} />}
+      {/* Camada de experiência guiada (Jornada 2): a próxima ação real vem do
+          servidor, não de um mock. Substitui o antigo "Foco de agora". */}
+      <GuidanceHome />
 
       {query.isLoading && <DashboardSkeleton />}
 
@@ -300,80 +303,6 @@ function HeroChip({ value, label }: { value: number; label: string }) {
       {label}
     </span>
   );
-}
-
-/**
- * Foco de agora: a camada assistente da Home. Lê o resumo e aponta a próxima
- * ação mais importante do corretor, na ordem: tarefa atrasada, alerta que
- * precisa de atenção, próxima tarefa do dia. É o embrião do agente da Nexlar:
- * hoje a regra é determinística; amanhã a API entrega a sugestão pronta.
- */
-function SmartFocus({ summary }: { summary: DashboardSummary }) {
-  const focus = buildFocus(summary);
-  if (!focus) return null;
-  return (
-    <a
-      href={focus.to}
-      className="animate-rise mt-4 flex items-center gap-3.5 rounded-2xl border border-highlight-border bg-highlight-soft p-4 shadow-xs transition-colors duration-fast hover:bg-highlight-strong focus-visible:shadow-focus sm:px-5"
-      style={{ animationDelay: "40ms" }}
-    >
-      <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-accent text-accent-on">
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 2.5l1.9 5.4a2 2 0 001.2 1.2l5.4 1.9-5.4 1.9a2 2 0 00-1.2 1.2L12 19.5l-1.9-5.4a2 2 0 00-1.2-1.2L3.5 11l5.4-1.9a2 2 0 001.2-1.2L12 2.5z" />
-          <path d="M19.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z" />
-        </svg>
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-caption font-semibold uppercase tracking-wide text-highlight-fg">
-          Foco de agora
-        </span>
-        <span className="block truncate text-body font-semibold text-text">{focus.title}</span>
-        <span className="block text-body-sm text-text-muted">{focus.detail}</span>
-      </span>
-      <svg
-        className="h-4 w-4 flex-none text-text-subtle"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </a>
-  );
-}
-
-/** Regra do foco: atrasada > alerta de atenção > próxima tarefa do dia. */
-function buildFocus(
-  summary: DashboardSummary,
-): { title: string; detail: string; to: string } | null {
-  const overdueTask = summary.today.overdue[0];
-  if (overdueTask) {
-    return {
-      title: overdueTask.title,
-      detail: `${overdueTask.leadName} · tarefa atrasada, resolva primeiro`,
-      to: "#hoje",
-    };
-  }
-  const alertDef = ALERT_DEFS.find(
-    (def) => def.tone === "attention" && summary.alerts[def.key] > 0,
-  );
-  if (alertDef) {
-    const count = summary.alerts[alertDef.key];
-    return {
-      title: `${count} ${alertDef.label.toLowerCase()}`,
-      detail: "Leads esfriam rápido: um contato hoje mantém a conversa viva",
-      to: alertDef.to,
-    };
-  }
-  const nextTask = summary.today.dueToday[0];
-  if (nextTask) {
-    return {
-      title: nextTask.title,
-      detail: `${nextTask.leadName} · próxima tarefa de hoje, às ${formatTime(nextTask.dueAt)}`,
-      to: "#hoje",
-    };
-  }
-  return null;
 }
 
 const ALERT_ICONS: Record<keyof DashboardAlerts, ReactNode> = {

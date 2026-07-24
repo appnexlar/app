@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { MobileDrawer } from "./MobileDrawer";
 import { AppHeader } from "./AppHeader";
 import { NewLeadModal } from "../leads/NewLeadModal";
+import { ContextualHelpPanel } from "../guidance/ContextualHelpPanel";
 import type { ShellContextValue } from "./ShellContext";
 
 const COLLAPSE_KEY = "nexlar.sidebar.collapsed";
@@ -57,6 +58,7 @@ export function AppLayout() {
 
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <NewLeadModal open={newLeadOpen} onClose={() => setNewLeadOpen(false)} />
+      <ContextualHelpPanel />
     </div>
   );
 }

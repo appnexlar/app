@@ -14,6 +14,7 @@ import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { Select } from "../../components/ui/Select";
 import { SearchField } from "../../components/ui/SearchField";
+import { SmartEmptyState } from "../../components/ui/SmartEmptyState";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { ApiError } from "../../lib/http";
 import { useDebounced } from "../../lib/useDebounced";
@@ -136,19 +137,12 @@ export function PropertiesPage() {
 
   if (total === 0 && !hasFilters) {
     return (
-      <section className="animate-rise mx-auto mt-4 flex max-w-xl flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent">
-          <HouseIcon className="h-8 w-8" />
-        </div>
-        <h2 className="mt-5 text-h2 text-text">Nenhum imóvel cadastrado</h2>
-        <p className="mt-2 max-w-sm text-body text-text-muted">
-          Cadastre imóveis para organizar sua carteira e futuramente enviar seleções
-          personalizadas para seus leads.
-        </p>
-        <Button type="button" variant="accent" className="mt-6" onClick={() => navigate("/imoveis/novo")}>
-          Cadastrar primeiro imóvel
-        </Button>
-      </section>
+      <SmartEmptyState
+        icon={<HouseIcon className="h-8 w-8" />}
+        title="Sua carteira de imóveis"
+        description="Com imóveis cadastrados, você seleciona os certos para cada lead e envia num link exclusivo. Comece pelo essencial: fotos e detalhes entram depois."
+        action={{ label: "Cadastrar primeiro imóvel", onClick: () => navigate("/imoveis/novo") }}
+      />
     );
   }
 
