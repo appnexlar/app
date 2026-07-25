@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -13,7 +12,7 @@ import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { useAuth } from "../auth/AuthContext";
 import { useShell } from "../shell/ShellContext";
-import { fetchDashboard, type PreviewMode } from "./api";
+import { fetchDashboard } from "./api";
 import { ALERT_DEFS, FUNNEL_LABELS } from "./constants";
 import { formatTime } from "./format";
 import { GuidanceHome } from "../guidance/GuidanceHome";
@@ -28,13 +27,9 @@ export function DashboardPage() {
   const { broker } = useAuth();
   const firstName = broker?.fullName.trim().split(/\s+/)[0] ?? "";
 
-  // Prévia temporária: alterna entre corretor novo e dados de exemplo enquanto
-  // o endpoint real não existe. Removível junto com o mock.
-  const [preview, setPreview] = useState<PreviewMode>("vazio");
-
   const query = useQuery({
-    queryKey: ["dashboard", preview],
-    queryFn: () => fetchDashboard(preview),
+    queryKey: ["dashboard"],
+    queryFn: fetchDashboard,
   });
 
   const summary = query.data;
@@ -116,9 +111,6 @@ export function DashboardPage() {
 
       {summary && (isEmpty ? <EmptyDashboard /> : <DashboardContent summary={summary} />)}
 
-      <div className="mt-10">
-        <PreviewSwitch mode={preview} onChange={setPreview} />
-      </div>
     </div>
   );
 }
@@ -649,46 +641,6 @@ function DashboardSkeleton() {
         <div className="h-6 w-24 rounded bg-surface-sunken" />
         <div className="h-28 rounded-2xl bg-surface-sunken" />
         <div className="h-56 rounded-2xl bg-surface-sunken" />
-      </div>
-    </div>
-  );
-}
-
-// --- Prévia temporária (removível com o mock) -------------------------------
-
-function PreviewSwitch({
-  mode,
-  onChange,
-}: {
-  mode: PreviewMode;
-  onChange: (mode: PreviewMode) => void;
-}) {
-  const options: { value: PreviewMode; label: string }[] = [
-    { value: "vazio", label: "Corretor novo" },
-    { value: "cheio", label: "Com dados de exemplo" },
-  ];
-  return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border-strong bg-surface-sunken px-3 py-2">
-      <span className="text-caption font-semibold uppercase tracking-wide text-text-subtle">
-        Prévia temporária
-      </span>
-      <div className="inline-flex rounded-full bg-surface p-1 shadow-xs">
-        {options.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            aria-pressed={mode === opt.value}
-            className={
-              "rounded-full px-3.5 py-1 text-caption font-semibold transition-colors duration-fast " +
-              (mode === opt.value
-                ? "bg-primary text-primary-on shadow-xs"
-                : "text-text-muted hover:text-text")
-            }
-          >
-            {opt.label}
-          </button>
-        ))}
       </div>
     </div>
   );

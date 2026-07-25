@@ -16,6 +16,7 @@ import { SharingModule } from "./sharing/sharing.module";
 import { PublicPageModule } from "./public-page/public-page.module";
 import { GuidanceModule } from "./guidance/guidance.module";
 import { NotificationModule } from "./notification/notification.module";
+import { DashboardModule } from "./dashboard/dashboard.module";
 import { HealthController } from "./health/health.controller";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import { RateLimitGuard } from "./common/rate-limit/rate-limit.guard";
@@ -43,6 +44,7 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
     PropertiesModule,
     SharingModule,
     PublicPageModule,
+    DashboardModule,
   ],
   controllers: [HealthController],
   providers: [
