@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AccountMenu } from "./AccountMenu";
+import { NotificationBell } from "../notifications/NotificationBell";
 import { breadcrumbsFor, pageTitleFor } from "./navigation";
 
 interface AppHeaderProps {
@@ -113,6 +114,7 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
               <span className="hidden sm:inline">Novo lead</span>
             </button>
           )}
+          <NotificationBell />
           <AccountMenu />
         </div>
       </div>
