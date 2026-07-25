@@ -7,7 +7,7 @@ import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { TextField } from "../../components/ui/TextField";
 import { useAuth } from "../auth/AuthContext";
-import { initials } from "../../lib/name";
+import { AvatarPhoto } from "../../components/ui/AvatarPhoto";
 import { CreciCard, CRECI_STATUS_LABELS } from "./CreciCard";
 import { fetchMe, updateMe } from "./api";
 
@@ -42,13 +42,9 @@ export function ProfilePage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       {/* Cartão de identidade. */}
       <section className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
-        <span className="flex h-16 w-16 flex-none items-center justify-center rounded-full bg-primary text-h3 font-bold text-primary-on">
-          {broker.avatarUrl ? (
-            <img src={broker.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
-          ) : (
-            initials(broker.fullName)
-          )}
-        </span>
+        {/* AvatarPhoto sabe carregar a foto enviada (rota autenticada) e a
+            externa; sem foto, caem as iniciais. */}
+        <AvatarPhoto src={broker.avatarUrl} name={broker.fullName} className="h-16 w-16" />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-h2 text-text">{broker.fullName}</h2>

@@ -6,7 +6,15 @@ import { z } from "zod";
  * documentos: esses dados só entram na conversão para cliente.
  */
 
-export const LEAD_SOURCES = ["instagram", "tiktok", "whatsapp", "indicacao", "site", "outro"] as const;
+export const LEAD_SOURCES = [
+  "instagram",
+  "tiktok",
+  "whatsapp",
+  "indicacao",
+  "site",
+  "pagina_publica",
+  "outro",
+] as const;
 export const LEAD_INTENTS = ["comprar", "financiar", "investir", "vender", "pesquisar"] as const;
 export const LEAD_AUDIENCES = ["brasil", "exterior"] as const;
 

@@ -19,6 +19,11 @@ import { FunnelPage } from "./features/funnel/FunnelPage";
 import { ClientsPage } from "./features/clients/ClientsPage";
 import { ClientDetailPage } from "./features/clients/ClientDetailPage";
 import { AgendaPage } from "./features/agenda/AgendaPage";
+import { MyPagePage } from "./features/public-page/MyPagePage";
+import { PublicPropertiesPage } from "./features/public-page/PublicPropertiesPage";
+import { PreviewPage } from "./features/public-page/PreviewPage";
+import { PublicBrokerPage } from "./features/public-page/PublicBrokerPage";
+import { PublicPropertyPage } from "./features/public-page/PublicPropertyPage";
 import {
   DocumentsPage,
   SimulationsPage,
@@ -43,6 +48,10 @@ export function App() {
 
         {/* Imóvel compartilhado: página pública, sem login. */}
         <Route path="/imovel-compartilhado/:token" element={<PublicSharePage />} />
+
+        {/* A vitrine do corretor: pública, sem login. */}
+        <Route path="/corretor/:slug" element={<PublicBrokerPage />} />
+        <Route path="/corretor/:slug/imovel/:code" element={<PublicPropertyPage />} />
 
         {/* Telas de autenticação: só para quem não está logado. */}
         <Route element={<GuestRoute />}>
@@ -76,6 +85,9 @@ export function App() {
             <Route path="/imoveis/:id/editar" element={<PropertyWizard />} />
             <Route path="/documentos" element={<DocumentsPage />} />
             <Route path="/simulacoes" element={<SimulationsPage />} />
+            <Route path="/minha-pagina" element={<MyPagePage />} />
+            <Route path="/minha-pagina/imoveis" element={<PublicPropertiesPage />} />
+            <Route path="/minha-pagina/previa" element={<PreviewPage />} />
             <Route path="/perfil" element={<ProfilePage />} />
           </Route>
         </Route>

@@ -232,7 +232,9 @@ export class PropertiesController {
         originRaw && (MEDIA_ORIGINS as readonly string[]).includes(originRaw)
           ? (originRaw as MediaOrigin)
           : undefined,
-      authorized: fieldValue("authorized") === "true",
+      // Só recusa quando o cliente diz explicitamente que não. O padrão é a
+      // mídia entrar disponível para o anúncio.
+      authorized: fieldValue("authorized") !== "false",
       caption: fieldValue("caption"),
       room:
         roomRaw && (PHOTO_ROOMS as readonly string[]).includes(roomRaw)

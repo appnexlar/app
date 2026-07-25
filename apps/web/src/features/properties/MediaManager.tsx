@@ -10,7 +10,6 @@ import {
 import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { Select } from "../../components/ui/Select";
-import { Checkbox } from "../../components/ui/Checkbox";
 import { TextField } from "../../components/ui/TextField";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import {
@@ -25,8 +24,9 @@ import { MEDIA_ORIGIN_LABELS, PHOTO_ROOM_LABELS } from "./labels";
 
 /**
  * Fotos, vídeos e links do imóvel. A mídia pertence ao cadastro do corretor
- * mesmo com origem externa: por isso cada envio registra a origem e a
- * confirmação de autorização de uso.
+ * mesmo com origem externa, e a origem fica registrada. A autorização de
+ * divulgação é do anúncio inteiro, declarada quando o corretor põe o imóvel na
+ * página pública: aqui não se autoriza foto a foto.
  */
 
 interface UploadingItem {
@@ -48,7 +48,6 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
 
   const [origin, setOrigin] = useState<MediaOrigin>("corretor");
   const [room, setRoom] = useState<PhotoRoom | "">("");
-  const [authorized, setAuthorized] = useState(false);
   const [uploads, setUploads] = useState<UploadingItem[]>([]);
   const [toRemove, setToRemove] = useState<PropertyMediaSummary | null>(null);
   const [externalUrl, setExternalUrl] = useState("");
@@ -62,7 +61,6 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
 
   async function handleFiles(files: FileList | null, kind: "foto" | "video") {
     if (!files || files.length === 0) return;
-    if (!authorized && origin !== "corretor") return;
     for (const file of Array.from(files)) {
       const key = `${file.name}-${file.size}-${file.lastModified}`;
       setUploads((u) => [...u, { key, name: file.name, percent: 0, error: null }]);
@@ -70,7 +68,7 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
         await uploadMedia(
           propertyId,
           file,
-          { kind, origin, authorized: origin === "corretor" ? true : authorized, room: room || undefined },
+          { kind, origin, authorized: true, room: room || undefined },
           (percent) => {
             setUploads((u) => u.map((item) => (item.key === key ? { ...item, percent } : item)));
           },
@@ -123,7 +121,6 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
   const photos = media.filter((m) => m.kind === "foto");
   const videos = media.filter((m) => m.kind === "video");
   const links = media.filter((m) => m.kind === "link_externo");
-  const needsAuthorization = origin !== "corretor" && !authorized;
 
   return (
     <div className="flex flex-col gap-5">
@@ -147,36 +144,18 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
             onChange={(e) => setRoom(e.target.value as PhotoRoom | "")}
           />
         </div>
-        {origin !== "corretor" && (
-          <Checkbox
-            label="Confirmo que tenho autorização para utilizar e compartilhar esta mídia."
-            checked={authorized}
-            onChange={(e) => setAuthorized(e.target.checked)}
-          />
-        )}
         <div className="flex flex-wrap gap-2.5">
-          <Button
-            type="button"
-            variant="accent"
-            disabled={needsAuthorization}
-            onClick={() => photoInputRef.current?.click()}
-          >
+          <Button type="button" variant="accent" onClick={() => photoInputRef.current?.click()}>
             Adicionar fotos
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={needsAuthorization}
-            onClick={() => videoInputRef.current?.click()}
-          >
+          <Button type="button" variant="ghost" onClick={() => videoInputRef.current?.click()}>
             Adicionar vídeo
           </Button>
         </div>
-        {needsAuthorization && (
-          <p className="text-caption text-text-subtle">
-            Confirme a autorização de uso para enviar mídia de origem externa.
-          </p>
-        )}
+        <p className="text-caption text-text-subtle">
+          Tudo que você enviar aqui entra no anúncio. Se o imóvel estiver na sua página pública,
+          essas fotos aparecem para quem visitar.
+        </p>
         <input
           ref={photoInputRef}
           type="file"
