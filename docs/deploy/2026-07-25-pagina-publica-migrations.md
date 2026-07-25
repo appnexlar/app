@@ -1,102 +1,108 @@
 # Migrations da Página Pública do Corretor
 
 Roteiro para aplicar em produção (Supabase) as cinco migrations que vieram
-com a branch `pagina-publica-corretor`. Quem roda é você, no seu terminal:
-o agente não toca no banco de produção.
+com a branch `pagina-publica-corretor`. Quem roda é você: o agente não
+escreve no banco de produção.
 
 Faça isto **antes** de fazer o merge para a `main`, ou junto com ele. A API
 nova espera as tabelas novas; se o código subir antes do banco, as rotas da
 página pública quebram.
 
+## Estado de produção conferido em 25 jul 2026
+
+Consultado com `migrate status` e leitura das tabelas:
+
+- Pendentes: **exatamente as cinco migrations desta branch**, nada além.
+- Conteúdo: **1 corretor, 0 imóveis, 0 leads.**
+
+Ou seja, não existe dado de cliente para ser afetado. Confira de novo antes
+de rodar, com o passo 1: se aparecer imóvel, releia a seção de risco.
+
 ## O que vai mudar
 
-| Migration | O que faz | Risco |
-|---|---|---|
-| `20260724155355_pagina_publica_fundacao` | Cria a tabela `broker_public_page` e o enum de status, com RLS | Nenhum. Tabela nova. |
-| `20260724165510_avatar_upload_corretor` | Adiciona `avatar_key` em `broker` | Nenhum. Coluna nova e opcional. |
-| `20260724214939_imovel_visibilidade_publica` | Adiciona `public_visibility`, `public_since` e `highlight_order` em `property` | Nenhum. Nasce tudo `privado` aqui. |
-| `20260724220000_interesse_e_notificacoes` | Cria `notification` com RLS e adiciona `pagina_publica` ao enum `lead_source` | Nenhum. Tabela e valor de enum novos. |
-| `20260725004500_imovel_nasce_publico` | Troca o DEFAULT de `property.public_visibility` para `publico` | **Atenção**, leia abaixo. |
+| Migration | O que faz |
+|---|---|
+| `20260724155355_pagina_publica_fundacao` | Cria `broker_public_page` e o enum de status, com RLS |
+| `20260724165510_avatar_upload_corretor` | Adiciona `avatar_key` em `broker` |
+| `20260724214939_imovel_visibilidade_publica` | Adiciona `public_visibility`, `public_since` e `highlight_order` em `property` |
+| `20260724220000_interesse_e_notificacoes` | Cria `notification` com RLS e adiciona `pagina_publica` ao enum `lead_source` |
+| `20260725004500_imovel_nasce_publico` | Troca o DEFAULT de `property.public_visibility` para `publico` |
 
-### Sobre a última
+### Risco da mudança de visibilidade
 
-Ela muda **só o padrão dos próximos cadastros**. Nenhum imóvel já existente
-é alterado: quem está privado continua privado. Confirme depois de rodar,
-com a consulta de verificação no fim deste documento.
+As duas últimas parecem perigosas juntas, e não são. A ordem resolve:
 
-Além disso, imóvel público só aparece de verdade se passar na elegibilidade
-(disponível, com foto, cidade e tipo) **e** o corretor tiver publicado a
-página. Ninguém vai para a internet só por causa deste DEFAULT.
+1. A coluna nasce com `DEFAULT 'privado'`, então **todo imóvel que já existir
+   fica privado**.
+2. Só depois o DEFAULT vira `publico`, valendo para os **próximos** cadastros.
+
+Nenhum imóvel existente vai para a internet. Hoje isso é teórico, porque não
+há imóvel nenhum em produção. Para pôr a carteira antiga no ar, o corretor
+usa o botão "Colocar todos no ar" em Minha Página, Imóveis.
+
+E mesmo um imóvel público só aparece se passar na elegibilidade (disponível,
+com foto, cidade e tipo) **e** a página do corretor estiver publicada.
 
 ## Passo 1: ver o que está pendente, sem aplicar nada
 
-Na pasta `apps/api`, com as variáveis de produção carregadas:
+As credenciais já estão em `apps/api/.env.production`, que o git ignora. Não
+precisa colar URL nenhuma. Copie o bloco inteiro:
 
 ```bash
-DATABASE_URL="$PROD_DATABASE_URL" DIRECT_URL="$PROD_DIRECT_URL" pnpm exec prisma migrate status
+cd /Users/rafaelle/Documents/Projects2026/NEXLAR/apps/api && ( set -a; . ./.env.production; set +a; pnpm exec prisma migrate status )
 ```
 
-A saída lista as migrations pendentes. Confira se são as cinco da tabela
-acima. Se aparecer alguma a mais, pare e me chame: significa que produção
-está atrás em outra frente também.
+Dois detalhes que fazem o comando falhar se você mudar:
 
-## Passo 2: fazer backup
+- **Tem que ser dentro de `apps/api`.** Na raiz do monorepo o pnpm responde
+  `Command "prisma" not found`, porque o Prisma está instalado só na API.
+- **Os parênteses importam.** Eles rodam o `source` numa subshell, então as
+  credenciais de produção somem quando o comando acaba, em vez de ficarem
+  penduradas no seu terminal.
 
-No painel do Supabase, projeto do Nexlar: **Database → Backups**. Garanta
-que existe um backup recente antes de seguir. É rápido e evita conversa
-ruim depois.
+Esperado: as cinco migrations da tabela acima, e nada além.
+
+## Passo 2: backup
+
+No painel do Supabase, projeto do Nexlar: **Database → Backups**. Garanta que
+existe um backup recente. É rápido e evita conversa ruim depois.
 
 ## Passo 3: aplicar
 
 ```bash
-DATABASE_URL="$PROD_DATABASE_URL" DIRECT_URL="$PROD_DIRECT_URL" pnpm exec prisma migrate deploy
+cd /Users/rafaelle/Documents/Projects2026/NEXLAR/apps/api && ( set -a; . ./.env.production; set +a; pnpm exec prisma migrate deploy )
 ```
 
-Use as **duas** variáveis. O `DIRECT_URL` precisa ser a conexão direta, não
-o pooler: o pooler não aceita os comandos de DDL da migration, e o Prisma
-falha no meio dizendo que não há nada pendente.
-
 `migrate deploy` é idempotente: aplica só o que falta e registra em
-`_prisma_migrations`. Não rode o SQL na mão pelo editor do Supabase, senão
-o Prisma não fica sabendo e vai tentar aplicar tudo de novo depois.
+`_prisma_migrations`. **Não rode o SQL na mão** pelo editor do Supabase: o
+Prisma não fica sabendo e vai tentar aplicar tudo de novo depois.
 
 ## Passo 4: conferir
 
-```sql
--- 1. As cinco migrations entraram e nenhuma falhou.
-SELECT migration_name, finished_at, rolled_back_at
-FROM _prisma_migrations
-WHERE migration_name LIKE '2026072%'
-ORDER BY migration_name DESC
-LIMIT 6;
-
--- 2. O DEFAULT novo está de pé.
-SELECT column_default
-FROM information_schema.columns
-WHERE table_name = 'property' AND column_name = 'public_visibility';
--- esperado: 'publico'::property_public_visibility
-
--- 3. NENHUM imóvel existente virou público sozinho.
---    Rode ANTES e DEPOIS da migration: os números têm que bater.
-SELECT public_visibility, count(*)
-FROM property
-GROUP BY public_visibility;
-
--- 4. As tabelas novas nasceram com RLS ligada.
-SELECT relname, relrowsecurity
-FROM pg_class
-WHERE relname IN ('broker_public_page', 'notification');
--- esperado: relrowsecurity = true nas duas
+```bash
+cd /Users/rafaelle/Documents/Projects2026/NEXLAR/apps/api && ( set -a; . ./.env.production; set +a; psql "$DIRECT_URL" \
+  -c "SELECT migration_name, finished_at IS NOT NULL AS ok, rolled_back_at FROM _prisma_migrations WHERE migration_name LIKE '202607242%' OR migration_name LIKE '202607250%' ORDER BY migration_name;" \
+  -c "SELECT column_default FROM information_schema.columns WHERE table_name='property' AND column_name='public_visibility';" \
+  -c "SELECT public_visibility, count(*) FROM property GROUP BY 1;" \
+  -c "SELECT relname, relrowsecurity FROM pg_class WHERE relname IN ('broker_public_page','notification');" )
 ```
+
+O que esperar:
+
+1. As cinco migrations com `ok = t` e `rolled_back_at` vazio.
+2. `column_default` = `'publico'::property_public_visibility`.
+3. A contagem por visibilidade: hoje vazia, e no futuro os imóveis antigos
+   têm que continuar `privado`.
+4. `relrowsecurity = t` nas duas tabelas novas.
 
 ## Se der errado
 
 Se o `migrate deploy` parar no meio, o Prisma marca a migration como falha e
-recusa as seguintes até você resolver. Não force: me mande a mensagem de
-erro e o resultado da consulta 1. O caminho normal é
+recusa as seguintes até você resolver. Não force nem rode de novo por cima:
+me mande a mensagem de erro e a saída da consulta 1. O caminho normal é
 
 ```bash
-DATABASE_URL="$PROD_DATABASE_URL" DIRECT_URL="$PROD_DIRECT_URL" pnpm exec prisma migrate resolve --rolled-back NOME_DA_MIGRATION
+cd /Users/rafaelle/Documents/Projects2026/NEXLAR/apps/api && ( set -a; . ./.env.production; set +a; pnpm exec prisma migrate resolve --rolled-back NOME_DA_MIGRATION )
 ```
 
-e rodar de novo depois de corrigir a causa.
+e rodar de novo depois de corrigida a causa.
