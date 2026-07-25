@@ -11,6 +11,10 @@ import { StorageService } from "../storage/storage.service";
 const TIPOS_ACEITOS = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 const TAMANHO_MAXIMO = 10 * 1024 * 1024; // 10 MB
 
+/** Foto de perfil: só imagem, e 5 MB é muito mais do que uma boa foto pede. */
+const TIPOS_AVATAR = ["image/jpeg", "image/png", "image/webp"];
+const TAMANHO_MAXIMO_AVATAR = 5 * 1024 * 1024;
+
 export interface CreciUpload {
   filename: string;
   mimeType: string;
@@ -48,6 +52,58 @@ export class BrokersService {
 
     const broker = await this.prisma.broker.update({ where: { id: brokerId }, data });
     return toProfile(broker);
+  }
+
+  /**
+   * Foto de perfil, no mesmo molde do documento do CRECI: bucket privado,
+   * nome aleatório (o nome original do arquivo pode carregar o nome da
+   * pessoa), arquivo antigo removido para não acumular.
+   */
+  async uploadAvatar(brokerId: string, upload: CreciUpload): Promise<BrokerProfile> {
+    if (!TIPOS_AVATAR.includes(upload.mimeType)) {
+      throw new BadRequestException("Envie uma foto JPG, PNG ou WEBP.");
+    }
+    if (upload.buffer.length > TAMANHO_MAXIMO_AVATAR) {
+      throw new BadRequestException("A foto passa de 5 MB. Envie uma versão menor.");
+    }
+
+    const atual = await this.prisma.broker.findUnique({ where: { id: brokerId } });
+    if (!atual) throw new NotFoundException("Conta não encontrada.");
+
+    const extensao = extname(upload.filename).slice(0, 10) || "";
+    const chave = `brokers/${brokerId}/profile/${randomBytes(12).toString("hex")}${extensao}`;
+    await this.storage.put(chave, upload.buffer, upload.mimeType);
+
+    if (atual.avatarKey) {
+      await this.storage.remove(atual.avatarKey).catch(() => undefined);
+    }
+
+    const broker = await this.prisma.broker.update({
+      where: { id: brokerId },
+      data: { avatarKey: chave },
+    });
+    return toProfile(broker);
+  }
+
+  async removeAvatar(brokerId: string): Promise<BrokerProfile> {
+    const atual = await this.prisma.broker.findUnique({ where: { id: brokerId } });
+    if (!atual) throw new NotFoundException("Conta não encontrada.");
+    if (atual.avatarKey) {
+      await this.storage.remove(atual.avatarKey).catch(() => undefined);
+    }
+    const broker = await this.prisma.broker.update({
+      where: { id: brokerId },
+      data: { avatarKey: null, avatarUrl: null },
+    });
+    return toProfile(broker);
+  }
+
+  /** Serve a foto enviada, só para o dono. A rota pública vem com a vitrine. */
+  async getAvatar(brokerId: string): Promise<{ stream: Readable; mimeType: string }> {
+    const broker = await this.prisma.broker.findUnique({ where: { id: brokerId } });
+    if (!broker?.avatarKey) throw new NotFoundException("Nenhuma foto enviada.");
+    const stream = await this.storage.getStream(broker.avatarKey);
+    return { stream, mimeType: mimeDaChave(broker.avatarKey) };
   }
 
   /**
@@ -122,17 +178,17 @@ export class BrokersService {
       throw new NotFoundException("Nenhum documento enviado.");
     }
     const stream = await this.storage.getStream(broker.creciDocumentKey);
-    const ext = extname(broker.creciDocumentKey).toLowerCase();
-    const mimeType =
-      ext === ".pdf"
-        ? "application/pdf"
-        : ext === ".png"
-          ? "image/png"
-          : ext === ".webp"
-            ? "image/webp"
-            : "image/jpeg";
-    return { stream, mimeType };
+    return { stream, mimeType: mimeDaChave(broker.creciDocumentKey) };
   }
+}
+
+/** Deduz o Content-Type pela extensão gravada na chave do storage. */
+function mimeDaChave(chave: string): string {
+  const ext = extname(chave).toLowerCase();
+  if (ext === ".pdf") return "application/pdf";
+  if (ext === ".png") return "image/png";
+  if (ext === ".webp") return "image/webp";
+  return "image/jpeg";
 }
 
 /** Mesma forma do perfil devolvido pelo auth, para o front ter um só formato. */
@@ -147,7 +203,11 @@ function toProfile(broker: Broker): BrokerProfile {
     creciStatus: broker.creciStatus,
     creciRejectionReason: broker.creciRejectionReason,
     agencyName: broker.agencyName,
-    avatarUrl: broker.avatarUrl,
+    // Foto enviada vence o link externo. A URL carrega a versão (updatedAt)
+    // para o cache do navegador não segurar a foto antiga depois de trocar.
+    avatarUrl: broker.avatarKey
+      ? `/api/brokers/me/avatar?v=${broker.updatedAt.getTime()}`
+      : broker.avatarUrl,
     emailVerified: broker.emailVerifiedAt !== null,
     createdAt: broker.createdAt.toISOString(),
     updatedAt: broker.updatedAt.toISOString(),

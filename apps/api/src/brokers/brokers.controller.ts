@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Patch,
   Post,
@@ -38,6 +39,41 @@ export class BrokersController {
     @Body(new ZodValidationPipe(updateProfileSchema)) dto: UpdateProfileDto,
   ): Promise<BrokerProfile> {
     return this.brokers.updateMe(brokerId, dto);
+  }
+
+  @Post("me/avatar")
+  @ApiConsumes("multipart/form-data")
+  @ApiOperation({ summary: "Envia a foto de perfil do corretor" })
+  async uploadAvatar(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Req() req: FastifyRequest,
+  ): Promise<BrokerProfile> {
+    const file = await req.file();
+    if (!file) throw new BadRequestException("Anexe a sua foto.");
+    return this.brokers.uploadAvatar(brokerId, {
+      filename: file.filename,
+      mimeType: file.mimetype,
+      buffer: await file.toBuffer(),
+    });
+  }
+
+  @Delete("me/avatar")
+  @ApiOperation({ summary: "Remove a foto de perfil" })
+  removeAvatar(@CurrentBroker("brokerId") brokerId: string): Promise<BrokerProfile> {
+    return this.brokers.removeAvatar(brokerId);
+  }
+
+  @Get("me/avatar")
+  @ApiOperation({ summary: "Serve a foto de perfil do próprio corretor" })
+  async getAvatar(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    const { stream, mimeType } = await this.brokers.getAvatar(brokerId);
+    void reply
+      .header("Content-Type", mimeType)
+      .header("Cache-Control", "private, max-age=3600")
+      .send(stream);
   }
 
   /**

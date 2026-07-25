@@ -106,7 +106,9 @@ export class PropertyMediaService {
         propertyId,
         kind: input.kind,
         origin: input.origin ?? "corretor",
-        authorized: input.authorized ?? false,
+        // A autorização de divulgação é do anúncio, declarada quando o corretor
+        // publica o imóvel na página. A mídia entra disponível para o anúncio.
+        authorized: input.authorized ?? true,
         status: "enviando",
         mimeType: input.mimeType,
         sizeBytes: input.buffer.length,

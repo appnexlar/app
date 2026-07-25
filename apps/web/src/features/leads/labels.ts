@@ -6,6 +6,7 @@ export const SOURCE_LABELS: Record<LeadSource, string> = {
   whatsapp: "WhatsApp",
   indicacao: "Indicação",
   site: "Site",
+  pagina_publica: "Página pública",
   outro: "Outro",
 };
 

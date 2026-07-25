@@ -136,6 +136,16 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Conta",
     items: [
       {
+        label: "Minha Página",
+        path: "/minha-pagina",
+        icon: (
+          <>
+            <circle cx="12" cy="12" r="8.5" {...s} />
+            <path d="M3.5 12h17M12 3.5c2.5 2.3 3.8 5.2 3.8 8.5S14.5 18.2 12 20.5c-2.5-2.3-3.8-5.2-3.8-8.5S9.5 5.8 12 3.5z" {...s} />
+          </>
+        ),
+      },
+      {
         label: "Perfil e configurações",
         path: "/perfil",
         icon: (
@@ -168,6 +178,8 @@ const SUBROUTE_LABELS: Record<string, string> = {
   novo: "Novo imóvel",
   editar: "Editar",
   "imoveis-enviados": "Imóveis enviados",
+  imoveis: "Imóveis da página",
+  previa: "Prévia",
 };
 
 /**
