@@ -16,6 +16,7 @@ import { Select } from "../../components/ui/Select";
 import { SearchField } from "../../components/ui/SearchField";
 import { SmartEmptyState } from "../../components/ui/SmartEmptyState";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { Pagination } from "../../components/ui/Pagination";
 import { ApiError } from "../../lib/http";
 import { useDebounced } from "../../lib/useDebounced";
 import {
@@ -41,11 +42,19 @@ import {
   mainPrice,
 } from "./labels";
 
-const PER_PAGE = 10;
+const PER_PAGE_OPTIONS = [10, 25, 50];
+
+/** Teto do servidor por seleção: avisar antes é melhor que recusar no fim. */
+const MAX_SELECIONADOS = 30;
 
 /**
  * A carteira privada do corretor, em lista compacta estilo tabela: miniatura,
- * dados essenciais e ações rápidas em cada linha. 10 por página.
+ * dados essenciais e ações rápidas em cada linha.
+ *
+ * Pensada para carteira grande: a lista é paginada no servidor, a posição fica
+ * sempre à vista ("11–20 de 85"), os filtros ativos aparecem como marcadores
+ * que se removem um a um, e a paginação numerada deixa saltar direto para
+ * qualquer página em vez de avançar de dez em dez.
  */
 export function PropertiesPage() {
   const navigate = useNavigate();
@@ -57,6 +66,7 @@ export function PropertiesPage() {
   const [origin, setOrigin] = useState("");
   const [sort, setSort] = useState("recentes");
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(PER_PAGE_OPTIONS[0]);
   const [showFilters, setShowFilters] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<PropertySummary | null>(null);
@@ -67,8 +77,16 @@ export function PropertiesPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [marked, setMarked] = useState<string[]>([]);
   const [pickerIds, setPickerIds] = useState<string[] | null>(null);
+  // A marcação atravessa as páginas: o corretor pode montar uma seleção com
+  // imóveis que estão em páginas diferentes. O teto do servidor é respeitado
+  // aqui para ele não descobrir o limite só na hora de enviar.
   const toggleMarked = (id: string) =>
-    setMarked((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
+    setMarked((prev) => {
+      if (prev.includes(id)) return prev.filter((m) => m !== id);
+      if (prev.length >= MAX_SELECIONADOS) return prev;
+      return [...prev, id];
+    });
+  const noLimite = marked.length >= MAX_SELECIONADOS;
   const exitSelectMode = () => {
     setSelectMode(false);
     setMarked([]);
@@ -93,7 +111,7 @@ export function PropertiesPage() {
     origin: origin || undefined,
     sort,
     page,
-    perPage: PER_PAGE,
+    perPage,
   };
 
   const query = useQuery({
@@ -101,6 +119,22 @@ export function PropertiesPage() {
     queryFn: () => fetchProperties(filters),
     placeholderData: keepPreviousData,
   });
+
+  // Trocar de página tem que recomeçar a leitura do topo. Sem isso o corretor
+  // clica no rodapé e continua olhando o rodapé, agora de outra página.
+  const irParaPagina = (proxima: number) => {
+    setPage(proxima);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // O conjunto pode encolher debaixo dos pés (uma exclusão na última página,
+  // por exemplo). Sem isto sobraria uma página vazia sem explicação.
+  const ultimaPagina = query.data
+    ? Math.max(1, Math.ceil(query.data.total / query.data.perPage))
+    : 1;
+  useEffect(() => {
+    if (page > ultimaPagina) setPage(ultimaPagina);
+  }, [page, ultimaPagina]);
 
   const invalidate = () => void queryClient.invalidateQueries({ queryKey: ["properties"] });
 
@@ -135,6 +169,25 @@ export function PropertiesPage() {
   const activeFilters = [purpose, category, status, origin].filter(Boolean).length;
   const resetPage = () => setPage(1);
 
+  // Filtro ativo vira marcador visível e removível: um número no botão diz
+  // quantos são, mas não diz quais, e é isso que faz o corretor duvidar do
+  // que está vendo.
+  const chips = [
+    purpose && { key: "purpose", label: PURPOSE_LABELS[purpose as never], clear: () => setPurpose("") },
+    category && { key: "category", label: CATEGORY_LABELS[category as never], clear: () => setCategory("") },
+    status && { key: "status", label: STATUS_LABELS[status as never], clear: () => setStatus("") },
+    origin && { key: "origin", label: ORIGIN_LABELS[origin as never], clear: () => setOrigin("") },
+  ].filter(Boolean) as { key: string; label: string; clear: () => void }[];
+
+  const limparTudo = () => {
+    setQ("");
+    setPurpose("");
+    setCategory("");
+    setStatus("");
+    setOrigin("");
+    resetPage();
+  };
+
   if (query.isPending) return <PropertiesSkeleton />;
 
   if (query.isError) {
@@ -150,8 +203,12 @@ export function PropertiesPage() {
     );
   }
 
-  const { items, total, perPage } = query.data;
-  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  // O servidor devolve o perPage que aplicou; a paginação segue ele, não o
+  // estado local, para não descrever uma página diferente da que chegou.
+  const { items, total, perPage: perPageAplicado } = query.data;
+  const totalPages = Math.max(1, Math.ceil(total / perPageAplicado));
+  const primeiroDaPagina = total === 0 ? 0 : (page - 1) * perPageAplicado + 1;
+  const ultimoDaPagina = Math.min(page * perPageAplicado, total);
 
   if (total === 0 && !hasFilters) {
     return (
@@ -170,13 +227,21 @@ export function PropertiesPage() {
         {/* Sem botão "Buscar": a lista responde enquanto digita, igual em Leads
             e Clientes. Imóveis mantém o painel porque filtra por cinco campos,
             o que não cabe em chips. */}
-        <div className="flex gap-2">
-          <SearchField
-            label="Buscar imóvel por título, código ou endereço"
-            placeholder="Buscar por título, código ou endereço"
-            value={q}
-            onChange={setQ}
-          />
+        {/* No celular a busca fica com a linha inteira: campo espremido não
+            deixa ler o que se digitou nem o que se procura. Filtro e ordenação
+            descem para a linha de baixo, onde sobra espaço para os dois. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="w-full sm:flex-1">
+            <SearchField
+              label="Buscar imóvel por título, código ou endereço"
+              // A lupa já diz que é busca; o texto usa o espaço para dizer o
+              // que dá para procurar, sem cortar no meio no celular.
+              placeholder="Título, código ou endereço"
+              value={q}
+              onChange={setQ}
+            />
+          </div>
+
           <Button
             type="button"
             variant="ghost"
@@ -193,10 +258,39 @@ export function PropertiesPage() {
               </span>
             )}
           </Button>
+
+          {/* Ordenação junto do filtro: são os dois controles que moldam a
+              lista. A contagem fica livre para dizer só onde você está. */}
+          <label className="sr-only" htmlFor="ordenar-imoveis">
+            Ordenar por
+          </label>
+          <select
+            id="ordenar-imoveis"
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value);
+              resetPage();
+            }}
+            className="h-11 min-w-0 flex-1 rounded-md border border-border bg-surface pl-3 pr-9 text-body-sm text-text transition-colors duration-fast hover:border-border-strong focus-visible:shadow-focus sm:h-auto sm:flex-none sm:py-1.5 sm:pl-2.5 sm:pr-7"
+            style={{
+              appearance: "none",
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 0.6rem center",
+              backgroundSize: "1rem",
+            }}
+          >
+            {PROPERTY_SORTS.map((s) => (
+              <option key={s} value={s}>
+                {SORT_LABELS[s]}
+              </option>
+            ))}
+          </select>
         </div>
 
         {showFilters && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Select
               label="Finalidade"
               value={purpose}
@@ -237,15 +331,37 @@ export function PropertiesPage() {
                 resetPage();
               }}
             />
-            <Select
-              label="Ordenar por"
-              value={sort}
-              options={PROPERTY_SORTS.map((s) => ({ value: s, label: SORT_LABELS[s] }))}
-              onChange={(e) => {
-                setSort(e.target.value);
-                resetPage();
-              }}
-            />
+          </div>
+        )}
+
+        {/* Filtros ativos, um a um, removíveis. Ordenação não entra aqui: ela
+            não reduz a lista, só reorganiza, e mora ao lado da contagem. */}
+        {chips.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {chips.map((chip) => (
+              <button
+                key={chip.key}
+                type="button"
+                aria-label={`Remover filtro ${chip.label}`}
+                onClick={() => {
+                  chip.clear();
+                  resetPage();
+                }}
+                className="flex items-center gap-1.5 rounded-full bg-accent-soft py-1 pl-3 pr-2 text-caption font-semibold text-accent transition-colors duration-fast hover:bg-accent hover:text-accent-on"
+              >
+                {chip.label}
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                </svg>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={limparTudo}
+              className="px-1 text-caption font-semibold text-text-muted underline underline-offset-2 transition-colors hover:text-text"
+            >
+              Limpar tudo
+            </button>
           </div>
         )}
       </div>
@@ -258,34 +374,29 @@ export function PropertiesPage() {
           <p className="mt-2 max-w-sm text-body-sm text-text-muted">
             Ajuste a busca ou limpe os filtros para ver toda a carteira.
           </p>
-          <Button
-            type="button"
-            variant="ghost"
-            className="mt-5"
-            onClick={() => {
-              setQ("");
-              setPurpose("");
-              setCategory("");
-              setStatus("");
-              setOrigin("");
-              resetPage();
-            }}
-          >
+          <Button type="button" variant="ghost" className="mt-5" onClick={limparTudo}>
             Limpar filtros
           </Button>
         </section>
       ) : (
         <>
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between px-1">
-              <p className="text-body-sm font-semibold text-text">
-                {total === 1 ? "1 imóvel" : `${total} imóveis`}
+            <div className="flex items-center gap-3 px-1">
+              {/* Onde estou dentro do conjunto: com carteira grande, o total
+                  sozinho não localiza ninguém. */}
+              <p className="min-w-0 flex-1 truncate text-body-sm text-text-muted">
+                <span className="font-semibold tabular-nums text-text">
+                  {primeiroDaPagina}–{ultimoDaPagina}
+                </span>{" "}
+                de <span className="tabular-nums">{total}</span>{" "}
+                {total === 1 ? "imóvel" : "imóveis"}
               </p>
+
               {/* Liga o modo de seleção: marcar imóveis e enviar para uma lead. */}
               <button
                 type="button"
                 onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
-                className="text-body-sm font-semibold text-accent transition-colors hover:text-accent-hover"
+                className="shrink-0 text-body-sm font-semibold text-accent transition-colors hover:text-accent-hover"
               >
                 {selectMode ? "Cancelar" : "Selecionar"}
               </button>
@@ -297,6 +408,7 @@ export function PropertiesPage() {
                   property={property}
                   selectMode={selectMode}
                   marked={marked.includes(property.id)}
+                  noLimite={noLimite}
                   onToggleMark={() => toggleMarked(property.id)}
                   onChangeStatus={(next) =>
                     statusMutation.mutate({ id: property.id, status: next })
@@ -308,28 +420,33 @@ export function PropertiesPage() {
             </ul>
           </div>
 
-          {totalPages > 1 && (
-            <nav className="flex items-center justify-center gap-3 pt-1" aria-label="Paginação">
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Anterior
-              </Button>
-              <span className="text-body-sm tabular-nums text-text-muted">
-                Página {page} de {totalPages}
-              </span>
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Próxima
-              </Button>
-            </nav>
+          {(totalPages > 1 || total > PER_PAGE_OPTIONS[0]) && (
+            <div className="flex flex-col items-center gap-3 pt-1">
+              <Pagination page={page} totalPages={totalPages} onChange={irParaPagina} />
+
+              {/* Quantos cabem de uma vez. No celular a lista já é rolagem
+                  natural, então a escolha aparece só onde há tela para isso. */}
+              <div className="hidden items-center gap-2 sm:flex">
+                <label className="text-caption text-text-muted" htmlFor="por-pagina">
+                  Imóveis por página
+                </label>
+                <select
+                  id="por-pagina"
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-border bg-surface px-2 py-1 text-caption tabular-nums text-text transition-colors duration-fast focus-visible:shadow-focus"
+                >
+                  {PER_PAGE_OPTIONS.map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           )}
         </>
       )}
@@ -361,6 +478,16 @@ export function PropertiesPage() {
                   <span className="sm:hidden">Toque para marcar</span>
                   <span className="hidden sm:inline">Toque nos imóveis para marcar</span>
                 </>
+              ) : noLimite ? (
+                // No limite a explicação aparece em qualquer tela: sem ela, as
+                // linhas apagadas viram um toque que "não funciona".
+                <span className="font-semibold text-text">
+                  <span className="sm:hidden">Máximo de {MAX_SELECIONADOS} atingido</span>
+                  <span className="hidden sm:inline">
+                    {MAX_SELECIONADOS} selecionados
+                    <span className="font-normal text-text-muted"> · máximo por seleção</span>
+                  </span>
+                </span>
               ) : (
                 <>
                   <span className="tabular-nums">{marked.length}</span>{" "}
@@ -396,6 +523,7 @@ function PropertyRow({
   property,
   selectMode,
   marked,
+  noLimite,
   onToggleMark,
   onChangeStatus,
   onDelete,
@@ -404,6 +532,8 @@ function PropertyRow({
   property: PropertySummary;
   selectMode: boolean;
   marked: boolean;
+  /** Teto de imóveis por seleção atingido: o que não está marcado trava. */
+  noLimite: boolean;
   onToggleMark: () => void;
   onChangeStatus: (status: PropertyStatus) => void;
   onDelete: () => void;
@@ -416,8 +546,9 @@ function PropertyRow({
     property.mainArea != null && `${property.mainArea} m²`,
   ].filter(Boolean) as string[];
   const location = [property.neighborhood, property.city].filter(Boolean).join(", ");
-  // Arquivado não entra em seleção (mesma regra da API); a linha avisa no toque.
-  const selecionavel = property.status !== "arquivado";
+  // Arquivado não entra em seleção (mesma regra da API); no limite, só dá para
+  // desmarcar o que já está marcado.
+  const selecionavel = property.status !== "arquivado" && (marked || !noLimite);
   // No modo de seleção o toque MARCA, não navega: um modo, um gesto.
   const open = () => {
     if (selectMode) {
@@ -441,7 +572,13 @@ function PropertyRow({
           aria-checked={marked}
           aria-label={`${marked ? "Desmarcar" : "Marcar"} ${property.title}`}
           disabled={!selecionavel}
-          title={selecionavel ? undefined : "Imóvel arquivado não entra em seleção"}
+          title={
+            selecionavel
+              ? undefined
+              : property.status === "arquivado"
+                ? "Imóvel arquivado não entra em seleção"
+                : `Máximo de ${MAX_SELECIONADOS} imóveis por seleção`
+          }
           onClick={onToggleMark}
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-fast ${
             marked ? "border-accent bg-accent text-accent-on" : "border-border-strong bg-surface"
@@ -472,20 +609,31 @@ function PropertyRow({
 
       {/* Dados essenciais: a linha toda leva à ficha. */}
       <button type="button" onClick={open} className="min-w-0 flex-1 text-left">
-        <p className="text-caption font-semibold uppercase tracking-wide text-text-subtle">
-          {formatCode(property.code)} · {TYPE_LABELS[property.type] ?? property.type} ·{" "}
-          {PURPOSE_LABELS[property.purpose]}
+        {/* No celular a finalidade sai da chapéu: o preço já a entrega, pelo
+            "/mês" da locação. A partir de sm ela volta. */}
+        <p className="truncate text-caption font-semibold uppercase tracking-wide text-text-subtle">
+          {formatCode(property.code)} · {TYPE_LABELS[property.type] ?? property.type}
+          <span className="hidden sm:inline"> · {PURPOSE_LABELS[property.purpose]}</span>
         </p>
         <span className="mt-0.5 flex items-center gap-2">
-          <span className="truncate text-body font-semibold text-text">{property.title}</span>
+          {/* Nome cortado no meio não identifica imóvel nenhum: no celular ele
+              usa duas linhas em vez de perder o fim. */}
+          <span className="line-clamp-2 text-body font-semibold text-text sm:line-clamp-1">
+            {property.title}
+          </span>
           <span
             className={`hidden shrink-0 rounded-full px-2 py-0.5 text-caption font-semibold sm:inline ${TONE_CLASSES[STATUS_TONES[property.status]]}`}
           >
             {STATUS_LABELS[property.status]}
           </span>
         </span>
+        {/* Metragem e quartos só onde cabem inteiros; no celular fica o lugar,
+            que é o que separa um imóvel do outro na varredura. */}
         <p className="mt-0.5 truncate text-body-sm text-text-muted">
-          {[location, specs.join(" · ")].filter(Boolean).join(" · ")}
+          <span className="sm:hidden">{location}</span>
+          <span className="hidden sm:inline">
+            {[location, specs.join(" · ")].filter(Boolean).join(" · ")}
+          </span>
         </p>
         {/* No mobile o status vem junto do preço. */}
         <span className="mt-1 flex items-center gap-2 sm:hidden">

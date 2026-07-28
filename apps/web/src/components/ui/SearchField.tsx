@@ -29,7 +29,7 @@ export function SearchField({ value, onChange, placeholder, label }: SearchField
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-xl border border-border bg-surface pl-10 pr-10 text-body text-text placeholder:text-text-subtle transition-[border-color,box-shadow] duration-fast ease-standard hover:border-border-strong focus:border-accent focus:outline-none focus-visible:shadow-focus [&::-webkit-search-cancel-button]:appearance-none"
+        className="h-11 w-full rounded-md border border-border bg-surface pl-10 pr-10 text-body text-text placeholder:text-text-subtle transition-[border-color,box-shadow] duration-fast ease-standard hover:border-border-strong focus:border-accent focus:outline-none focus-visible:shadow-focus [&::-webkit-search-cancel-button]:appearance-none"
       />
       {value && (
         <button
