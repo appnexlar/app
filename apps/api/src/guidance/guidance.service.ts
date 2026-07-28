@@ -173,6 +173,8 @@ export class GuidanceService {
       title: m.title,
       done: ctx.milestones.has(m.event) || m.derivable(ctx),
       indisponivel: m.indisponivel,
+      actionUrl: m.actionUrl,
+      actionType: m.actionType,
     }));
     return {
       items,

@@ -12,6 +12,10 @@ import { ProfilePage } from "./features/profile/ProfilePage";
 import { LeadsPage } from "./features/leads/LeadsPage";
 import { LeadDetailPage } from "./features/leads/LeadDetailPage";
 import { LeadSharesPage } from "./features/sharing/LeadSharesPage";
+import { SelectionBuilderPage } from "./features/selections/SelectionBuilderPage";
+import { SelectionPreviewPage } from "./features/selections/SelectionPreviewPage";
+import { PublicSelectionPage } from "./features/selections/PublicSelectionPage";
+import { PublicSelectionItemPage } from "./features/selections/PublicSelectionItemPage";
 import { PropertiesPage } from "./features/properties/PropertiesPage";
 import { PropertyWizard } from "./features/properties/PropertyWizard";
 import { PropertyDetailPage } from "./features/properties/PropertyDetailPage";
@@ -48,6 +52,12 @@ export function App() {
 
         {/* Imóvel compartilhado: página pública, sem login. */}
         <Route path="/imovel-compartilhado/:token" element={<PublicSharePage />} />
+        {/* Seleção para a lead: /s/ é o caminho curto que vai no WhatsApp;
+            /selecao/ continua vivo para links que já circularam. */}
+        <Route path="/s/:token" element={<PublicSelectionPage />} />
+        <Route path="/s/:token/imovel/:itemId" element={<PublicSelectionItemPage />} />
+        <Route path="/selecao/:token" element={<PublicSelectionPage />} />
+        <Route path="/selecao/:token/imovel/:itemId" element={<PublicSelectionItemPage />} />
 
         {/* A vitrine do corretor: pública, sem login. */}
         <Route path="/corretor/:slug" element={<PublicBrokerPage />} />
@@ -74,6 +84,8 @@ export function App() {
             <Route path="/leads" element={<LeadsPage />} />
             <Route path="/leads/:id" element={<LeadDetailPage />} />
             <Route path="/leads/:id/imoveis-enviados" element={<LeadSharesPage />} />
+            <Route path="/leads/:id/selecoes/:selectionId" element={<SelectionBuilderPage />} />
+            <Route path="/leads/:id/selecoes/:selectionId/previa" element={<SelectionPreviewPage />} />
             <Route path="/funil" element={<FunnelPage />} />
             <Route path="/clientes" element={<ClientsPage />} />
             <Route path="/clientes/:id" element={<ClientDetailPage />} />

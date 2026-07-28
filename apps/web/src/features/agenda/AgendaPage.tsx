@@ -21,6 +21,7 @@ import {
   updateAgendaEvent,
 } from "./api";
 import { EventFormModal } from "./EventFormModal";
+import { VisitAvailabilitySection } from "./VisitAvailabilitySection";
 import {
   STATUS_LABELS,
   TYPE_LABELS,
@@ -196,7 +197,12 @@ export function AgendaPage() {
           <span className="h-2 w-2 rounded-full bg-[var(--text-subtle)]" aria-hidden="true" />
           Google Calendar: não conectado
         </button>
-        <Button type="button" variant="accent" onClick={() => setChooserOpen(true)}>
+        <Button
+          type="button"
+          variant="accent"
+          className="w-full sm:w-auto"
+          onClick={() => setChooserOpen(true)}
+        >
           Novo compromisso
         </Button>
       </div>
@@ -345,6 +351,9 @@ export function AgendaPage() {
           </div>
         </>
       )}
+
+      {/* Horários em que a lead pode agendar visita sozinha (seleções). */}
+      <VisitAvailabilitySection />
 
       {/* "O que deseja criar?" */}
       {chooserOpen && (

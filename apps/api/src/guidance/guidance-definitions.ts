@@ -36,14 +36,6 @@ export interface GuidanceDefinition {
 }
 
 /**
- * Chave da agenda: enquanto não existe modelo de disponibilidade, "configurar
- * agenda" não pode ser detectado de verdade. A orientação existe e é
- * dispensável para sempre, para não virar um lembrete eterno.
- */
-export const CALENDAR_LIMITATION =
-  "Sem modelo de disponibilidade, a conclusão de 'configurar agenda' não é detectável ainda.";
-
-/**
  * Catálogo. A ordem aqui não importa para a prioridade (isso é `category` +
  * `priority`), mas ajuda a ler a jornada de cima para baixo, na sequência
  * natural do corretor (§30).
@@ -132,9 +124,8 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     actionUrl: "/agenda",
     dismissible: true,
     dismissPolicy: "nunca_reapresentar",
-    // Aparece quando já há movimento (leads e imóveis) e a agenda não foi
-    // configurada. `calendarConfigured` é sempre falso por ora (limitação
-    // conhecida), então quem não quer isso agora dispensa e não volta.
+    // Aparece quando já há movimento (links circulando) e a disponibilidade
+    // de visitas ainda não foi configurada.
     eligible: (ctx) => ctx.linkCount > 0 && !ctx.calendarConfigured,
     completionEvent: "CALENDAR_CONFIGURED",
   },
@@ -186,6 +177,10 @@ export interface ChecklistMilestone {
   derivable: (ctx: GuidanceContext) => boolean;
   /** True quando a conclusão não é detectável ainda (agenda). */
   indisponivel?: boolean;
+  /** Rota do front onde o corretor faz este passo. Item pendente vira link. */
+  actionUrl?: string;
+  /** Ação simbólica que o front interpreta (ex.: abrir modal de novo lead). */
+  actionType?: "abrir-novo-lead";
 }
 
 export const CHECKLIST_MILESTONES: ChecklistMilestone[] = [
@@ -194,54 +189,63 @@ export const CHECKLIST_MILESTONES: ChecklistMilestone[] = [
     title: "Completar perfil profissional",
     event: "PROFILE_COMPLETED",
     derivable: (ctx) => ctx.profileComplete,
+    actionUrl: "/perfil",
   },
   {
     key: "primeiro-lead",
     title: "Cadastrar primeiro lead",
     event: "FIRST_LEAD_CREATED",
     derivable: (ctx) => ctx.leadCount > 0,
+    actionType: "abrir-novo-lead",
+    actionUrl: "/leads",
   },
   {
     key: "preferencias",
     title: "Adicionar preferências a um lead",
     event: "LEAD_PREFERENCES_ADDED",
     derivable: (ctx) => ctx.leadCount > 0 && ctx.leadsSemPreferencias < ctx.leadCount,
+    actionUrl: "/leads",
   },
   {
     key: "primeiro-imovel",
     title: "Cadastrar primeiro imóvel",
     event: "FIRST_PROPERTY_CREATED",
     derivable: (ctx) => ctx.propertyCount > 0,
+    actionUrl: "/imoveis/novo",
   },
   {
     key: "relacionar-imovel",
     title: "Relacionar um imóvel a um lead",
     event: "FIRST_PROPERTY_MATCH_CREATED",
     derivable: (ctx) => ctx.matchCount > 0,
+    actionUrl: "/imoveis",
   },
   {
     key: "primeiro-link",
     title: "Gerar o primeiro link personalizado",
     event: "FIRST_PERSONALIZED_LINK_GENERATED",
     derivable: (ctx) => ctx.linkCount > 0,
+    actionUrl: "/leads",
   },
   {
     key: "configurar-agenda",
     title: "Configurar a agenda",
     event: "CALENDAR_CONFIGURED",
-    derivable: () => false, // não detectável ainda
-    indisponivel: true,
+    derivable: (ctx) => ctx.calendarConfigured,
+    actionUrl: "/agenda",
   },
   {
     key: "primeira-visita",
     title: "Agendar a primeira visita",
     event: "FIRST_VISIT_SCHEDULED",
     derivable: (ctx) => ctx.milestones.has("FIRST_VISIT_SCHEDULED"),
+    actionUrl: "/agenda",
   },
   {
     key: "primeira-conversao",
     title: "Converter o primeiro lead em cliente",
     event: "FIRST_LEAD_CONVERTED",
     derivable: (ctx) => ctx.milestones.has("FIRST_LEAD_CONVERTED"),
+    actionUrl: "/funil",
   },
 ];

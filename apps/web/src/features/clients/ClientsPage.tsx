@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/Button";
 import { SearchField } from "../../components/ui/SearchField";
 import { FilterChips, type FilterChip } from "../../components/ui/FilterChips";
 import { useDebounced } from "../../lib/useDebounced";
+import { clientPath } from "../../lib/routes";
 import { STATUS_LABELS, STATUS_TONE, STATUS_TONE_CLASS, displayWhatsapp } from "../leads/labels";
 import { fetchClients } from "./api";
 import { PURPOSE_LABELS, displayDate } from "./labels";
@@ -87,7 +88,7 @@ export function ClientsPage() {
             {clients.map((c) => (
               <li key={c.id}>
                 <Link
-                  to={`/clientes/${c.id}`}
+                  to={clientPath(c.code)}
                   className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-sunken/60"
                 >
                   <div className="min-w-0 flex-1">

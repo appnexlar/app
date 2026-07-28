@@ -327,6 +327,8 @@ model Broker {
   simulations   Simulation[]
   selections    PropertySelection[]
   selectionItems SelectionItem[]
+  leadPreferences LeadPreference[]
+  visitAvailability VisitAvailability?
   conversions   Conversion[]
   consents      Consent[]
   auditLogs     AuditLog[]
@@ -412,6 +414,9 @@ model PasswordResetToken {
 model Lead {
   id            String        @id @default(uuid()) @db.Uuid
   brokerId      String        @map("broker_id") @db.Uuid
+  /// Número curto e legível, no mesmo padrão do imóvel. É o que aparece na
+  /// URL (/leads/1042) e o que o corretor cita. O id continua sendo o uuid.
+  code          Int           @unique @default(autoincrement())
   fullName      String        @map("full_name")
   whatsapp      String
   email         String?
@@ -440,6 +445,7 @@ model Lead {
   visits      Visit[]
   simulations Simulation[]
   selections  PropertySelection[]
+  preference  LeadPreference?
   conversion  Conversion?
   consents    Consent[]
   clientProfile     ClientProfile?
@@ -811,6 +817,9 @@ model AgendaEvent {
   type        AgendaEventType
   leadId      String?           @map("lead_id") @db.Uuid
   propertyId  String?           @map("property_id") @db.Uuid
+  /// Evento de visita nascido de um agendamento: aponta o registro de Visit
+  /// para cancelamento e remarcação andarem juntos nos dois lugares.
+  visitId     String?           @map("visit_id") @db.Uuid
   title       String
   description String?
   location    String?
@@ -834,10 +843,12 @@ model AgendaEvent {
   broker   Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
   lead     Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
   property Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  visit    Visit?    @relation(fields: [visitId], references: [id], onDelete: SetNull)
 
   @@index([brokerId])
   @@index([leadId])
   @@index([propertyId])
+  @@index([visitId])
   @@index([brokerId, startAt])
   @@map("agenda_event")
 }
@@ -1020,6 +1031,32 @@ model PropertyMedia {
 // ---------------------------------------------------------------------------
 // visit — visitas
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// visit_availability — horários em que o corretor aceita visitas
+// ---------------------------------------------------------------------------
+// Uma linha por corretor. As janelas ficam em Json validado pelo zod:
+// [{ weekday: 0-6, start: "09:00", end: "18:00" }]. Sem linha (ou sem
+// janelas) = agenda não configurada, e a página da lead cai no fallback de
+// solicitação. Fuso fixo America/Sao_Paulo por ora: corretor solo no Brasil.
+model VisitAvailability {
+  id       String @id @default(uuid()) @db.Uuid
+  brokerId String @unique @map("broker_id") @db.Uuid
+
+  windows          Json @default("[]")
+  slotDurationMin  Int  @default(60) @map("slot_duration_min")
+  /// Antecedência mínima em horas: a lead não agenda para daqui a 20 minutos.
+  minNoticeHours   Int  @default(12) @map("min_notice_hours")
+  /// Até quantos dias no futuro a lead consegue agendar.
+  maxAdvanceDays   Int  @default(14) @map("max_advance_days")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+
+  @@map("visit_availability")
+}
+
 model Visit {
   id          String      @id @default(uuid()) @db.Uuid
   brokerId    String      @map("broker_id") @db.Uuid
@@ -1030,9 +1067,10 @@ model Visit {
   createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  broker     Broker          @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  lead       Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  properties VisitProperty[]
+  broker       Broker          @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead         Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  properties   VisitProperty[]
+  agendaEvents AgendaEvent[]
 
   @@index([brokerId])
   @@index([leadId])
@@ -1086,14 +1124,36 @@ model Simulation {
 // property_selection — envio/compartilhamento de imóveis para uma lead.
 // Um envio de um único imóvel é uma seleção com um item (ver docs/02 2.13).
 // ---------------------------------------------------------------------------
+/// Ciclo de vida da seleção (docs da épica Seleção Personalizada). O fato de
+/// a lead ter visualizado não é estado do link: fica em viewedAt/viewCount.
 enum SelectionStatus {
-  criada
-  enviada
-  visualizada
-  revogada
+  rascunho
+  ativa
   expirada
+  revogada
+  arquivada
 
   @@map("selection_status")
+}
+
+/// Como o imóvel entrou na seleção: sugerido pelos filtros das preferências
+/// da lead ou escolhido manualmente pelo corretor fora do perfil.
+enum SelectionItemOrigin {
+  preferencia
+  manual
+
+  @@map("selection_item_origin")
+}
+
+/// Compatibilidade calculada por regras determinísticas entre o imóvel e as
+/// preferências da lead no momento da inclusão. Nulo = sem preferências.
+enum SelectionCompatibility {
+  alta
+  media
+  baixa
+  fora_do_perfil
+
+  @@map("selection_compatibility")
 }
 
 enum SelectionResponse {
@@ -1111,9 +1171,17 @@ model PropertySelection {
   id          String          @id @default(uuid()) @db.Uuid
   brokerId    String          @map("broker_id") @db.Uuid
   leadId      String          @map("lead_id") @db.Uuid
+  /// Número curto para a URL do montador (/leads/1042/selecoes/7). Não tem
+  /// relação com o publicToken, que é o segredo do link da lead.
+  code        Int             @unique @default(autoincrement())
   publicToken String          @unique @map("public_token")
-  status      SelectionStatus @default(criada)
+  status      SelectionStatus @default(rascunho)
   message     String?
+  /// Prazo escolhido pelo corretor (7, 15 ou 30 dias). O backend calcula
+  /// expiresAt na ativação; editar a seleção nunca renova o prazo.
+  expiresInDays Int?          @map("expires_in_days")
+  activatedAt DateTime?       @map("activated_at") @db.Timestamptz(6)
+  archivedAt  DateTime?       @map("archived_at") @db.Timestamptz(6)
   sentAt      DateTime?       @map("sent_at") @db.Timestamptz(6)
   viewedAt    DateTime?       @map("viewed_at") @db.Timestamptz(6)
   lastAccessAt DateTime?      @map("last_access_at") @db.Timestamptz(6)
@@ -1139,8 +1207,17 @@ model SelectionItem {
   selectionId      String            @map("selection_id") @db.Uuid
   propertyId       String            @map("property_id") @db.Uuid
   position         Int               @default(0)
+  /// Destaque na página da lead (máximo de 3 por seleção, regra no serviço).
+  highlight        Boolean           @default(false)
+  /// Observação do corretor sobre este imóvel para esta lead ("tem a varanda
+  /// que você pediu"). Aparece na página pública.
+  brokerNote       String?           @map("broker_note")
+  origin           SelectionItemOrigin    @default(manual)
+  compatibility    SelectionCompatibility?
   response         SelectionResponse @default(nao_visualizado)
   respondedAt      DateTime?         @map("responded_at") @db.Timestamptz(6)
+  /// Motivo do "não combina comigo" escolhido pela lead (preço, localização...).
+  responseReason   String?           @map("response_reason")
   comment          String?
   visitRequestedAt DateTime?         @map("visit_requested_at") @db.Timestamptz(6)
   isPriority       Boolean           @default(false) @map("is_priority")
@@ -1151,10 +1228,51 @@ model SelectionItem {
   selection PropertySelection @relation(fields: [selectionId], references: [id], onDelete: Cascade)
   property  Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
+  @@unique([selectionId, propertyId])
   @@index([brokerId])
   @@index([selectionId])
   @@index([propertyId])
   @@map("selection_item")
+}
+
+// ---------------------------------------------------------------------------
+// lead_preference — o que a lead procura, em campos estruturados
+// ---------------------------------------------------------------------------
+// A ficha da lead sempre teve intenção, região livre e faixa de orçamento;
+// isto aqui é a versão pesquisável que alimenta os filtros e a compatibilidade
+// da seleção personalizada. No máximo uma por lead.
+model LeadPreference {
+  id       String @id @default(uuid()) @db.Uuid
+  brokerId String @map("broker_id") @db.Uuid
+  leadId   String @unique @map("lead_id") @db.Uuid
+
+  purpose       PropertyPurpose?
+  /// Tipos de imóvel aceitos (mesmo vocabulário livre de property.type).
+  types         String[]         @default([])
+  cities        String[]         @default([])
+  neighborhoods String[]         @default([])
+  priceMin      Decimal?         @map("price_min") @db.Decimal(14, 2)
+  priceMax      Decimal?         @map("price_max") @db.Decimal(14, 2)
+  bedroomsMin   Int?             @map("bedrooms_min")
+  bathroomsMin  Int?             @map("bathrooms_min")
+  parkingMin    Int?             @map("parking_min")
+  areaMin       Int?             @map("area_min")
+  areaMax       Int?             @map("area_max")
+  furnished     Boolean?
+  /// Comodidades desejadas (mesmo vocabulário de property.features).
+  features      String[]         @default([])
+  /// O que a lead NÃO aceita, em texto livre ("nada em rua movimentada").
+  restrictions  String?
+  notes         String?
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@map("lead_preference")
 }
 
 // ===========================================================================

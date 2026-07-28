@@ -2,11 +2,11 @@ import { SELECTION_RESPONSES, type LeadShareSummary, type SelectionResponse, typ
 
 /** Estado do link do compartilhamento (sempre mostrado por texto, não só cor). */
 export const SHARE_STATUS_LABELS: Record<SelectionStatus, string> = {
-  criada: "Criado",
-  enviada: "Enviado",
-  visualizada: "Visualizado",
-  revogada: "Revogado",
+  rascunho: "Rascunho",
+  ativa: "Ativo",
   expirada: "Expirado",
+  revogada: "Revogado",
+  arquivada: "Arquivado",
 };
 
 /** Resposta da lead sobre o imóvel. */
@@ -63,10 +63,13 @@ export function shareDisplayStatus(share: LeadShareSummary): {
   }
   if (share.status === "revogada") return { label: "Link revogado", tone: "danger" };
   if (share.status === "expirada") return { label: "Link expirado", tone: "danger" };
+  if (share.status === "arquivada") return { label: "Arquivado", tone: "neutral" };
+  if (share.status === "rascunho") return { label: "Rascunho, não enviado", tone: "neutral" };
   if (share.visitRequestedAt) return { label: "Visita solicitada", tone: "success" };
   if (share.response !== "nao_visualizado") {
     return { label: SHARE_RESPONSE_LABELS[share.response], tone: SHARE_RESPONSE_TONE[share.response] };
   }
-  if (share.status === "visualizada") return { label: "Visualizado", tone: "neutral" };
+  // Visualização não é mais estado do link: sai de viewCount.
+  if (share.viewCount > 0) return { label: "Visualizado", tone: "neutral" };
   return { label: "Enviado, não visualizado", tone: "neutral" };
 }

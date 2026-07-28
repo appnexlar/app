@@ -29,7 +29,12 @@
   text-decoration: none;
   font-weight: 600;
   font-size: var(--text-caption);
-  text-transform: capitalize;
+  /* Só a primeira letra do dia: "Terça-feira, 28 de jul.", não "28 De Jul". */
+  text-transform: lowercase;
+  display: inline-block;
+}
+.agenda-calendar .fc .fc-list-day-text::first-letter {
+  text-transform: uppercase;
 }
 
 .agenda-calendar .fc .fc-daygrid-day-number {
@@ -85,13 +90,29 @@
 }
 .agenda-calendar .fc .fc-list-day-cushion {
   background: var(--surface-sunken);
+  /* Respiro simétrico: a data do lado direito encostava na borda do cartão. */
+  padding-left: 14px;
+  padding-right: 14px;
 }
 .agenda-calendar .fc-list-event td {
   cursor: pointer;
 }
-.agenda-calendar .fc .fc-list-event-time {
-  color: var(--text-muted);
-  white-space: nowrap;
+/* O horário e o pontinho da lista saem: o conteúdo do evento (renderEvent)
+   já traz os dois no fuso de Brasília. Mantê-los aqui duplicava a hora e
+   ainda no fuso do aparelho, roubando espaço do título no celular. */
+.agenda-calendar .fc .fc-list-event-time,
+.agenda-calendar .fc .fc-list-event-graphic {
+  display: none;
+}
+
+/* Sem isto, a célula do título estica a tabela até o tamanho do texto
+   (404px num cartão de 341px) e o fim de cada linha morre cortado na borda.
+   O par width:100% + max-width:0 força a célula a caber no cartão e deixa o
+   truncate fazer o trabalho dele. Layout fixo não serve aqui: o cabeçalho do
+   dia tem colspan e dividiria as colunas em terços, esmagando o título. */
+.agenda-calendar .fc .fc-list-event-title {
+  width: 100%;
+  max-width: 0;
 }
 .agenda-calendar .fc .fc-list-empty {
   background: transparent;

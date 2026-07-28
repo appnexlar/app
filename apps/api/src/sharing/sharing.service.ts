@@ -5,26 +5,21 @@ import { ConfigService } from "@nestjs/config";
 import type {
   CreateShareDto,
   LeadShareSummary,
-  LeadStatus,
   PropertyShareSummary,
   PublicSharedProperty,
   SelectionResponse,
   SetPriorityDto,
   SetResponseDto,
 } from "@nexlar/shared";
-import { LEAD_STATUSES } from "@nexlar/shared";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { StorageService } from "../storage/storage.service";
-import { STATUS_LABELS } from "../leads/status-labels";
+import { promoteLeadStage } from "./lead-stage";
 import { ProductEventService } from "../guidance/product-event.service";
 
 type SelectionWithRelations = Prisma.PropertySelectionGetPayload<{
   include: { lead: true; items: { include: { property: true } } };
 }>;
-
-/** Etapas que nunca mudam sozinhas: sair delas é sempre decisão do corretor. */
-const FROZEN_STATUSES: LeadStatus[] = ["convertida_em_cliente", "perdida", "reativar_futuro"];
 
 @Injectable()
 export class SharingService {
@@ -35,41 +30,8 @@ export class SharingService {
     private readonly events: ProductEventService,
   ) {}
 
-  /**
-   * Promove a etapa da lead no funil quando um evento comercial acontece
-   * (imóvel enviado, link aberto, resposta registrada, pedido de visita,
-   * imóvel prioritário). Só anda para a frente: nunca rebaixa uma lead que
-   * já está adiante e nunca mexe em lead encerrada ou convertida. A mudança
-   * fica registrada na timeline como automática.
-   */
-  private async promoteLeadStage(
-    tx: Prisma.TransactionClient,
-    brokerId: string,
-    leadId: string,
-    target: LeadStatus,
-  ): Promise<void> {
-    const lead = await tx.lead.findFirst({
-      where: { id: leadId, brokerId },
-      select: { status: true },
-    });
-    if (!lead) return;
-    if (FROZEN_STATUSES.includes(lead.status)) return;
-    if (LEAD_STATUSES.indexOf(target) <= LEAD_STATUSES.indexOf(lead.status)) return;
-
-    await tx.lead.update({
-      where: { id: leadId },
-      data: { status: target, lastContactAt: new Date() },
-    });
-    await tx.leadActivity.create({
-      data: {
-        brokerId,
-        leadId,
-        type: "mudanca_status",
-        description: `Etapa atualizada automaticamente para ${STATUS_LABELS[target]}`,
-        metadata: { from: lead.status, to: target, auto: true },
-      },
-    });
-  }
+  /** Ver lead-stage.ts: regra única de avanço automático do funil. */
+  private promoteLeadStage = promoteLeadStage;
 
   /** Cria o compartilhamento (seleção com um item) do imóvel para a lead. */
   async createShare(
@@ -90,14 +52,17 @@ export class SharingService {
     if (!lead) throw new NotFoundException("Lead não encontrada.");
 
     const selection = await this.prisma.$transaction(async (tx) => {
+      // O envio rápido nasce direto ativo: criar, ativar e enviar são o
+      // mesmo gesto quando a seleção tem um imóvel só.
       const created = await tx.propertySelection.create({
         data: {
           brokerId,
           leadId: lead.id,
           publicToken: this.newToken(),
-          status: "enviada",
+          status: "ativa",
           message: dto.message,
           sentAt: new Date(),
+          activatedAt: new Date(),
           items: {
             create: { brokerId, propertyId, position: 0 },
           },
@@ -207,9 +172,6 @@ export class SharingService {
           visitRequestedAt: dto.response === "quero_visitar" ? new Date() : item.visitRequestedAt,
         },
       });
-      if (selection.status === "enviada" || selection.status === "criada") {
-        await tx.propertySelection.update({ where: { id: shareId }, data: { status: "visualizada" } });
-      }
       await tx.leadActivity.create({
         data: {
           brokerId,
@@ -285,12 +247,16 @@ export class SharingService {
     return map[response];
   }
 
-  /** Reenviar: não duplica, só atualiza a data e conta o reenvio. */
+  /**
+   * Reenviar: não duplica, só atualiza a data e conta o reenvio. É a regra
+   * explícita de reabertura do envio rápido: reenviar um link revogado o
+   * reativa (decisão consciente do corretor, registrada pelo resendCount).
+   */
   async resend(brokerId: string, shareId: string): Promise<PropertyShareSummary> {
     await this.getOwnedSelection(brokerId, shareId);
     const updated = await this.prisma.propertySelection.update({
       where: { id: shareId },
-      data: { sentAt: new Date(), resendCount: { increment: 1 }, status: "enviada", revokedAt: null },
+      data: { sentAt: new Date(), resendCount: { increment: 1 }, status: "ativa", revokedAt: null },
       include: { lead: true, items: { include: { property: true } } },
     });
     return this.toShareSummary(updated);
@@ -349,14 +315,14 @@ export class SharingService {
       };
     }
 
-    // Registra a visualização.
+    // Registra a visualização. Abrir o link não muda o estado da seleção:
+    // "visualizada" vive em viewedAt/viewCount.
     await this.prisma.propertySelection.update({
       where: { id: selection.id },
       data: {
         viewCount: { increment: 1 },
         lastAccessAt: new Date(),
         viewedAt: selection.viewedAt ?? new Date(),
-        status: selection.status === "enviada" || selection.status === "criada" ? "visualizada" : selection.status,
       },
     });
     await this.prisma.selectionItem.updateMany({
@@ -436,11 +402,16 @@ export class SharingService {
   }
 
   private unavailableReason(s: {
+    status?: string;
     revokedAt: Date | null;
     expiresAt: Date | null;
   }): "revogado" | "expirado" | null {
-    if (s.revokedAt) return "revogado";
+    if (s.revokedAt || s.status === "revogada") return "revogado";
     if (s.expiresAt && s.expiresAt.getTime() < Date.now()) return "expirado";
+    if (s.status === "expirada") return "expirado";
+    // Rascunho e arquivada não circulam: para quem tem o link, é como se o
+    // acesso tivesse sido encerrado. O motivo interno nunca vaza.
+    if (s.status === "rascunho" || s.status === "arquivada") return "revogado";
     return null;
   }
 
@@ -529,7 +500,7 @@ export class SharingService {
  * O número do CRECI só sai quando está verificado. Mostrar um CRECI que
  * ninguém conferiu daria ao número uma autoridade que ele não tem.
  */
-function brokerPublico(broker: {
+export function brokerPublico(broker: {
   fullName: string;
   phone: string | null;
   agencyName: string | null;

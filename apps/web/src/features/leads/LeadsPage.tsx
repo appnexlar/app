@@ -153,8 +153,10 @@ export function LeadsPage() {
 }
 
 /**
- * Uma linha por lead, em lista agrupada: o cartão é a lista inteira, não cada
- * item. Menos borda e menos caixa, mais fácil de varrer com o olho.
+ * Uma linha por lead, no desenho de uma lista de contatos de app: nome dono
+ * da primeira linha inteira, e uma única linha de apoio embaixo (etapa +
+ * WhatsApp; origem e região entram só onde há espaço). Nada disputa a mesma
+ * linha que o nome.
  */
 function LeadRow({ lead, onOpen }: { lead: LeadSummary; onOpen: () => void }) {
   const tone = STATUS_TONE[lead.status];
@@ -174,15 +176,17 @@ function LeadRow({ lead, onOpen }: { lead: LeadSummary; onOpen: () => void }) {
       />
 
       <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 items-baseline gap-2">
-          <p className="truncate text-body font-semibold text-text">{lead.fullName}</p>
-          <span className={`shrink-0 text-caption font-semibold ${STATUS_TEXT_CLASS[tone]}`}>
+        <p className="truncate text-body font-semibold text-text">{lead.fullName}</p>
+        <p className="mt-0.5 truncate text-caption text-text-muted">
+          <span className={`font-semibold ${STATUS_TEXT_CLASS[tone]}`}>
             {STATUS_LABELS[lead.status]}
           </span>
-        </div>
-        <p className="mt-0.5 truncate text-body-sm text-text-muted">
-          {displayWhatsapp(lead.whatsapp)}
-          {meta.length > 0 && <span className="text-text-subtle"> · {meta.join(" · ")}</span>}
+          {/* Número cortado no meio não informa nada: no celular fica só a
+              etapa, e falar com a lead é o botão verde ao lado. */}
+          <span className="hidden sm:inline"> · {displayWhatsapp(lead.whatsapp)}</span>
+          {meta.length > 0 && (
+            <span className="hidden text-text-subtle sm:inline"> · {meta.join(" · ")}</span>
+          )}
         </p>
       </div>
 

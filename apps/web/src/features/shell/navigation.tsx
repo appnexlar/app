@@ -179,8 +179,12 @@ const SUBROUTE_LABELS: Record<string, string> = {
   editar: "Editar",
   "imoveis-enviados": "Imóveis enviados",
   imoveis: "Imóveis da página",
+  selecoes: "Seleções",
   previa: "Prévia",
 };
+
+/** Segmentos que só existem para compor o caminho: não abrem tela sozinhos. */
+const SEM_TELA_PROPRIA = new Set(["selecoes"]);
 
 /**
  * Caminho de pão da página atual. Ex.: /imoveis/:id/editar →
@@ -194,18 +198,20 @@ export function breadcrumbsFor(pathname: string): Crumb[] {
   const rest = pathname.slice(section.path.length).split("/").filter(Boolean);
 
   for (const segment of rest) {
-    const isId = /^[0-9a-f-]{36}$/i.test(segment);
+    // Identificador na URL: uuid (link antigo) ou o código curto do registro.
+    const isId = /^[0-9a-f-]{36}$/i.test(segment) || /^\d+$/.test(segment);
     crumbs.push({
       label: isId ? "Detalhes" : SUBROUTE_LABELS[segment] ?? segment,
       to: undefined,
     });
   }
 
-  // Itens intermediários continuam clicáveis (ex.: Detalhes em .../editar).
+  // Itens intermediários continuam clicáveis (ex.: Detalhes em .../editar),
+  // menos os que não têm tela própria: link para lugar nenhum é pior que texto.
   let acc = section.path;
   for (let i = 1; i < crumbs.length - 1; i++) {
     acc += `/${rest[i - 1]}`;
-    crumbs[i].to = acc;
+    if (!SEM_TELA_PROPRIA.has(rest[i - 1])) crumbs[i].to = acc;
   }
   return crumbs;
 }

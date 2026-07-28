@@ -74,13 +74,18 @@ export const TYPE_STYLE: Record<AgendaEventType, TypeStyle> = {
   },
 };
 
-const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" });
-const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" });
+// Fuso fixo de Brasília, a mesma decisão do agendamento público: o produto
+// atende corretor no Brasil, e o horário exibido tem que ser o horário
+// COMBINADO, não o do aparelho que por acaso abriu a tela.
+const SP = "America/Sao_Paulo";
+const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: SP });
+const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: SP });
 const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
   month: "short",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: SP,
 });
 
 export function formatTime(iso: string): string {

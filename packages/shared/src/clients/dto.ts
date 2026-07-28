@@ -88,6 +88,8 @@ export interface ConsentSummary {
  */
 export interface ClientSummary {
   id: string;
+  /** Número curto do cliente, o mesmo do lead: é o que vai para a URL. */
+  code: number;
   fullName: string;
   whatsapp: string;
   status: string;

@@ -9,27 +9,55 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
   changeLeadStatusSchema,
   convertLeadSchema,
   createLeadSchema,
+  upsertLeadPreferenceSchema,
   type ChangeLeadStatusDto,
   type ConvertLeadDto,
   type CreateLeadDto,
   type LeadDetail,
+  type LeadPreferenceView,
   type LeadSummary,
+  type UpsertLeadPreferenceDto,
 } from "@nexlar/shared";
 import { CurrentBroker } from "../common/decorators/current-broker.decorator";
+import { LeadRefPipe } from "../common/pipes/short-code.pipe";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 import { LeadsService } from "./leads.service";
+import { LeadPreferencesService } from "./lead-preferences.service";
 
 @ApiTags("leads")
 @ApiBearerAuth()
 @Controller("leads")
 export class LeadsController {
-  constructor(private readonly leads: LeadsService) {}
+  constructor(
+    private readonly leads: LeadsService,
+    private readonly preferences: LeadPreferencesService,
+  ) {}
+
+  @Get(":id/preferences")
+  @ApiOperation({ summary: "Preferências de busca da lead (nulo se nunca preenchidas)" })
+  getPreferences(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("id", LeadRefPipe) leadId: string,
+  ): Promise<LeadPreferenceView | null> {
+    return this.preferences.get(brokerId, leadId);
+  }
+
+  @Put(":id/preferences")
+  @ApiOperation({ summary: "Salvar as preferências de busca (substitui o conjunto)" })
+  upsertPreferences(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("id", LeadRefPipe) leadId: string,
+    @Body(new ZodValidationPipe(upsertLeadPreferenceSchema)) dto: UpsertLeadPreferenceDto,
+  ): Promise<LeadPreferenceView> {
+    return this.preferences.upsert(brokerId, leadId, dto);
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -51,7 +79,7 @@ export class LeadsController {
   @ApiOperation({ summary: "Ficha completa do lead: dados + linha do tempo" })
   findOne(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
   ): Promise<LeadDetail> {
     return this.leads.findOne(brokerId, id);
   }
@@ -60,7 +88,7 @@ export class LeadsController {
   @ApiOperation({ summary: "Muda o status do lead (ex.: converter em cliente)" })
   changeStatus(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Body(new ZodValidationPipe(changeLeadStatusSchema)) dto: ChangeLeadStatusDto,
   ): Promise<LeadSummary> {
     return this.leads.changeStatus(brokerId, id, dto);
@@ -70,7 +98,7 @@ export class LeadsController {
   @ApiOperation({ summary: "Converte a lead em cliente (ação consciente, LEAD-13)" })
   convert(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Body(new ZodValidationPipe(convertLeadSchema)) dto: ConvertLeadDto,
   ): Promise<LeadSummary> {
     return this.leads.convert(brokerId, id, dto);
@@ -81,7 +109,7 @@ export class LeadsController {
   @ApiOperation({ summary: "Exclui um lead do corretor autenticado" })
   remove(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
   ): Promise<void> {
     return this.leads.remove(brokerId, id);
   }

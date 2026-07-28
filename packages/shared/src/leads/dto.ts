@@ -151,6 +151,8 @@ export type ChangeLeadStatusDto = z.infer<typeof changeLeadStatusSchema>;
 /** Resumo do lead nas respostas da API. */
 export interface LeadSummary {
   id: string;
+  /** Número curto do lead, usado na URL (/leads/1042) e citável pelo corretor. */
+  code: number;
   fullName: string;
   whatsapp: string;
   status: LeadStatus;

@@ -32,34 +32,35 @@ export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => 
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-3">
-          {NAV_GROUPS.map((group) => (
-            <div key={group.title} className="mb-4">
-              <p className="mb-1 px-3 text-caption font-semibold uppercase tracking-wide text-text-subtle">
-                {group.title}
-              </p>
-              <ul className="flex flex-col gap-0.5">
-                {group.items.map((item) => (
-                  <li key={item.path}>
-                    <NavLink
-                      to={item.path}
-                      onClick={onClose}
-                      className={({ isActive }) =>
-                        "flex min-h-[var(--tap-target-min)] items-center gap-3 rounded-lg px-3 text-body font-semibold transition-colors " +
-                        (isActive
-                          ? "bg-primary-soft text-primary"
-                          : "text-text-muted hover:bg-surface-sunken hover:text-text")
-                      }
-                    >
-                      <svg className="h-[22px] w-[22px] flex-none" viewBox="0 0 24 24" aria-hidden="true">
-                        {item.icon}
-                      </svg>
-                      {item.label}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
+        {/* Só a lista de destinos, como um app: os títulos de grupo ("Relacio-
+            namento comercial"...) eram informação de sobra no celular. Uma
+            linha fina separa os blocos e o olho entende sem ler nada. */}
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          {NAV_GROUPS.map((group, index) => (
+            <ul
+              key={group.title}
+              className={`flex flex-col gap-0.5 py-2 ${index > 0 ? "border-t border-border" : ""}`}
+            >
+              {group.items.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      "flex min-h-[var(--tap-target-min)] items-center gap-3 rounded-lg px-3 text-body font-semibold transition-colors " +
+                      (isActive
+                        ? "bg-primary-soft text-primary"
+                        : "text-text-muted hover:bg-surface-sunken hover:text-text")
+                    }
+                  >
+                    <svg className="h-[22px] w-[22px] flex-none" viewBox="0 0 24 24" aria-hidden="true">
+                      {item.icon}
+                    </svg>
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
           ))}
         </nav>
 

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Banner } from "../../components/ui/Banner";
 import { Button } from "../../components/ui/Button";
 import { initials } from "../../lib/name";
+import { clientPath, isUuid, useCanonicalPath } from "../../lib/routes";
 import { usePageEntityLabel } from "../shell/ShellContext";
 import { EventFormModal } from "../agenda/EventFormModal";
 import { ACTIVITY_LABELS, displayWhatsapp, whatsappLink } from "../leads/labels";
@@ -56,6 +57,9 @@ export function ClientDetailPage() {
     enabled: Boolean(id),
   });
   usePageEntityLabel(query.data?.fullName);
+
+  // Mesma regra da ficha de lead: a URL mostra o código curto do cliente.
+  useCanonicalPath(Boolean(query.data) && isUuid(id), clientPath(query.data?.code ?? ""));
 
   useEffect(() => {
     if (!moreOpen) return;

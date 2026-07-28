@@ -19,6 +19,7 @@ export function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [entityLabel, setEntityLabel] = useState<string | null>(null);
+  const [hasActionBar, setHasActionBar] = useState(false);
 
   const toggleCollapsed = () => {
     setCollapsed((v) => {
@@ -32,6 +33,7 @@ export function AppLayout() {
   useEffect(() => {
     setDrawerOpen(false);
     setEntityLabel(null);
+    setHasActionBar(false);
   }, [location.pathname]);
 
   return (
@@ -50,7 +52,11 @@ export function AppLayout() {
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-5">
           <Outlet
             context={
-              { openNewLead: () => setNewLeadOpen(true), setEntityLabel } satisfies ShellContextValue
+              {
+                openNewLead: () => setNewLeadOpen(true),
+                setEntityLabel,
+                setHasActionBar,
+              } satisfies ShellContextValue
             }
           />
         </main>
@@ -58,7 +64,7 @@ export function AppLayout() {
 
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <NewLeadModal open={newLeadOpen} onClose={() => setNewLeadOpen(false)} />
-      <ContextualHelpPanel />
+      <ContextualHelpPanel elevated={hasActionBar} />
     </div>
   );
 }

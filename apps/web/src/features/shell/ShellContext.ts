@@ -6,6 +6,8 @@ export interface ShellContextValue {
   openNewLead: () => void;
   /** Define o rótulo da entidade atual (nome no caminho de pão e título). */
   setEntityLabel: (label: string | null) => void;
+  /** Avisa o layout que a página tem barra de ação fixa no rodapé. */
+  setHasActionBar: (has: boolean) => void;
 }
 
 export function useShell(): ShellContextValue {
@@ -22,4 +24,16 @@ export function usePageEntityLabel(label: string | null | undefined): void {
     setEntityLabel(label ?? null);
     return () => setEntityLabel(null);
   }, [label, setEntityLabel]);
+}
+
+/**
+ * Declara que a página tem barra de ação fixa no rodapé. O layout usa isso
+ * para tirar o balão de ajuda do caminho: nada pode cobrir o botão primário.
+ */
+export function usePageActionBar(active: boolean): void {
+  const { setHasActionBar } = useShell();
+  useEffect(() => {
+    setHasActionBar(active);
+    return () => setHasActionBar(false);
+  }, [active, setHasActionBar]);
 }

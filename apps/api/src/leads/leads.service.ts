@@ -307,6 +307,7 @@ export class LeadsService {
   private toSummary(lead: Lead): LeadSummary {
     return {
       id: lead.id,
+      code: lead.code,
       fullName: lead.fullName,
       whatsapp: lead.whatsapp,
       status: lead.status,

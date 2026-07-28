@@ -1,13 +1,26 @@
 import { useState } from "react";
-import type { GuidanceChecklist } from "@nexlar/shared";
+import { useNavigate } from "react-router-dom";
+import type { ChecklistItem, GuidanceChecklist } from "@nexlar/shared";
+import { useShell } from "../shell/ShellContext";
 
 /**
  * Checklist de primeiros passos (§8). Concluído só por ação real: o corretor
  * nunca marca à mão. Pode ser minimizado, porque orientação não bloqueia nada.
+ * Item pendente é um botão: toca e cai direto onde o passo acontece.
  */
 export function ProgressChecklist({ checklist }: { checklist: GuidanceChecklist }) {
   const [aberto, setAberto] = useState(true);
+  const navigate = useNavigate();
+  const { openNewLead } = useShell();
   const pct = Math.round((checklist.completed / checklist.total) * 100);
+
+  function agir(item: ChecklistItem) {
+    if (item.actionType === "abrir-novo-lead") {
+      openNewLead();
+      return;
+    }
+    if (item.actionUrl) navigate(item.actionUrl);
+  }
 
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
@@ -45,24 +58,51 @@ export function ProgressChecklist({ checklist }: { checklist: GuidanceChecklist 
 
       {aberto && (
         <ul className="divide-y divide-border px-1 pb-2 pt-1">
-          {checklist.items.map((item) => (
-            <li key={item.key} className="flex items-center gap-3 px-4 py-3">
-              <Marcador done={item.done} indisponivel={item.indisponivel} />
-              <span
-                className={
-                  "flex-1 text-body-sm " +
-                  (item.done ? "text-text-muted line-through" : "text-text")
-                }
-              >
-                {item.title}
-              </span>
-              {item.indisponivel && !item.done && (
-                <span className="rounded-full bg-surface-sunken px-2 py-0.5 text-caption font-semibold text-text-subtle">
-                  em breve
-                </span>
-              )}
-            </li>
-          ))}
+          {checklist.items.map((item) => {
+            const clicavel =
+              !item.done && !item.indisponivel && (item.actionUrl || item.actionType);
+            return (
+              <li key={item.key}>
+                {clicavel ? (
+                  <button
+                    type="button"
+                    onClick={() => agir(item)}
+                    className="group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-fast hover:bg-surface-sunken focus-visible:bg-surface-sunken"
+                  >
+                    <Marcador done={false} indisponivel={item.indisponivel} />
+                    <span className="flex-1 text-body-sm text-text group-hover:text-accent">
+                      {item.title}
+                    </span>
+                    <svg
+                      className="h-4 w-4 flex-none text-text-subtle"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <Marcador done={item.done} indisponivel={item.indisponivel} />
+                    <span
+                      className={
+                        "flex-1 text-body-sm " +
+                        (item.done ? "text-text-muted line-through" : "text-text")
+                      }
+                    >
+                      {item.title}
+                    </span>
+                    {item.indisponivel && !item.done && (
+                      <span className="rounded-full bg-surface-sunken px-2 py-0.5 text-caption font-semibold text-text-subtle">
+                        em breve
+                      </span>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

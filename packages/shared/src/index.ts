@@ -6,6 +6,7 @@ export * from "./leads/dto";
 export * from "./properties/dto";
 export * from "./properties/detail-fields";
 export * from "./sharing/dto";
+export * from "./selections/dto";
 export * from "./dashboard/dto";
 export * from "./guidance/dto";
 export * from "./public-page/dto";

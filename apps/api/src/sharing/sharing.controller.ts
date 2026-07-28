@@ -13,6 +13,7 @@ import {
   type SetResponseDto,
 } from "@nexlar/shared";
 import { CurrentBroker } from "../common/decorators/current-broker.decorator";
+import { LeadRefPipe } from "../common/pipes/short-code.pipe";
 import { Public } from "../common/decorators/public.decorator";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 import { SharingService } from "./sharing.service";
@@ -48,7 +49,7 @@ export class SharingController {
   @ApiOperation({ summary: "Imóveis enviados para esta lead" })
   listForLead(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) leadId: string,
+    @Param("id", LeadRefPipe) leadId: string,
   ): Promise<LeadShareSummary[]> {
     return this.sharing.listForLead(brokerId, leadId);
   }

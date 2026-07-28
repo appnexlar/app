@@ -39,6 +39,7 @@ export class GuidanceContextBuilder {
       linkCount,
       leadsSemFollowUp,
       negociacoesSemProximaAcao,
+      visitAvailabilityCount,
       eventos,
     ] = await this.prisma.$transaction([
       this.prisma.broker.findUnique({
@@ -74,6 +75,7 @@ export class GuidanceContextBuilder {
           nextActionAt: null,
         },
       }),
+      this.prisma.visitAvailability.count({ where: { brokerId } }),
       this.prisma.productEvent.findMany({
         where: { brokerId, dedupeKey: { not: null } },
         select: { type: true },
@@ -93,9 +95,7 @@ export class GuidanceContextBuilder {
       propertyCount,
       matchCount,
       linkCount,
-      // Limitação conhecida: sem modelo de disponibilidade, a agenda nunca
-      // aparece como configurada. A orientação existe e é dispensável.
-      calendarConfigured: false,
+      calendarConfigured: visitAvailabilityCount > 0,
       leadsSemFollowUp,
       negociacoesSemProximaAcao,
       milestones,

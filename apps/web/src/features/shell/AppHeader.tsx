@@ -88,15 +88,19 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
           />
         </div>
 
+        {/* Regra da barra: UM elemento de destaque (a ação de criar), o resto
+            neutro e do mesmo tamanho. No celular a ação vira um botão redondo
+            de 40px, par do sino, e a conta sai da barra: identidade, perfil e
+            sair já moram no menu, e app não repete porta. */}
         <div className="flex items-center gap-2 sm:gap-3">
           {inProperties ? (
             <button
               type="button"
               onClick={() => navigate("/imoveis/novo")}
               aria-label="Novo imóvel"
-              className="inline-flex min-h-[40px] items-center gap-2 rounded-md bg-accent px-3.5 text-body-sm font-semibold text-accent-on transition-colors hover:bg-accent-hover active:scale-[0.98] sm:px-4"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-on transition-colors hover:bg-accent-hover active:scale-[0.98] sm:w-auto sm:gap-2 sm:rounded-md sm:px-4 sm:text-body-sm sm:font-semibold"
             >
-              <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
               <span className="hidden sm:inline">Novo imóvel</span>
@@ -106,16 +110,18 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
               type="button"
               onClick={onNewLead}
               aria-label="Novo lead"
-              className="inline-flex min-h-[40px] items-center gap-2 rounded-md bg-accent px-3.5 text-body-sm font-semibold text-accent-on transition-colors hover:bg-accent-hover active:scale-[0.98] sm:px-4"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-on transition-colors hover:bg-accent-hover active:scale-[0.98] sm:w-auto sm:gap-2 sm:rounded-md sm:px-4 sm:text-body-sm sm:font-semibold"
             >
-              <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
               <span className="hidden sm:inline">Novo lead</span>
             </button>
           )}
           <NotificationBell />
-          <AccountMenu />
+          <div className="hidden sm:block">
+            <AccountMenu />
+          </div>
         </div>
       </div>
       </header>
@@ -139,7 +145,10 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
             </button>
           )
         ) : (
-          <nav aria-label="Caminho de pão" className="mb-1">
+          // No celular o caminho de pão não existe: um app orienta pelo título
+          // e pela seta de voltar da barra. Do tablet em diante ele volta,
+          // porque aí há espaço e o mouse aproveita os atalhos.
+          <nav aria-label="Caminho de pão" className="mb-1 hidden sm:block">
             <ol className="flex min-w-0 items-center gap-1.5 text-body-sm">
               {crumbs.slice(0, -1).map((crumb, index) => (
                 <li key={`${crumb.label}-${index}`} className="flex min-w-0 items-center gap-1.5">

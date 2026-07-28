@@ -16,6 +16,7 @@ import {
   setShareResponse,
   whatsappDigits,
 } from "./api";
+import { leadSharesPath } from "../../lib/routes";
 import {
   RESPONSE_OPTIONS,
   SHARE_RESPONSE_LABELS,
@@ -138,7 +139,7 @@ export function LeadSharesSection({
   lead,
   onSend,
 }: {
-  lead: { id: string; whatsapp: string };
+  lead: { id: string; code: number; whatsapp: string };
   onSend: () => void;
 }) {
   const navigate = useNavigate();
@@ -312,7 +313,7 @@ export function LeadSharesSection({
             {hasMore && (
               <button
                 type="button"
-                onClick={() => navigate(`/leads/${lead.id}/imoveis-enviados`)}
+                onClick={() => navigate(leadSharesPath(lead.code))}
                 className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
               >
                 Ver todos os {shares.length} imóveis enviados

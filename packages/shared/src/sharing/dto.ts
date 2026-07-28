@@ -7,8 +7,24 @@ import type { AddressDisplayMode, PropertyPurpose, PropertyStatus } from "../pro
  * é uma seleção com um item (ver docs/02 2.13).
  */
 
-export const SELECTION_STATUSES = ["criada", "enviada", "visualizada", "revogada", "expirada"] as const;
+/**
+ * Ciclo de vida do link. "Visualizada" não é estado: vive em viewedAt e
+ * viewCount, porque a lead abrir o link não muda o que o corretor pode fazer.
+ */
+export const SELECTION_STATUSES = ["rascunho", "ativa", "expirada", "revogada", "arquivada"] as const;
 export type SelectionStatus = (typeof SELECTION_STATUSES)[number];
+
+/** Prazos de acesso permitidos para uma seleção ativa, em dias. */
+export const SELECTION_EXPIRY_OPTIONS = [7, 15, 30] as const;
+export type SelectionExpiryDays = (typeof SELECTION_EXPIRY_OPTIONS)[number];
+
+/** Como o imóvel entrou na seleção: pelos filtros das preferências ou à mão. */
+export const SELECTION_ITEM_ORIGINS = ["preferencia", "manual"] as const;
+export type SelectionItemOrigin = (typeof SELECTION_ITEM_ORIGINS)[number];
+
+/** Compatibilidade por regras entre o imóvel e as preferências da lead. */
+export const SELECTION_COMPATIBILITIES = ["alta", "media", "baixa", "fora_do_perfil"] as const;
+export type SelectionCompatibility = (typeof SELECTION_COMPATIBILITIES)[number];
 
 export const SELECTION_RESPONSES = [
   "nao_visualizado",

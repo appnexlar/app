@@ -84,6 +84,7 @@ export class ClientsService {
 
     return {
       id: lead.id,
+      code: lead.code,
       fullName: lead.fullName,
       whatsapp: lead.whatsapp,
       status: lead.status,
@@ -428,6 +429,7 @@ export class ClientsService {
   private toSummary(lead: LeadWithConversion): ClientSummary {
     return {
       id: lead.id,
+      code: lead.code,
       fullName: lead.fullName,
       whatsapp: lead.whatsapp,
       status: lead.status,

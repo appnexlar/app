@@ -200,3 +200,41 @@ export const listAgendaSchema = z.object({
   done: boolFromQuery,
 });
 export type AgendaListQuery = z.infer<typeof listAgendaSchema>;
+
+// ---------------------------------------------------------------------------
+// Disponibilidade de visitas (Seleção Personalizada, Fatia 4)
+// ---------------------------------------------------------------------------
+
+/** "HH:MM" em 24h. */
+const horaMinuto = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use o formato HH:MM");
+
+/** Uma janela semanal em que o corretor aceita visitas. weekday: 0=domingo. */
+export const availabilityWindowSchema = z
+  .object({
+    weekday: z.number().int().min(0).max(6),
+    start: horaMinuto,
+    end: horaMinuto,
+  })
+  .refine((w) => w.start < w.end, { message: "O início precisa vir antes do fim" });
+export type AvailabilityWindow = z.infer<typeof availabilityWindowSchema>;
+
+/**
+ * Configuração de visitas do corretor. Sem janelas = agenda não configurada:
+ * a página da lead cai no fallback de solicitação (nunca inventamos horário).
+ */
+export const upsertVisitAvailabilitySchema = z.object({
+  windows: z.array(availabilityWindowSchema).max(21),
+  slotDurationMin: z.union([z.literal(30), z.literal(45), z.literal(60), z.literal(90)]),
+  minNoticeHours: z.number().int().min(0).max(72),
+  maxAdvanceDays: z.number().int().min(1).max(60),
+});
+export type UpsertVisitAvailabilityDto = z.infer<typeof upsertVisitAvailabilitySchema>;
+
+export interface VisitAvailabilityView {
+  windows: AvailabilityWindow[];
+  slotDurationMin: number;
+  minNoticeHours: number;
+  maxAdvanceDays: number;
+  /** Tem ao menos uma janela: a lead verá horários reais. */
+  configured: boolean;
+}

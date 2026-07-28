@@ -26,6 +26,8 @@ import {
   type PropertyFilters,
 } from "./api";
 import { SendToLeadModal } from "../sharing/SendToLeadModal";
+import { SelectLeadForSelectionModal } from "../selections/SelectLeadForSelectionModal";
+import { usePageActionBar } from "../shell/ShellContext";
 import { AuthImage } from "./AuthImage";
 import {
   CATEGORY_LABELS,
@@ -59,6 +61,22 @@ export function PropertiesPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<PropertySummary | null>(null);
   const [toSend, setToSend] = useState<PropertySummary | null>(null);
+
+  // Modo de seleção: o corretor marca imóveis da carteira e envia como uma
+  // seleção para a lead. A ordem de marcação vira a ordem dos itens.
+  const [selectMode, setSelectMode] = useState(false);
+  const [marked, setMarked] = useState<string[]>([]);
+  const [pickerIds, setPickerIds] = useState<string[] | null>(null);
+  const toggleMarked = (id: string) =>
+    setMarked((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setMarked([]);
+  };
+
+  // A barra fixa de baixo existe só no modo de seleção; o layout tira o
+  // balão de ajuda da frente enquanto ela estiver visível.
+  usePageActionBar(selectMode);
 
   // Busca ao vivo: o campo responde na hora e a chamada sai quando a digitação
   // para. Termo novo sempre volta para a primeira página.
@@ -259,17 +277,27 @@ export function PropertiesPage() {
       ) : (
         <>
           <div className="flex flex-col gap-2">
-            <div className="flex items-baseline justify-between px-1">
+            <div className="flex items-center justify-between px-1">
               <p className="text-body-sm font-semibold text-text">
                 {total === 1 ? "1 imóvel" : `${total} imóveis`}
               </p>
-              <p className="text-caption text-text-subtle">de qualquer origem</p>
+              {/* Liga o modo de seleção: marcar imóveis e enviar para uma lead. */}
+              <button
+                type="button"
+                onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
+                className="text-body-sm font-semibold text-accent transition-colors hover:text-accent-hover"
+              >
+                {selectMode ? "Cancelar" : "Selecionar"}
+              </button>
             </div>
             <ul className="animate-rise divide-y divide-border rounded-2xl border border-border bg-surface shadow-sm">
               {items.map((property) => (
                 <PropertyRow
                   key={property.id}
                   property={property}
+                  selectMode={selectMode}
+                  marked={marked.includes(property.id)}
+                  onToggleMark={() => toggleMarked(property.id)}
                   onChangeStatus={(next) =>
                     statusMutation.mutate({ id: property.id, status: next })
                   }
@@ -322,6 +350,37 @@ export function PropertiesPage() {
       />
 
       <SendToLeadModal property={toSend} onClose={() => setToSend(null)} />
+
+      {/* Barra do modo de seleção: contagem e o próximo passo, sempre à mão. */}
+      {selectMode && (
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+            <p className="min-w-0 flex-1 truncate text-body-sm text-text-muted">
+              {marked.length === 0 ? (
+                <>
+                  <span className="sm:hidden">Toque para marcar</span>
+                  <span className="hidden sm:inline">Toque nos imóveis para marcar</span>
+                </>
+              ) : (
+                <>
+                  <span className="tabular-nums">{marked.length}</span>{" "}
+                  {marked.length === 1 ? "selecionado" : "selecionados"}
+                </>
+              )}
+            </p>
+            <Button
+              type="button"
+              className="shrink-0 whitespace-nowrap"
+              disabled={marked.length === 0}
+              onClick={() => setPickerIds(marked)}
+            >
+              Enviar para lead
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <SelectLeadForSelectionModal propertyIds={pickerIds} onClose={() => setPickerIds(null)} />
     </div>
   );
 }
@@ -335,11 +394,17 @@ const TONE_CLASSES: Record<string, string> = {
 
 function PropertyRow({
   property,
+  selectMode,
+  marked,
+  onToggleMark,
   onChangeStatus,
   onDelete,
   onSend,
 }: {
   property: PropertySummary;
+  selectMode: boolean;
+  marked: boolean;
+  onToggleMark: () => void;
   onChangeStatus: (status: PropertyStatus) => void;
   onDelete: () => void;
   onSend: () => void;
@@ -351,10 +416,44 @@ function PropertyRow({
     property.mainArea != null && `${property.mainArea} m²`,
   ].filter(Boolean) as string[];
   const location = [property.neighborhood, property.city].filter(Boolean).join(", ");
-  const open = () => navigate(`/imoveis/${property.id}`);
+  // Arquivado não entra em seleção (mesma regra da API); a linha avisa no toque.
+  const selecionavel = property.status !== "arquivado";
+  // No modo de seleção o toque MARCA, não navega: um modo, um gesto.
+  const open = () => {
+    if (selectMode) {
+      if (selecionavel) onToggleMark();
+      return;
+    }
+    navigate(`/imoveis/${property.id}`);
+  };
 
   return (
-    <li className="flex items-center gap-3 px-3 py-3 transition-colors first:rounded-t-2xl last:rounded-b-2xl hover:bg-surface-sunken sm:gap-4 sm:px-4">
+    <li
+      className={`flex items-center gap-3 px-3 py-3 transition-colors first:rounded-t-2xl last:rounded-b-2xl hover:bg-surface-sunken sm:gap-4 sm:px-4 ${
+        selectMode && marked ? "bg-accent-soft/40" : ""
+      } ${selectMode && !selecionavel ? "opacity-50" : ""}`}
+    >
+      {/* Marcador do modo de seleção, no padrão de listas de apps. */}
+      {selectMode && (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={marked}
+          aria-label={`${marked ? "Desmarcar" : "Marcar"} ${property.title}`}
+          disabled={!selecionavel}
+          title={selecionavel ? undefined : "Imóvel arquivado não entra em seleção"}
+          onClick={onToggleMark}
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-fast ${
+            marked ? "border-accent bg-accent text-accent-on" : "border-border-strong bg-surface"
+          }`}
+        >
+          {marked && (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
+      )}
       {/* Miniatura pequena, clicável. */}
       <button
         type="button"
@@ -404,8 +503,8 @@ function PropertyRow({
         {mainPrice(property)}
       </p>
 
-      {/* Ações rápidas. */}
-      <div className="flex shrink-0 items-center gap-1.5">
+      {/* Ações rápidas (fora do modo de seleção, para não disputar o toque). */}
+      <div className={`shrink-0 items-center gap-1.5 ${selectMode ? "hidden" : "flex"}`}>
         <Button
           type="button"
           variant="ghost"

@@ -7,9 +7,11 @@ import { Banner } from "../../components/ui/Banner";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { usePageEntityLabel } from "../shell/ShellContext";
 import { LeadSharesSection } from "../sharing/LeadSharesSection";
+import { LeadSelectionsSection } from "../selections/LeadSelectionsSection";
 import { SendFromLeadModal } from "../sharing/SendFromLeadModal";
 import { StageDialog } from "../funnel/StageDialog";
 import { ConvertDialog } from "../clients/ConvertDialog";
+import { clientPath, isUuid, leadPath, useCanonicalPath } from "../../lib/routes";
 import { deleteLead, fetchLead } from "./api";
 import {
   ACTIVITY_LABELS,
@@ -58,6 +60,15 @@ export function LeadDetailPage() {
   });
   usePageEntityLabel(query.data?.fullName);
 
+  // Chegou por link com uuid: troca para a URL com código curto assim que os
+  // dados chegam. Quem já virou cliente é redirecionado logo abaixo, então
+  // aqui não mexemos para não brigar com aquele redirecionamento.
+  const dadosDaLead = query.data;
+  useCanonicalPath(
+    Boolean(dadosDaLead) && !dadosDaLead?.isClient && isUuid(id),
+    leadPath(dadosDaLead?.code ?? ""),
+  );
+
   const remove = useMutation({
     mutationFn: () => deleteLead(id as string),
     onSuccess: () => {
@@ -85,7 +96,7 @@ export function LeadDetailPage() {
 
   // Pessoa convertida vive na área Clientes: link antigo de lead cai na ficha
   // do cliente (mesma pessoa, outra fase da jornada).
-  if (lead.isClient) return <Navigate to={`/clientes/${lead.id}`} replace />;
+  if (lead.isClient) return <Navigate to={clientPath(lead.code)} replace />;
 
   const lastActivity = lead.activities[0]?.createdAt ?? lead.lastContactAt ?? lead.createdAt;
   const meta = [
@@ -215,8 +226,14 @@ export function LeadDetailPage() {
         </dl>
       </header>
 
+      {/* Seleções personalizadas: a curadoria com link exclusivo. */}
+      <LeadSelectionsSection leadId={lead.id} leadCode={lead.code} />
+
       {/* Resumo + imóvel prioritário + imóveis enviados. */}
-      <LeadSharesSection lead={{ id: lead.id, whatsapp: lead.whatsapp }} onSend={() => setSendOpen(true)} />
+      <LeadSharesSection
+        lead={{ id: lead.id, code: lead.code, whatsapp: lead.whatsapp }}
+        onSend={() => setSendOpen(true)}
+      />
 
       <InfoCard lead={lead} />
 

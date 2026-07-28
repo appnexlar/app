@@ -18,6 +18,7 @@ import {
 import type { StatusTone } from "../leads/labels";
 import { StageDialog } from "./StageDialog";
 import { FUNNEL_LABELS } from "./labels";
+import { leadPath } from "../../lib/routes";
 
 /** Cor do texto do status no card, por tom. */
 const TONE_TEXT: Record<StatusTone, string> = {
@@ -174,7 +175,7 @@ export function FunnelPage() {
         <LeadActionSheet
           lead={actionLead}
           onClose={() => setActionLead(null)}
-          onOpenFicha={() => navigate(`/leads/${actionLead.id}`)}
+          onOpenFicha={() => navigate(leadPath(actionLead.code))}
           onChangeStage={() => {
             setStageLead(actionLead);
             setActionLead(null);

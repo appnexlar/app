@@ -6,6 +6,7 @@ import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { deleteLead } from "./api";
+import { leadPath } from "../../lib/routes";
 import {
   INTENT_LABELS,
   SOURCE_LABELS,
@@ -114,7 +115,7 @@ export function LeadActionSheet({
               fullWidth
               onClick={() => {
                 onClose();
-                navigate(`/leads/${lead.id}`);
+                navigate(leadPath(lead.code));
               }}
             >
               Ver detalhes da lead

@@ -34,6 +34,7 @@ import {
   type UpsertParticipantDto,
 } from "@nexlar/shared";
 import { CurrentBroker } from "../common/decorators/current-broker.decorator";
+import { LeadRefPipe } from "../common/pipes/short-code.pipe";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 import { ClientsService } from "./clients.service";
 
@@ -56,7 +57,7 @@ export class ClientsController {
   @ApiOperation({ summary: "Ficha do cliente: reaproveita a jornada da lead + conversão" })
   findOne(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
   ): Promise<ClientDetail> {
     return this.clients.findOne(brokerId, id);
   }
@@ -65,7 +66,7 @@ export class ClientsController {
   @ApiOperation({ summary: "Atualiza os dados pessoais do cliente (coleta progressiva)" })
   updateProfile(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Body(new ZodValidationPipe(updateClientProfileSchema)) dto: UpdateClientProfileDto,
   ): Promise<ClientProfileData> {
     return this.clients.updateProfile(brokerId, id, dto);
@@ -75,7 +76,7 @@ export class ClientsController {
   @ApiOperation({ summary: "Atualiza o estado atual da negociação do cliente" })
   updateNegotiation(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Body(new ZodValidationPipe(updateClientNegotiationSchema)) dto: UpdateClientNegotiationDto,
   ): Promise<ClientNegotiationData> {
     return this.clients.updateNegotiation(brokerId, id, dto);
@@ -85,7 +86,7 @@ export class ClientsController {
   @ApiOperation({ summary: "Atualiza os dados financeiros (sensíveis) do cliente" })
   updateFinancial(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Body(new ZodValidationPipe(updateClientFinancialSchema)) dto: UpdateClientFinancialDto,
   ): Promise<ClientFinancialData> {
     return this.clients.updateFinancial(brokerId, id, dto);
@@ -96,7 +97,7 @@ export class ClientsController {
   @ApiOperation({ summary: "Adiciona um participante (cônjuge, fiador...) ao cliente" })
   addParticipant(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Body(new ZodValidationPipe(upsertParticipantSchema)) dto: UpsertParticipantDto,
   ): Promise<ParticipantSummary> {
     return this.clients.addParticipant(brokerId, id, dto);
@@ -106,7 +107,7 @@ export class ClientsController {
   @ApiOperation({ summary: "Edita um participante do cliente" })
   updateParticipant(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Param("participantId", ParseUUIDPipe) participantId: string,
     @Body(new ZodValidationPipe(upsertParticipantSchema)) dto: UpsertParticipantDto,
   ): Promise<ParticipantSummary> {
@@ -118,7 +119,7 @@ export class ClientsController {
   @ApiOperation({ summary: "Remove um participante do cliente" })
   removeParticipant(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Param("participantId", ParseUUIDPipe) participantId: string,
   ): Promise<void> {
     return this.clients.removeParticipant(brokerId, id, participantId);
@@ -129,7 +130,7 @@ export class ClientsController {
   @ApiOperation({ summary: "Registra uma solicitação de exclusão de dados (LGPD, não apaga)" })
   requestDeletion(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", LeadRefPipe) id: string,
     @Body(new ZodValidationPipe(requestDeletionSchema)) dto: RequestDeletionDto,
   ): Promise<DeletionRequestSummary> {
     return this.clients.requestDeletion(brokerId, id, dto);

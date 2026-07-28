@@ -40,6 +40,21 @@ export const PRODUCT_EVENTS = [
   "GUIDANCE_REOPENED",
   "GUIDANCE_COMPLETED",
   "FEATURE_DISCOVERED",
+  // Jornada da Seleção Personalizada. Repetíveis: deduplicação por
+  // dedupeKey quando o evento só faz sentido uma vez por entidade.
+  "SELECTION_CREATED",
+  "SELECTION_ACTIVATED",
+  "SELECTION_SENT",
+  "SELECTION_OPENED",
+  "SELECTION_EXPIRED",
+  "SELECTION_REVOKED",
+  "SELECTION_PROPERTY_LIKED",
+  "SELECTION_PROPERTY_UNLIKED",
+  "SELECTION_PROPERTY_DISMISSED",
+  "SELECTION_INFORMATION_REQUESTED",
+  "SELECTION_VISIT_REQUESTED",
+  "SELECTION_VISIT_SCHEDULED",
+  "SELECTION_VISIT_CANCELLED",
 ] as const;
 
 export type ProductEventType = (typeof PRODUCT_EVENTS)[number];
@@ -154,6 +169,10 @@ export interface ChecklistItem {
   done: boolean;
   /** True quando a conclusão ainda não pode ser detectada (ex.: agenda). */
   indisponivel?: boolean;
+  /** Rota do front onde o corretor faz este passo, quando pendente. */
+  actionUrl?: string;
+  /** Ação simbólica (ex.: abrir modal de novo lead) que o front interpreta. */
+  actionType?: string;
 }
 
 export interface GuidanceChecklist {
