@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { PublicPropertyCard, PublicSort } from "@nexlar/shared";
+import { Select, type SelectOption } from "../../components/ui/Select";
 import { useDebounced } from "../../lib/useDebounced";
 import { CartaoPublico, Eyebrow } from "./BrokerStorefront";
 import { fetchPublicListing } from "./publicApi";
@@ -11,19 +12,24 @@ import { fetchPublicListing } from "./publicApi";
  * chips e selects de um toque, não um painel de formulário.
  */
 
-const ORDENACOES: { valor: PublicSort; rotulo: string }[] = [
-  { valor: "destaque", rotulo: "Destaques primeiro" },
-  { valor: "recentes", rotulo: "Mais recentes" },
-  { valor: "menor_preco", rotulo: "Menor preço" },
-  { valor: "maior_preco", rotulo: "Maior preço" },
-  { valor: "maior_area", rotulo: "Maior área" },
+const ORDENACOES: { value: PublicSort; label: string }[] = [
+  { value: "destaque", label: "Destaques primeiro" },
+  { value: "recentes", label: "Mais recentes" },
+  { value: "menor_preco", label: "Menor preço" },
+  { value: "maior_preco", label: "Maior preço" },
+  { value: "maior_area", label: "Maior área" },
 ];
 
-const FINALIDADES: { valor: string; rotulo: string }[] = [
-  { valor: "", rotulo: "Tudo" },
-  { valor: "venda", rotulo: "Comprar" },
-  { valor: "locacao", rotulo: "Alugar" },
+const FINALIDADES: { value: string; label: string }[] = [
+  { value: "", label: "Tudo" },
+  { value: "venda", label: "Comprar" },
+  { value: "locacao", label: "Alugar" },
 ];
+
+/** As facetas vêm como lista de textos; o Select quer valor e rótulo. */
+function comoOpcoes(valores: string[]): SelectOption[] {
+  return valores.map((v) => ({ value: v, label: v }));
+}
 
 export function PublicListingSection({
   slug,
@@ -114,53 +120,73 @@ export function PublicListingSection({
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex gap-1 rounded-md bg-surface-sunken p-1" role="radiogroup" aria-label="Finalidade">
+        {/* Duas fileiras no celular e uma no desktop. Antes era um `flex-wrap`
+            só, e o "Ordenar" tinha `ml-auto`: no celular ele caía sozinho numa
+            terceira linha, colado na borda direita, com cara de erro de
+            layout. Aqui a finalidade ocupa a largura inteira (é a escolha que
+            mais muda o resultado) e os seletores dividem a linha de baixo. */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div
+            className="grid grid-cols-3 gap-1 rounded-md bg-surface-sunken p-[3px] sm:inline-flex sm:flex-none"
+            role="radiogroup"
+            aria-label="Finalidade"
+          >
             {FINALIDADES.map((f) => (
               <button
-                key={f.valor}
+                key={f.value}
                 type="button"
                 role="radio"
-                aria-checked={finalidade === f.valor}
-                onClick={() => mudar(setFinalidade)(f.valor)}
+                aria-checked={finalidade === f.value}
+                onClick={() => mudar(setFinalidade)(f.value)}
                 className={`min-h-[38px] rounded-[6px] px-3.5 text-body-sm font-semibold transition-colors ${
-                  finalidade === f.valor ? "bg-surface text-text shadow-sm" : "text-text-muted hover:text-text"
+                  finalidade === f.value ? "bg-surface text-text shadow-sm" : "text-text-muted hover:text-text"
                 }`}
               >
-                {f.rotulo}
+                {f.label}
               </button>
             ))}
           </div>
 
-          {(dados?.facets.types.length ?? 0) > 1 && (
-            <SelectFiltro
-              rotulo="Tipo"
-              valor={tipo}
-              opcoes={dados?.facets.types ?? []}
-              onChange={mudar(setTipo)}
-            />
-          )}
-          {(dados?.facets.neighborhoods.length ?? 0) > 1 && (
-            <SelectFiltro
-              rotulo="Bairro"
-              valor={bairro}
-              opcoes={dados?.facets.neighborhoods ?? []}
-              onChange={mudar(setBairro)}
-            />
-          )}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-1 sm:items-center">
+            {(dados?.facets.types.length ?? 0) > 1 && (
+              <Select
+                label="Tipo"
+                hideLabel
+                compact
+                highlighted={Boolean(tipo)}
+                value={tipo}
+                placeholder="Tipo: todos"
+                options={comoOpcoes(dados?.facets.types ?? [])}
+                onValueChange={mudar(setTipo)}
+              />
+            )}
+            {(dados?.facets.neighborhoods.length ?? 0) > 1 && (
+              <Select
+                label="Bairro"
+                hideLabel
+                compact
+                highlighted={Boolean(bairro)}
+                value={bairro}
+                placeholder="Bairro: todos"
+                options={comoOpcoes(dados?.facets.neighborhoods ?? [])}
+                onValueChange={mudar(setBairro)}
+              />
+            )}
 
-          <select
-            value={ordem}
-            onChange={(e) => mudar(setOrdem)(e.target.value as PublicSort)}
-            aria-label="Ordenar por"
-            className="ml-auto min-h-[38px] rounded-md border border-border bg-surface px-2.5 text-body-sm font-semibold text-text-muted focus-visible:shadow-focus focus-visible:outline-none"
-          >
-            {ORDENACOES.map((o) => (
-              <option key={o.valor} value={o.valor}>
-                {o.rotulo}
-              </option>
-            ))}
-          </select>
+            {/* Ordenar não é filtro: nunca fica em destaque (estar preenchido é
+                o normal dele) e no desktop vai para a direita, separado de quem
+                restringe a lista. */}
+            <Select
+              label="Ordenar por"
+              hideLabel
+              compact
+              align="right"
+              value={ordem}
+              options={ORDENACOES}
+              onValueChange={(v) => mudar(setOrdem)(v as PublicSort)}
+              className="col-span-2 sm:col-span-1 sm:ml-auto sm:w-auto"
+            />
+          </div>
         </div>
       </div>
 
@@ -224,35 +250,5 @@ export function PublicListingSection({
         </>
       )}
     </section>
-  );
-}
-
-function SelectFiltro({
-  rotulo,
-  valor,
-  opcoes,
-  onChange,
-}: {
-  rotulo: string;
-  valor: string;
-  opcoes: string[];
-  onChange: (v: string) => void;
-}) {
-  return (
-    <select
-      value={valor}
-      onChange={(e) => onChange(e.target.value)}
-      aria-label={rotulo}
-      className={`min-h-[38px] max-w-[46vw] truncate rounded-md border px-2.5 text-body-sm font-semibold focus-visible:shadow-focus focus-visible:outline-none ${
-        valor ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface text-text-muted"
-      }`}
-    >
-      <option value="">{rotulo}: todos</option>
-      {opcoes.map((o) => (
-        <option key={o} value={o}>
-          {o}
-        </option>
-      ))}
-    </select>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { Select } from "./Select";
 
 interface DatePickerProps {
   label: string;
@@ -22,6 +23,11 @@ const WEEKDAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
+}
+
+/** Os meses vivem em minúsculo para uso em frase; no seletor abrem em maiúscula. */
+function comInicialMaiuscula(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 /** "AAAA-MM-DD" para exibição "DD/MM/AAAA". */
@@ -149,26 +155,25 @@ export function DatePicker({
               </svg>
             </button>
             <div className="flex flex-1 gap-2">
-              <select
-                value={viewMonth}
-                onChange={(e) => setViewMonth(Number(e.target.value))}
-                aria-label="Mês"
-                className="min-h-9 flex-1 rounded-md border border-border bg-surface px-2 text-body-sm capitalize text-text focus-visible:shadow-focus"
-              >
-                {MONTHS.map((m, i) => (
-                  <option key={m} value={i}>{m}</option>
-                ))}
-              </select>
-              <select
-                value={viewYear}
-                onChange={(e) => setViewYear(Number(e.target.value))}
-                aria-label="Ano"
-                className="min-h-9 w-[84px] rounded-md border border-border bg-surface px-2 text-body-sm tabular-nums text-text focus-visible:shadow-focus"
-              >
-                {years.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
+              <Select
+                label="Mês"
+                hideLabel
+                compact
+                value={String(viewMonth)}
+                options={MONTHS.map((m, i) => ({ value: String(i), label: comInicialMaiuscula(m) }))}
+                onValueChange={(v) => setViewMonth(Number(v))}
+                className="min-w-0 flex-1"
+              />
+              <Select
+                label="Ano"
+                hideLabel
+                compact
+                align="right"
+                value={String(viewYear)}
+                options={years.map((y) => ({ value: String(y), label: String(y) }))}
+                onValueChange={(v) => setViewYear(Number(v))}
+                className="w-[92px] flex-none"
+              />
             </div>
             <button
               type="button"

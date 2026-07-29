@@ -238,6 +238,73 @@ describe("Página Pública — interesse do visitante e notificações", () => {
   });
 
   // -------------------------------------------------------------------------
+  // Contato sem imóvel: o "Chamar no WhatsApp" da vitrine
+  // -------------------------------------------------------------------------
+
+  function pedirContato(slug: string, payload: Record<string, unknown>) {
+    return app.inject({ method: "POST", url: `/api/public/corretor/${slug}/contato`, payload });
+  }
+
+  it("chamar no WhatsApp vira lead antes de a conversa começar", async () => {
+    const { broker } = await montarVitrine("vitrine-wa", "dona.wa@teste.dev");
+
+    const res = await pedirContato("vitrine-wa", VISITANTE);
+    expect(res.statusCode).toBe(201);
+
+    // O ponto da mudança: quem tocaria num link direto agora existe no CRM.
+    const lead = await prisma.lead.findFirstOrThrow({ where: { brokerId: broker.brokerId } });
+    expect(lead.fullName).toBe("Joana Interessada");
+    expect(lead.source).toBe("pagina_publica");
+    expect(lead.status).toBe("novo");
+
+    // LGPD vale igual, com ou sem imóvel na jogada.
+    const consent = await prisma.consent.findFirstOrThrow({ where: { leadId: lead.id } });
+    expect(consent.purpose).toBe("contato_pagina_publica");
+
+    // Sem imóvel, a atividade não pode inventar um.
+    const atividade = await prisma.leadActivity.findFirstOrThrow({
+      where: { leadId: lead.id, type: "contato" },
+    });
+    expect(atividade.description).not.toContain("#");
+    expect(atividade.metadata).toMatchObject({ propertyCode: null });
+
+    const avisos = await notificacoes(broker);
+    expect(avisos.unreadCount).toBe(1);
+    expect(avisos.items[0]?.body).toContain("WhatsApp");
+    expect(avisos.items[0]?.actionUrl).toBe(`/leads/${lead.id}`);
+  });
+
+  it("o mesmo visitante pedindo contato de novo não vira uma segunda lead", async () => {
+    const { broker } = await montarVitrine("vitrine-wa2", "dona.wa2@teste.dev");
+
+    await pedirContato("vitrine-wa2", VISITANTE);
+    const segunda = await pedirContato("vitrine-wa2", { ...VISITANTE, name: "Joana de novo" });
+    expect(segunda.statusCode).toBe(201);
+
+    expect(await prisma.lead.count({ where: { brokerId: broker.brokerId } })).toBe(1);
+    // As duas passagens ficam registradas, mesmo sendo uma lead só.
+    const lead = await prisma.lead.findFirstOrThrow({ where: { brokerId: broker.brokerId } });
+    expect(await prisma.leadActivity.count({ where: { leadId: lead.id, type: "contato" } })).toBe(2);
+  });
+
+  it("vitrine pausada não aceita contato, e robô que preenche o campo oculto é recusado", async () => {
+    const { broker } = await montarVitrine("vitrine-wa3", "dona.wa3@teste.dev");
+
+    await requestAs(app, broker, { method: "POST", url: "/api/public-page/me/pausar" });
+    expect((await pedirContato("vitrine-wa3", VISITANTE)).statusCode).toBe(404);
+
+    await requestAs(app, broker, { method: "POST", url: "/api/public-page/me/publicar" });
+    const robo = await pedirContato("vitrine-wa3", { ...VISITANTE, honeypot: "comprei-tudo" });
+    expect(robo.statusCode).toBe(400);
+
+    // Sem consentimento também não passa: não é caixinha decorativa.
+    const semAceite = await pedirContato("vitrine-wa3", { ...VISITANTE, acceptedTerms: false });
+    expect(semAceite.statusCode).toBe(400);
+
+    expect(await prisma.lead.count()).toBe(0);
+  });
+
+  // -------------------------------------------------------------------------
   // Isolamento e leitura dos avisos
   // -------------------------------------------------------------------------
 

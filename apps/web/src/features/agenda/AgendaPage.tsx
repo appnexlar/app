@@ -685,13 +685,13 @@ function FiltersModal({
         <Select
           label="Tipo"
           value={type}
-          onChange={(e) => setType(e.target.value)}
+          onValueChange={setType}
           options={typeOptions}
         />
         <Select
           label="Origem"
           value={source}
-          onChange={(e) => setSource(e.target.value)}
+          onValueChange={setSource}
           options={[
             { value: "", label: "Todas" },
             { value: "nexlar", label: "Nexlar" },
@@ -701,7 +701,7 @@ function FiltersModal({
         <Select
           label="Situação"
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onValueChange={setStatus}
           options={[
             { value: "", label: "Todas" },
             ...Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label })),

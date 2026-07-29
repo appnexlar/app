@@ -619,7 +619,7 @@ function StepIdentification({
           error={errors.type}
           placeholder="Escolha o tipo"
           options={typeOptions.map((t) => ({ value: t, label: TYPE_LABELS[t] ?? t }))}
-          onChange={(e) => set("type", e.target.value)}
+          onValueChange={(v) => set("type", v)}
         />
       )}
       <ChipGroup
@@ -644,7 +644,7 @@ function StepIdentification({
         error={errors.origin}
         placeholder="Escolha a origem"
         options={PROPERTY_ORIGINS.map((o) => ({ value: o, label: ORIGIN_LABELS[o] }))}
-        onChange={(e) => set("origin", e.target.value as PropertyOrigin)}
+        onValueChange={(v) => set("origin", v as PropertyOrigin)}
       />
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
@@ -753,7 +753,7 @@ function StepLocation({
           value={form.state}
           placeholder="UF"
           options={UFS.map((uf) => ({ value: uf.value, label: uf.value }))}
-          onChange={(e) => set("state", e.target.value)}
+          onValueChange={(v) => set("state", v)}
         />
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
@@ -789,7 +789,7 @@ function StepLocation({
           value: mode,
           label: ADDRESS_DISPLAY_LABELS[mode],
         }))}
-        onChange={(e) => set("addressDisplay", e.target.value as AddressDisplayMode)}
+        onValueChange={(v) => set("addressDisplay", v as AddressDisplayMode)}
       />
     </>
   );

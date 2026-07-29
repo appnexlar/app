@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { LeadSummary } from "@nexlar/shared";
 import { Button } from "../../components/ui/Button";
@@ -8,7 +9,7 @@ import { FilterChips, type FilterChip } from "../../components/ui/FilterChips";
 import { SmartEmptyState } from "../../components/ui/SmartEmptyState";
 import { GuidanceInline } from "../guidance/GuidanceInline";
 import { useShell } from "../shell/ShellContext";
-import { LeadActionSheet } from "./LeadActionSheet";
+import { leadPath } from "../../lib/routes";
 import { fetchLeads } from "./api";
 import {
   INTENT_LABELS,
@@ -55,7 +56,6 @@ function matches(lead: LeadSummary, termo: string): boolean {
 export function LeadsPage() {
   const { openNewLead } = useShell();
   const query = useQuery({ queryKey: ["leads"], queryFn: fetchLeads });
-  const [selected, setSelected] = useState<LeadSummary | null>(null);
   const [termo, setTermo] = useState("");
   const [faixa, setFaixa] = useState<Faixa>("todos");
 
@@ -141,13 +141,12 @@ export function LeadsPage() {
           </header>
           <ul className="divide-y divide-border">
             {visiveis.map((lead) => (
-              <LeadRow key={lead.id} lead={lead} onOpen={() => setSelected(lead)} />
+              <LeadRow key={lead.id} lead={lead} />
             ))}
           </ul>
         </section>
       )}
 
-      <LeadActionSheet lead={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }
@@ -158,7 +157,7 @@ export function LeadsPage() {
  * WhatsApp; origem e região entram só onde há espaço). Nada disputa a mesma
  * linha que o nome.
  */
-function LeadRow({ lead, onOpen }: { lead: LeadSummary; onOpen: () => void }) {
+function LeadRow({ lead }: { lead: LeadSummary }) {
   const tone = STATUS_TONE[lead.status];
   const meta = [
     lead.source ? SOURCE_LABELS[lead.source] : null,
@@ -168,10 +167,14 @@ function LeadRow({ lead, onOpen }: { lead: LeadSummary; onOpen: () => void }) {
 
   return (
     <li className="group relative flex items-center gap-3 px-3 py-3 transition-colors duration-fast ease-standard hover:bg-surface-hover sm:gap-4 sm:px-4">
-      <button
-        type="button"
-        onClick={onOpen}
-        aria-label={`Ver detalhes de ${lead.fullName}`}
+      {/* A linha inteira leva à ficha. Antes abria uma folha de ações cuja
+          ação principal era "Ver detalhes" e cujas outras duas já estavam
+          resolvidas: o WhatsApp está aqui do lado, e excluir é melhor na
+          ficha, onde dá para ver o que está sendo apagado. Era um toque a
+          mais na ação mais frequente do dia. */}
+      <Link
+        to={leadPath(lead.code)}
+        aria-label={`Abrir a ficha de ${lead.fullName}`}
         className="absolute inset-0 focus-visible:shadow-focus"
       />
 

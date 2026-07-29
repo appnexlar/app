@@ -75,6 +75,19 @@ export class PublicBrokerPageController {
   }
 
   @Public()
+  // Mesmo teto do interesse: é a mesma porta de entrada de lead, só que sem
+  // imóvel, e merece a mesma proteção contra enxurrada.
+  @RateLimit({ name: "interesse", limit: 5, windowMs: 10 * MINUTO })
+  @Post(":slug/contato")
+  @ApiOperation({ summary: "Pedir contato pelo WhatsApp a partir da vitrine" })
+  submitContact(
+    @Param("slug") slug: string,
+    @Body(new ZodValidationPipe(publicInterestSchema)) body: CreateInterestRequest,
+  ): Promise<InterestResponse> {
+    return this.interest.submitContact(slug, body);
+  }
+
+  @Public()
   @RateLimit({ name: "vitrine-foto", limit: 600, windowMs: 5 * MINUTO })
   @Get(":slug/foto")
   @ApiOperation({ summary: "Foto de perfil do corretor da vitrine" })

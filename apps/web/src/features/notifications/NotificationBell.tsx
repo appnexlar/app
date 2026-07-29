@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell } from "lucide-react";
 import type { NotificationDTO } from "@nexlar/shared";
+import { ICON } from "../../components/ui/icon";
 import { fetchNotifications, markAllNotificationsRead, markNotificationRead } from "./api";
 
 /**
@@ -69,21 +71,7 @@ export function NotificationBell() {
         aria-label={naoLidas > 0 ? `Notificações, ${naoLidas} não lidas` : "Notificações"}
         className="relative flex h-10 w-10 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-sunken hover:text-text focus-visible:shadow-focus"
       >
-        <svg className="h-[22px] w-[22px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M18 8.4A6 6 0 006 8.4c0 4.2-1.8 5.4-1.8 5.4h15.6S18 12.6 18 8.4z"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M13.7 17.4a2 2 0 01-3.4 0"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-        </svg>
+        <Bell size={ICON.bar} aria-hidden="true" />
         {naoLidas > 0 && (
           <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold tabular-nums text-accent-on">
             {naoLidas > 9 ? "9+" : naoLidas}

@@ -1,10 +1,11 @@
-import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 
 export interface ModuleContent {
   /** Descrição curta do módulo, abaixo do título (que vem do cabeçalho). */
   description: string;
-  icon: ReactNode;
+  /** Mesmo ícone do módulo no menu, em tamanho de ilustração. */
+  icon: LucideIcon | null;
   emptyTitle: string;
   emptyDescription: string;
   actionLabel: string;
@@ -16,6 +17,7 @@ export interface ModuleContent {
  * genérico "em construção".
  */
 export function ModulePlaceholder({ content }: { content: ModuleContent }) {
+  const Icone = content.icon;
   return (
     <div className="mx-auto flex max-w-xl flex-col">
       <div className="mb-2 flex items-center gap-2">
@@ -27,9 +29,7 @@ export function ModulePlaceholder({ content }: { content: ModuleContent }) {
 
       <section className="animate-rise mt-6 flex flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent shadow-xs">
-          <svg className="h-8 w-8" viewBox="0 0 24 24" aria-hidden="true">
-            {content.icon}
-          </svg>
+          {Icone && <Icone size={32} aria-hidden="true" />}
         </div>
         <h2 className="mt-5 text-h2 text-text">{content.emptyTitle}</h2>
         <p className="mt-2 max-w-sm text-body text-text-muted">{content.emptyDescription}</p>

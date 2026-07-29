@@ -133,7 +133,7 @@ export function ConvertDialog({ lead, onClose, onConverted }: Props) {
         <Select
           label="Motivo da conversão"
           value={reason}
-          onChange={(e) => setReason(e.target.value)}
+          onValueChange={setReason}
           placeholder="Selecione"
           options={CONVERSION_REASONS.map((r) => ({ value: r, label: REASON_LABELS[r] }))}
         />
@@ -149,7 +149,7 @@ export function ConvertDialog({ lead, onClose, onConverted }: Props) {
         <Select
           label="Próxima etapa"
           value={nextStep}
-          onChange={(e) => setNextStep(e.target.value)}
+          onValueChange={setNextStep}
           placeholder="Selecione"
           options={CONVERSION_NEXT_STEPS.map((n) => ({ value: n, label: NEXT_STEP_LABELS[n] }))}
         />
@@ -157,7 +157,7 @@ export function ConvertDialog({ lead, onClose, onConverted }: Props) {
         <Select
           label="Finalidade do atendimento"
           value={purpose}
-          onChange={(e) => setPurpose(e.target.value)}
+          onValueChange={setPurpose}
           placeholder="Selecione"
           options={CLIENT_PURPOSES.map((p) => ({ value: p, label: PURPOSE_LABELS[p] }))}
         />
@@ -165,7 +165,7 @@ export function ConvertDialog({ lead, onClose, onConverted }: Props) {
         <Select
           label="Imóvel relacionado (opcional)"
           value={propertyId}
-          onChange={(e) => setPropertyId(e.target.value)}
+          onValueChange={setPropertyId}
           options={propertyOptions}
         />
 

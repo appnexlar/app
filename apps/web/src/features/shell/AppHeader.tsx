@@ -1,4 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Menu, Plus } from "lucide-react";
+import { ICON } from "../../components/ui/icon";
 import { AccountMenu } from "./AccountMenu";
 import { NotificationBell } from "../notifications/NotificationBell";
 import { breadcrumbsFor, pageTitleFor } from "./navigation";
@@ -49,7 +51,12 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
     <>
       <header className="sticky top-0 z-[var(--z-header)] border-b border-border bg-surface/80 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
-        <div className="flex min-w-0 items-center gap-2.5">
+        {/* O botão tem 40px de toque com um ícone de 22px dentro, então já
+            carrega 9px invisíveis de cada lado. O -ml-2 desconta essa folga à
+            esquerda (o ícone passa a alinhar com a margem do conteúdo abaixo)
+            e o espaçamento curto evita somar folga com folga entre o ícone e a
+            marca. */}
+        <div className="-ml-2 flex min-w-0 items-center gap-1">
           {/* Voltar na barra: só nas telas internas (no mobile ocupa o lugar do
               menu). Nas seções o voltar fica acima do título grande. */}
           {!isSection && (
@@ -59,9 +66,7 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
               aria-label="Voltar"
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-sunken hover:text-text sm:hidden"
             >
-              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ChevronLeft size={ICON.bar} aria-hidden="true" />
             </button>
           )}
           {/* Menu: nas seções aparece no mobile e no tablet; nas telas internas
@@ -75,9 +80,7 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
               (isSection ? "flex lg:hidden" : "hidden sm:flex lg:hidden")
             }
           >
-            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
+            <Menu size={ICON.bar} aria-hidden="true" />
           </button>
           {/* A barra carrega só a marca. Quem diz em que página você está é o
               bloco de identidade abaixo, igual em qualquer largura. */}
@@ -100,9 +103,7 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
               aria-label="Novo imóvel"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-on transition-colors hover:bg-accent-hover active:scale-[0.98] sm:w-auto sm:gap-2 sm:rounded-md sm:px-4 sm:text-body-sm sm:font-semibold"
             >
-              <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              <Plus size={ICON.bar} className="shrink-0 sm:size-[18px]" aria-hidden="true" />
               <span className="hidden sm:inline">Novo imóvel</span>
             </button>
           ) : (
@@ -112,9 +113,7 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
               aria-label="Novo lead"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-on transition-colors hover:bg-accent-hover active:scale-[0.98] sm:w-auto sm:gap-2 sm:rounded-md sm:px-4 sm:text-body-sm sm:font-semibold"
             >
-              <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              <Plus size={ICON.bar} className="shrink-0 sm:size-[18px]" aria-hidden="true" />
               <span className="hidden sm:inline">Novo lead</span>
             </button>
           )}
@@ -138,9 +137,7 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
               onClick={goHome}
               className="-ml-1 mb-1 inline-flex items-center gap-1 text-body-sm font-semibold text-text-muted transition-colors hover:text-text lg:hidden"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ChevronLeft size={ICON.hint} aria-hidden="true" />
               Voltar
             </button>
           )
@@ -181,20 +178,5 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
 }
 
 function Chevron() {
-  return (
-    <svg
-      className="h-3.5 w-3.5 shrink-0 text-text-subtle"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M9 6l6 6-6 6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  return <ChevronRight size={ICON.hint} className="shrink-0 text-text-subtle" aria-hidden="true" />;
 }

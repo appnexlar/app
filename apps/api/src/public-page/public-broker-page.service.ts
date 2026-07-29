@@ -61,7 +61,7 @@ export class PublicBrokerPageService {
       include: { broker: true },
     });
     if (!page) return { available: false, page: null };
-    return { available: true, page: await this.buildView(page, page.broker) };
+    return { available: true, page: await this.buildView(page, page.broker, true) };
   }
 
   // -------------------------------------------------------------------------
@@ -262,12 +262,23 @@ export class PublicBrokerPageService {
   // Montagem da view
   // -------------------------------------------------------------------------
 
-  private async buildView(page: BrokerPublicPage, broker: Broker): Promise<PublicBrokerPageView> {
+  /**
+   * @param doDono verdadeiro na prévia. As rotas públicas de imagem só servem
+   * páginas ATIVAS, e é justamente antes de publicar que a prévia é usada, o
+   * que deixava a foto do corretor quebrada exatamente na tela que promete
+   * "é assim que os visitantes vão ver". Na prévia a foto vem pela rota
+   * autenticada do próprio dono.
+   */
+  private async buildView(
+    page: BrokerPublicPage,
+    broker: Broker,
+    doDono = false,
+  ): Promise<PublicBrokerPageView> {
     const publicaveis = await this.loadPublishable(page.brokerId);
     // Destaques na ordem do corretor, depois os mais recentes.
     ordenar(publicaveis, "destaque");
     const slug = page.slug ?? "";
-    const cards = publicaveis.map((p) => this.toCard(slug, p));
+    const cards = publicaveis.map((p) => this.toCard(slug, p, doDono));
 
     const verificado = broker.creciStatus === "aprovado";
 
@@ -278,7 +289,9 @@ export class PublicBrokerPageService {
       headline: page.headline,
       bio: page.bio,
       photoUrl: broker.avatarKey
-        ? `/api/public/corretor/${slug}/foto?v=${broker.updatedAt.getTime()}`
+        ? doDono
+          ? `/api/brokers/me/avatar?v=${broker.updatedAt.getTime()}`
+          : `/api/public/corretor/${slug}/foto?v=${broker.updatedAt.getTime()}`
         : broker.avatarUrl,
       verified: verificado,
       creci: verificado ? broker.creci : null,
@@ -301,7 +314,11 @@ export class PublicBrokerPageService {
     };
   }
 
-  private toCard(slug: string, p: Property & { media: PropertyMedia[] }): PublicPropertyCard {
+  private toCard(
+    slug: string,
+    p: Property & { media: PropertyMedia[] },
+    doDono = false,
+  ): PublicPropertyCard {
     // media já vem ordenada com a capa primeiro.
     const capa = p.media[0] ?? null;
     const d = detalhes(p);
@@ -315,7 +332,13 @@ export class PublicBrokerPageService {
       // Bairro e cidade valem para qualquer addressDisplay: rua e número
       // nunca aparecem na listagem, só (talvez) no detalhe.
       locationLine: [p.neighborhood, p.city].filter(Boolean).join(", ") || null,
-      coverUrl: capa ? `/api/public/corretor/${slug}/imoveis/${p.code}/foto/${capa.id}` : null,
+      // Mesma razão da foto do corretor: antes de publicar, a rota pública da
+      // capa não serve nada, então na prévia a capa vem pela rota do dono.
+      coverUrl: capa
+        ? doDono
+          ? `/api/properties/${p.id}/media/${capa.id}/file`
+          : `/api/public/corretor/${slug}/imoveis/${p.code}/foto/${capa.id}`
+        : null,
       bedrooms: d.bedrooms,
       bathrooms: d.bathrooms,
       parkingSpots: d.parkingSpots,

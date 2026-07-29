@@ -261,32 +261,19 @@ export function PropertiesPage() {
 
           {/* Ordenação junto do filtro: são os dois controles que moldam a
               lista. A contagem fica livre para dizer só onde você está. */}
-          <label className="sr-only" htmlFor="ordenar-imoveis">
-            Ordenar por
-          </label>
-          <select
-            id="ordenar-imoveis"
+          <Select
+            label="Ordenar por"
+            hideLabel
+            compact
+            align="right"
             value={sort}
-            onChange={(e) => {
-              setSort(e.target.value);
+            options={PROPERTY_SORTS.map((s) => ({ value: s, label: SORT_LABELS[s] }))}
+            onValueChange={(v) => {
+              setSort(v);
               resetPage();
             }}
-            className="h-11 min-w-0 flex-1 rounded-md border border-border bg-surface pl-3 pr-9 text-body-sm text-text transition-colors duration-fast hover:border-border-strong focus-visible:shadow-focus sm:h-auto sm:flex-none sm:py-1.5 sm:pl-2.5 sm:pr-7"
-            style={{
-              appearance: "none",
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "right 0.6rem center",
-              backgroundSize: "1rem",
-            }}
-          >
-            {PROPERTY_SORTS.map((s) => (
-              <option key={s} value={s}>
-                {SORT_LABELS[s]}
-              </option>
-            ))}
-          </select>
+            className="min-w-0 flex-1 sm:flex-none"
+          />
         </div>
 
         {showFilters && (
@@ -296,8 +283,8 @@ export function PropertiesPage() {
               value={purpose}
               placeholder="Todas"
               options={PROPERTY_PURPOSES.map((p) => ({ value: p, label: PURPOSE_LABELS[p] }))}
-              onChange={(e) => {
-                setPurpose(e.target.value);
+              onValueChange={(v) => {
+                setPurpose(v);
                 resetPage();
               }}
             />
@@ -306,8 +293,8 @@ export function PropertiesPage() {
               value={category}
               placeholder="Todas"
               options={PROPERTY_CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))}
-              onChange={(e) => {
-                setCategory(e.target.value);
+              onValueChange={(v) => {
+                setCategory(v);
                 resetPage();
               }}
             />
@@ -316,8 +303,8 @@ export function PropertiesPage() {
               value={status}
               placeholder="Todos, menos arquivados"
               options={PROPERTY_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] }))}
-              onChange={(e) => {
-                setStatus(e.target.value);
+              onValueChange={(v) => {
+                setStatus(v);
                 resetPage();
               }}
             />
@@ -326,8 +313,8 @@ export function PropertiesPage() {
               value={origin}
               placeholder="Todas"
               options={PROPERTY_ORIGINS.map((o) => ({ value: o, label: ORIGIN_LABELS[o] }))}
-              onChange={(e) => {
-                setOrigin(e.target.value);
+              onValueChange={(v) => {
+                setOrigin(v);
                 resetPage();
               }}
             />
@@ -427,24 +414,19 @@ export function PropertiesPage() {
               {/* Quantos cabem de uma vez. No celular a lista já é rolagem
                   natural, então a escolha aparece só onde há tela para isso. */}
               <div className="hidden items-center gap-2 sm:flex">
-                <label className="text-caption text-text-muted" htmlFor="por-pagina">
-                  Imóveis por página
-                </label>
-                <select
-                  id="por-pagina"
-                  value={perPage}
-                  onChange={(e) => {
-                    setPerPage(Number(e.target.value));
+                <span className="text-caption text-text-muted">Imóveis por página</span>
+                <Select
+                  label="Imóveis por página"
+                  hideLabel
+                  compact
+                  align="right"
+                  value={String(perPage)}
+                  options={PER_PAGE_OPTIONS.map((n) => ({ value: String(n), label: String(n) }))}
+                  onValueChange={(v) => {
+                    setPerPage(Number(v));
                     setPage(1);
                   }}
-                  className="rounded-lg border border-border bg-surface px-2 py-1 text-caption tabular-nums text-text transition-colors duration-fast focus-visible:shadow-focus"
-                >
-                  {PER_PAGE_OPTIONS.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
           )}

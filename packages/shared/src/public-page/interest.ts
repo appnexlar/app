@@ -15,6 +15,8 @@ export interface CreateInterestRequest {
   whatsapp: string;
   message?: string;
   acceptedTerms: boolean;
+  /** Campo invisível: gente não preenche, robô preenche. Precisa vir vazio. */
+  honeypot?: string;
 }
 
 export interface InterestResponse {

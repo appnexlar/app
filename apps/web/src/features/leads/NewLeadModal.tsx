@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import {
@@ -19,8 +20,15 @@ import { TextField } from "../../components/ui/TextField";
 import { Banner } from "../../components/ui/Banner";
 import { ApiError } from "../../lib/http";
 import { maskPhone, onlyDigits } from "../../lib/masks";
+import { leadPath } from "../../lib/routes";
 import { createLead, duplicateLeadFrom } from "./api";
-import { INTENT_LABELS, SOURCE_LABELS, displayCreatedAt, displayWhatsapp } from "./labels";
+import {
+  INTENT_LABELS,
+  SOURCE_LABELS,
+  displayCreatedAt,
+  displayWhatsapp,
+  whatsappLink,
+} from "./labels";
 
 /**
  * Cadastro rápido de lead (J1): a tela mais importante do produto.
@@ -84,11 +92,12 @@ function ChipGroup<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="flex items-baseline justify-between gap-2 text-label text-text">
-        <span>{label}</span>
-        <span className="font-normal text-caption text-text-subtle">opcional</span>
-      </legend>
-      <div className="mt-1.5 flex flex-wrap gap-2">
+      <legend className="text-caption font-semibold text-text-muted">{label}</legend>
+      {/* Chips menores que os do resto do app de propósito: aqui eles são
+          atalhos, não campos. Com a altura de campo, doze deles ocupavam mais
+          da metade da folha e faziam o cadastro de dois campos parecer
+          formulário longo. */}
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
         {options.map((option) => {
           const active = value === option;
           return (
@@ -98,7 +107,9 @@ function ChipGroup<T extends string>({
               aria-pressed={active}
               onClick={() => onChange(active ? null : option)}
               className={
-                "min-h-9 rounded-full border px-3.5 text-body-sm font-medium transition-colors duration-fast " +
+                // 36px é o piso do toque aqui: a compactação vem da largura e
+                // do tamanho do texto, não de encolher o alvo do dedo.
+                "min-h-9 rounded-full border px-3 text-caption font-medium transition-colors duration-fast " +
                 (active
                   ? "border-accent bg-accent-soft text-accent"
                   : "border-border bg-surface text-text-muted hover:bg-surface-sunken")
@@ -180,14 +191,31 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
     navigate("/leads");
   };
 
+  /** Abre a ficha da lead recém-criada, onde o histórico é registrado. */
+  const goToLead = () => {
+    if (!created) return;
+    close();
+    navigate(leadPath(created.code));
+  };
+
+  /**
+   * Abre a conversa e deixa o corretor na ficha ao voltar. O window.open aqui
+   * é seguro porque acontece no clique, sem await antes: aba aberta depois de
+   * uma espera deixa de contar como gesto do usuário e o Safari do iPhone
+   * bloqueia.
+   */
+  const goToFirstContact = () => {
+    if (!created) return;
+    window.open(whatsappLink(created.whatsapp), "_blank", "noopener,noreferrer");
+    goToLead();
+  };
+
   return (
     <Modal open={open} onClose={close} title={created ? "Lead cadastrado" : "Novo lead"}>
       {created ? (
         <div className="flex flex-col items-center text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--success-soft)] text-[var(--success-fg)]">
-            <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Check size={28} aria-hidden="true" />
           </div>
           <p className="mt-4 text-body font-semibold text-text">{created.fullName}</p>
           <p className="mt-0.5 text-body-sm text-text-muted">{displayWhatsapp(created.whatsapp)}</p>
@@ -195,13 +223,24 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
             Já está na sua lista como <span className="font-semibold text-text">novo</span>. A
             próxima ação é fazer o primeiro contato.
           </p>
+          {/* A tela diz qual é a próxima ação, então ela precisa entregar essa
+              ação. Antes o botão principal era "Cadastrar outro", que manda
+              cadastrar de novo quem acabou de cadastrar, e o primeiro contato
+              ficava por conta do corretor lembrar depois. */}
           <div className="mt-6 flex w-full flex-col gap-2.5">
-            <Button type="button" variant="accent" fullWidth onClick={resetAll}>
+            <Button type="button" variant="accent" fullWidth onClick={goToFirstContact}>
+              Chamar no WhatsApp
+            </Button>
+            <Button type="button" variant="ghost" fullWidth onClick={goToLead}>
+              Abrir a ficha
+            </Button>
+            <button
+              type="button"
+              onClick={resetAll}
+              className="mt-0.5 min-h-9 text-body-sm font-semibold text-text-muted transition-colors hover:text-text"
+            >
               Cadastrar outro
-            </Button>
-            <Button type="button" variant="ghost" fullWidth onClick={goToLeads}>
-              Ver leads
-            </Button>
+            </button>
           </div>
         </div>
       ) : (
@@ -249,27 +288,35 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
             })}
           />
 
-          <ChipGroup
-            label="Origem"
-            options={LEAD_SOURCES}
-            labels={SOURCE_LABELS}
-            value={source}
-            onChange={setSource}
-          />
+          {/* Tudo o que é opcional vive dentro de uma moldura só, separada dos
+              dois campos que realmente importam. O corretor entende num olhar
+              onde o cadastro acaba e onde começa o que ele pode ignorar. */}
+          <div className="-mt-1 flex flex-col gap-3.5 rounded-md border border-border bg-surface-sunken p-3.5">
+            <p className="text-caption text-text-subtle">Se já souber, marque. Dá para deixar em branco.</p>
+            <ChipGroup
+              label="Origem"
+              options={LEAD_SOURCES}
+              labels={SOURCE_LABELS}
+              value={source}
+              onChange={setSource}
+            />
 
-          <ChipGroup
-            label="Interesse"
-            options={LEAD_INTENTS}
-            labels={INTENT_LABELS}
-            value={intent}
-            onChange={setIntent}
-          />
+            <ChipGroup
+              label="Interesse"
+              options={LEAD_INTENTS}
+              labels={INTENT_LABELS}
+              value={intent}
+              onChange={setIntent}
+            />
+          </div>
 
           {!showDetails ? (
+            // Sem laranja: o acento é do "Salvar lead". Um link opcional
+            // disputando a mesma cor do botão principal empata a decisão.
             <button
               type="button"
               onClick={() => setShowDetails(true)}
-              className="self-start text-body-sm font-semibold text-accent transition-colors hover:text-accent-hover"
+              className="self-start text-body-sm font-semibold text-text-muted underline decoration-border underline-offset-4 transition-colors hover:text-text"
             >
               Mais detalhes (opcional)
             </button>

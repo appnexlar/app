@@ -384,7 +384,7 @@ function StatusCard({
               variant="accent"
               onClick={() => page.slug && window.open(`/corretor/${page.slug}`, "_blank")}
             >
-              Abrir minha página
+              Ver minha página no ar
             </Button>
             <Button type="button" variant="ghost" onClick={onPause} loading={pausing}>
               {pausing ? "Pausando..." : "Pausar página"}
@@ -401,12 +401,16 @@ function StatusCard({
             {publishing ? "Publicando..." : "Publicar página"}
           </Button>
         ) : null}
+        {/* Os dois caminhos existem, mas cada um com o seu porquê no rótulo:
+            um abre a página de verdade numa aba, o outro mostra como ela fica
+            na tela do celular sem você precisar pegar o aparelho. Antes os
+            dois se chamavam quase igual e faziam parecer a mesma coisa. */}
         {page.status !== "restrita" && (
           <Link
             to="/minha-pagina/previa"
             className="text-body-sm font-semibold text-accent transition-colors hover:text-accent-hover"
           >
-            Ver prévia
+            {page.status === "ativa" ? "Ver no celular" : "Ver como vai ficar"}
           </Link>
         )}
       </div>

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ChevronDown, LogOut, Settings, User } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { initials } from "../../lib/name";
+import { ICON } from "../../components/ui/icon";
 
 export function AccountMenu() {
   const { broker, signOut } = useAuth();
@@ -35,9 +37,7 @@ export function AccountMenu() {
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-caption font-bold text-primary-on">
           {broker ? initials(broker.fullName) : ""}
         </span>
-        <svg className="hidden h-4 w-4 text-text-subtle sm:block" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <ChevronDown size={ICON.hint} className="hidden text-text-subtle sm:block" aria-hidden="true" />
       </button>
 
       {open && (
@@ -51,15 +51,15 @@ export function AccountMenu() {
           </div>
           <div className="p-1.5">
             <MenuItem onClick={() => go("/perfil")}>
-              <IconUser /> Meu perfil
+              <User size={ICON.action} className="flex-none" aria-hidden="true" /> Meu perfil
             </MenuItem>
             <MenuItem onClick={() => go("/perfil")}>
-              <IconGear /> Configurações
+              <Settings size={ICON.action} className="flex-none" aria-hidden="true" /> Configurações
             </MenuItem>
           </div>
           <div className="border-t border-border p-1.5">
             <MenuItem onClick={signOut} danger>
-              <IconExit /> Sair
+              <LogOut size={ICON.action} className="flex-none" aria-hidden="true" /> Sair
             </MenuItem>
           </div>
         </div>
@@ -94,27 +94,3 @@ function MenuItem({
   );
 }
 
-function IconUser() {
-  return (
-    <svg className="h-[18px] w-[18px] flex-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.4" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M5.5 20c0-3.4 2.9-6 6.5-6s6.5 2.6 6.5 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-function IconGear() {
-  return (
-    <svg className="h-[18px] w-[18px] flex-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M12 3.5l1.4 2.2 2.6-.4 .4 2.6 2.2 1.4-1 2.4 1 2.4-2.2 1.4-.4 2.6-2.6-.4L12 20.5l-1.4-2.2-2.6.4-.4-2.6-2.2-1.4 1-2.4-1-2.4 2.2-1.4.4-2.6 2.6.4z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function IconExit() {
-  return (
-    <svg className="h-[18px] w-[18px] flex-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M15 4.5H6a1.5 1.5 0 00-1.5 1.5v12A1.5 1.5 0 006 19.5h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M18.5 12H10m8.5 0l-3-3m3 3l-3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}

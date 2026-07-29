@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { House, MoreHorizontal } from "lucide-react";
 import type { LeadDetail } from "@nexlar/shared";
+import { ICON } from "../../components/ui/icon";
 import { Button } from "../../components/ui/Button";
 import { Banner } from "../../components/ui/Banner";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { usePageEntityLabel } from "../shell/ShellContext";
-import { LeadSharesSection } from "../sharing/LeadSharesSection";
-import { LeadSelectionsSection } from "../selections/LeadSelectionsSection";
+import { LeadPropertiesBlock } from "./LeadPropertiesBlock";
 import { SendFromLeadModal } from "../sharing/SendFromLeadModal";
 import { StageDialog } from "../funnel/StageDialog";
 import { ConvertDialog } from "../clients/ConvertDialog";
@@ -144,7 +145,7 @@ export function LeadDetailPage() {
             rel="noreferrer"
             className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl bg-[var(--success-soft)] px-2 py-2.5 text-[var(--success-fg)] transition-[transform,box-shadow] duration-fast ease-standard hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:shadow-focus sm:w-[104px]"
           >
-            <WhatsAppIcon className="h-5 w-5" />
+            <WhatsAppIcon />
             <span className="text-caption font-semibold">WhatsApp</span>
           </a>
 
@@ -153,15 +154,7 @@ export function LeadDetailPage() {
             onClick={() => setSendOpen(true)}
             className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl bg-accent-soft px-2 py-2.5 text-accent transition-[transform,box-shadow] duration-fast ease-standard hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:shadow-focus sm:w-[104px]"
           >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M3 11l9-7 9 7M5 9.5V20a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V9.5"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <House size={ICON.action} aria-hidden="true" />
             <span className="text-caption font-semibold">Enviar imóvel</span>
           </button>
 
@@ -173,11 +166,7 @@ export function LeadDetailPage() {
               onClick={() => setMoreOpen((v) => !v)}
               className="flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-xl bg-surface-sunken px-2 py-2.5 text-text transition-[transform,box-shadow,background-color] duration-fast ease-standard hover:-translate-y-0.5 hover:bg-[var(--neutral-200,#e5e5e5)] hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:shadow-focus"
             >
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <circle cx="5" cy="12" r="1.9" />
-                <circle cx="12" cy="12" r="1.9" />
-                <circle cx="19" cy="12" r="1.9" />
-              </svg>
+              <MoreHorizontal size={ICON.action} aria-hidden="true" />
               <span className="text-caption font-semibold">Mais</span>
             </button>
             {moreOpen && (
@@ -226,11 +215,8 @@ export function LeadDetailPage() {
         </dl>
       </header>
 
-      {/* Seleções personalizadas: a curadoria com link exclusivo. */}
-      <LeadSelectionsSection leadId={lead.id} leadCode={lead.code} />
-
-      {/* Resumo + imóvel prioritário + imóveis enviados. */}
-      <LeadSharesSection
+      {/* Seleções e imóveis enviados. Sem histórico, viram uma decisão só. */}
+      <LeadPropertiesBlock
         lead={{ id: lead.id, code: lead.code, whatsapp: lead.whatsapp }}
         onSend={() => setSendOpen(true)}
       />
@@ -278,9 +264,27 @@ export function LeadDetailPage() {
   );
 }
 
-function WhatsAppIcon({ className }: { className?: string }) {
+/**
+ * Exceção consciente ao Lucide: a biblioteca não tem ícones de marca, e trocar
+ * este glifo por um balão genérico custaria o reconhecimento imediato, que é o
+ * que faz o corretor achar o botão sem ler. Marca fica com o desenho da marca.
+ *
+ * Duas escolhas deliberadas aqui:
+ * 1. ICON.brand, e não ICON.action: com a mesma medida dos vizinhos a marca
+ *    parece encolhida, porque forma circular cheia lê menor que contorno.
+ * 2. Verde oficial do WhatsApp, não o verde do sistema. Metade do
+ *    reconhecimento de uma marca é a cor dela; pintada com a paleta do app,
+ *    ela vira só "um ícone verde".
+ */
+function WhatsAppIcon() {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg
+      width={ICON.brand}
+      height={ICON.brand}
+      viewBox="0 0 24 24"
+      fill="#25D366"
+      aria-hidden="true"
+    >
       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.611-.916-2.206-.242-.58-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885" />
     </svg>
   );

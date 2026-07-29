@@ -124,7 +124,7 @@ function FormularioEnvio({
             placeholder="UF"
             options={UFS}
             value={creciUf}
-            onChange={(e) => setCreciUf(e.target.value)}
+            onValueChange={setCreciUf}
           />
         </div>
       </div>

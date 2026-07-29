@@ -134,14 +134,14 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
               value: o,
               label: MEDIA_ORIGIN_LABELS[o],
             }))}
-            onChange={(e) => setOrigin(e.target.value as MediaOrigin)}
+            onValueChange={(v) => setOrigin(v as MediaOrigin)}
           />
           <Select
             label="Ambiente da foto"
             value={room}
             placeholder="Escolher depois"
             options={PHOTO_ROOMS.map((r) => ({ value: r, label: PHOTO_ROOM_LABELS[r] }))}
-            onChange={(e) => setRoom(e.target.value as PhotoRoom | "")}
+            onValueChange={(v) => setRoom(v as PhotoRoom | "")}
           />
         </div>
         <div className="flex flex-wrap gap-2.5">

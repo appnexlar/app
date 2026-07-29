@@ -159,7 +159,7 @@ function ParticipantFormModal({
         <Select
           label="Relação com o cliente"
           value={relation}
-          onChange={(e) => setRelation(e.target.value)}
+          onValueChange={setRelation}
           placeholder="Selecione"
           options={PARTICIPANT_RELATIONS.map((r) => ({ value: r, label: RELATION_LABELS[r] }))}
         />

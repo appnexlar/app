@@ -66,23 +66,26 @@ export function waLink(digits: string, message: string): string {
   return `https://wa.me/${completo}?text=${encodeURIComponent(message)}`;
 }
 
-/** Submeter demonstração de interesse no imóvel. */
+/**
+ * Registra o contato da vitrine. Com `code`, é interesse num imóvel; sem
+ * `code`, é o pedido de conversa geral do "Chamar no WhatsApp". Nos dois casos
+ * o servidor cria (ou reencontra) a lead antes de a conversa começar.
+ */
 export async function submitInterest(
   slug: string,
-  code: number,
+  code: number | undefined,
   interest: CreateInterestRequest,
 ): Promise<InterestResponse> {
-  const response = await fetch(
-    `/api/public/corretor/${encodeURIComponent(slug)}/imoveis/${code}/interesse`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(interest),
-    },
-  );
+  const base = `/api/public/corretor/${encodeURIComponent(slug)}`;
+  const url = code === undefined ? `${base}/contato` : `${base}/imoveis/${code}/interesse`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(interest),
+  });
   if (!response.ok) {
     const err = await response.json();
-    throw new Error(err.message || "Erro ao registrar interesse");
+    throw new Error(err.message || "Erro ao registrar contato");
   }
   return (await response.json()) as InterestResponse;
 }

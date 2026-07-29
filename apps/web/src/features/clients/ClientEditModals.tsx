@@ -56,6 +56,9 @@ export function ProfileFormModal({
   });
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
+  /** O Select entrega o valor direto, não o evento. */
+  const setValor = (key: keyof typeof form) => (valor: string) =>
+    setForm((f) => ({ ...f, [key]: valor }));
 
   const [cepLoading, setCepLoading] = useState(false);
   const [cepNotFound, setCepNotFound] = useState(false);
@@ -120,7 +123,7 @@ export function ProfileFormModal({
         <Select
           label="Estado civil"
           value={form.maritalStatus}
-          onChange={set("maritalStatus")}
+          onValueChange={setValor("maritalStatus")}
           placeholder="Selecione"
           options={MARITAL_STATUSES.map((m) => ({ value: m, label: MARITAL_LABELS[m] }))}
         />
@@ -236,14 +239,14 @@ export function NegotiationFormModal({
         <Select
           label="Forma de pagamento pretendida"
           value={paymentMethod}
-          onChange={(e) => setPaymentMethod(e.target.value)}
+          onValueChange={setPaymentMethod}
           placeholder="Selecione"
           options={PAYMENT_METHODS.map((p) => ({ value: p, label: PAYMENT_LABELS[p] }))}
         />
         <Select
           label="Precisa de financiamento?"
           value={needsFinancing}
-          onChange={(e) => setNeedsFinancing(e.target.value)}
+          onValueChange={setNeedsFinancing}
           placeholder="Selecione"
           options={[
             { value: "sim", label: "Sim" },
@@ -339,7 +342,7 @@ export function FinancialFormModal({
         <Select
           label="Tipo de renda"
           value={incomeType}
-          onChange={(e) => setIncomeType(e.target.value)}
+          onValueChange={setIncomeType}
           placeholder="Selecione"
           options={INCOME_TYPES.map((t) => ({ value: t, label: INCOME_LABELS[t] }))}
         />
@@ -373,7 +376,7 @@ export function FinancialFormModal({
           <Select
             label="Possui FGTS?"
             value={hasFgts}
-            onChange={(e) => setHasFgts(e.target.value)}
+            onValueChange={setHasFgts}
             placeholder="Selecione"
             options={[
               { value: "sim", label: "Sim" },
@@ -383,7 +386,7 @@ export function FinancialFormModal({
           <Select
             label="Composição de renda?"
             value={hasComposition}
-            onChange={(e) => setHasComposition(e.target.value)}
+            onValueChange={setHasComposition}
             placeholder="Selecione"
             options={[
               { value: "sim", label: "Sim" },

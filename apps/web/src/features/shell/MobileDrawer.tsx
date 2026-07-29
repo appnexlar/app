@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
+import { LogOut } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { initials } from "../../lib/name";
+import { ICON } from "../../components/ui/icon";
 import { NAV_GROUPS } from "./navigation";
 
 export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -53,9 +55,7 @@ export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => 
                         : "text-text-muted hover:bg-surface-sunken hover:text-text")
                     }
                   >
-                    <svg className="h-[22px] w-[22px] flex-none" viewBox="0 0 24 24" aria-hidden="true">
-                      {item.icon}
-                    </svg>
+                    <item.icon size={ICON.bar} className="flex-none" aria-hidden="true" />
                     {item.label}
                   </NavLink>
                 </li>
@@ -70,10 +70,7 @@ export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => 
             onClick={signOut}
             className="flex min-h-[var(--tap-target-min)] w-full items-center gap-3 rounded-lg px-3 text-body font-semibold text-[var(--danger-fg)] transition-colors hover:bg-danger-soft"
           >
-            <svg className="h-[22px] w-[22px] flex-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M15 4.5H6a1.5 1.5 0 00-1.5 1.5v12A1.5 1.5 0 006 19.5h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              <path d="M18.5 12H10m8.5 0l-3-3m3 3l-3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <LogOut size={ICON.bar} className="flex-none" aria-hidden="true" />
             Sair
           </button>
         </div>

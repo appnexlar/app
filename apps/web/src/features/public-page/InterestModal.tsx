@@ -1,16 +1,24 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
-import { submitInterest } from "./publicApi";
+import { submitInterest, waLink } from "./publicApi";
 
 interface InterestModalProps {
   slug: string;
-  propertyCode: number;
-  propertyTitle: string;
+  /** Com imóvel: interesse. Sem imóvel: pedido de conversa pela vitrine. */
+  propertyCode?: number;
+  propertyTitle?: string;
   brokerWhatsapp?: string;
   onClose: () => void;
 }
 
+/**
+ * A porta de entrada de lead da vitrine. Existe porque o caminho anterior era
+ * um link direto para o WhatsApp: o visitante saía, o corretor ganhava uma
+ * conversa solta e o Nexlar não ficava com nada. Aqui a pessoa vira lead
+ * (com origem "Página pública" e consentimento registrado) e SÓ ENTÃO segue
+ * para a conversa que ela queria ter.
+ */
 export function InterestModal({
   slug,
   propertyCode,
@@ -23,6 +31,9 @@ export function InterestModal({
   const [message, setMessage] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [honeypot, setHoneypot] = useState("");
+  const [aviso, setAviso] = useState<string | null>(null);
+
+  const sobreImovel = propertyCode !== undefined;
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -31,14 +42,20 @@ export function InterestModal({
         whatsapp,
         message: message || undefined,
         acceptedTerms,
+        // Ia sem isto antes, então a armadilha de robô não pegava nada.
+        honeypot,
       }),
     onSuccess: () => {
       if (brokerWhatsapp) {
-        const conversaMsg = `Olá, me interessei pelo imóvel ${propertyTitle} (#${propertyCode})`;
-        window.open(
-          `https://wa.me/55${brokerWhatsapp}?text=${encodeURIComponent(conversaMsg)}`,
-          "_blank",
-        );
+        const conversaMsg = sobreImovel
+          ? `Olá, me interessei pelo imóvel ${propertyTitle} (#${propertyCode})`
+          : `Olá! Vi sua página e gostaria de falar com você.`;
+        // Navegação na mesma aba, não window.open: aba nova aberta depois de
+        // um await não é mais gesto do usuário e o Safari do iPhone bloqueia,
+        // o que deixaria a pessoa preenchendo o formulário e não indo a lugar
+        // nenhum, que é justamente o que não pode acontecer aqui.
+        window.location.href = waLink(brokerWhatsapp, conversaMsg);
+        return;
       }
       onClose();
     },
@@ -50,8 +67,30 @@ export function InterestModal({
     return digits.slice(0, 15);
   };
 
+  /**
+   * O que falta preencher, em português. A validação do navegador resolveria,
+   * mas ela fala o idioma do aparelho do visitante, e esta é a porta de
+   * entrada de uma página em português: alguém com o celular em inglês leria
+   * "Please fill out this field" no meio da vitrine.
+   */
+  const primeiraPendencia = (): { campo: string; aviso: string } | null => {
+    if (name.trim().length < 2) return { campo: "name", aviso: "Informe seu nome." };
+    if (whatsapp.replace(/\D/g, "").length < 10)
+      return { campo: "whatsapp", aviso: "Informe seu WhatsApp com DDD." };
+    if (!acceptedTerms)
+      return { campo: "aceite", aviso: "Marque o aceite para o corretor poder responder." };
+    return null;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const pendencia = primeiraPendencia();
+    if (pendencia) {
+      setAviso(pendencia.aviso);
+      document.getElementById(pendencia.campo)?.focus();
+      return;
+    }
+    setAviso(null);
     mutation.mutate();
   };
 
@@ -59,7 +98,9 @@ export function InterestModal({
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-bg p-6 sm:p-7 shadow-lg">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-h3 font-bold text-text">Tenho interesse</h2>
+          <h2 className="text-h3 font-bold text-text">
+            {sobreImovel ? "Tenho interesse" : "Falar com o corretor"}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -72,10 +113,18 @@ export function InterestModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Diz de saída o que vai acontecer: quem pede conversa espera cair no
+            WhatsApp, e formulário que não avisa parece pedágio. */}
+        <p className="-mt-4 mb-5 text-body-sm text-text-muted">
+          {sobreImovel
+            ? "Deixe seu contato e a conversa abre no WhatsApp do corretor."
+            : "Deixe seu contato e abrimos a conversa no WhatsApp do corretor."}
+        </p>
+
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           <div>
             <label htmlFor="name" className="block text-body-sm font-semibold text-text mb-1.5">
-              Nome completo
+              Nome
             </label>
             <input
               id="name"
@@ -123,13 +172,19 @@ export function InterestModal({
             />
           </div>
 
-          <label className="flex items-start gap-2 cursor-pointer">
+          {/* O aceite fica num alvo grande e com fundo próprio: antes era uma
+              caixinha de 13px, menor que a ponta do dedo, e é ela que destrava
+              o botão. Errar o toque aqui é perder o contato inteiro. */}
+          <label className="-mx-2 flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-surface">
             <input
+              id="aceite"
               type="checkbox"
               checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-              required
-              className="mt-1 w-4 h-4 rounded border-border accent-primary"
+              onChange={(e) => {
+                setAcceptedTerms(e.target.checked);
+                if (e.target.checked) setAviso(null);
+              }}
+              className="mt-0.5 h-5 w-5 shrink-0 rounded border-border accent-primary"
             />
             <span className="text-body-sm text-text-muted">
               Concordo que o corretor possa entrar em contato comigo via WhatsApp
@@ -138,17 +193,27 @@ export function InterestModal({
 
           <input type="text" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} hidden />
 
+          {aviso && (
+            <p role="alert" className="-mb-1 text-body-sm font-semibold text-[var(--error-fg)]">
+              {aviso}
+            </p>
+          )}
+
+          {/* Desabilitado só enquanto envia. Antes o botão nascia apagado e não
+              dizia o que faltava, então quem esquecia de marcar o aceite via
+              um botão morto e ia embora. Habilitado, o toque dispara a
+              validação do navegador, que aponta o campo e explica. */}
           <button
             type="submit"
-            disabled={mutation.isPending || !acceptedTerms || !name || !whatsapp}
+            disabled={mutation.isPending}
             className="w-full min-h-12 rounded-lg bg-primary text-primary-on font-bold transition-colors hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {mutation.isPending ? "Enviando..." : "Confirmar interesse"}
+            {mutation.isPending ? "Abrindo conversa..." : "Continuar no WhatsApp"}
           </button>
 
           {mutation.isError && (
             <p className="text-body-sm text-[var(--error-fg)] bg-[var(--error-soft)] rounded-lg p-3">
-              {mutation.error instanceof Error ? mutation.error.message : "Erro ao registrar interesse"}
+              {mutation.error instanceof Error ? mutation.error.message : "Erro ao registrar contato"}
             </p>
           )}
         </form>

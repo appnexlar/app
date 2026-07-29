@@ -26,6 +26,7 @@ import { AgendaPage } from "./features/agenda/AgendaPage";
 import { MyPagePage } from "./features/public-page/MyPagePage";
 import { PublicPropertiesPage } from "./features/public-page/PublicPropertiesPage";
 import { PreviewPage } from "./features/public-page/PreviewPage";
+import { PreviewFramePage } from "./features/public-page/PreviewFramePage";
 import { PublicBrokerPage } from "./features/public-page/PublicBrokerPage";
 import { PublicPropertyPage } from "./features/public-page/PublicPropertyPage";
 import {
@@ -79,6 +80,9 @@ export function App() {
 
         {/* Área logada: layout-base + módulos. */}
         <Route element={<ProtectedRoute />}>
+          {/* O quadro da prévia: logado, mas sem o shell, porque ele é
+              carregado dentro do iframe da tela de prévia. */}
+          <Route path="/minha-pagina/previa/quadro" element={<PreviewFramePage />} />
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/leads" element={<LeadsPage />} />

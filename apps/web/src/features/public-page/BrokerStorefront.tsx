@@ -1,11 +1,15 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { PublicBrokerPageView, PublicPropertyCard } from "@nexlar/shared";
+import { AuthImage } from "../properties/AuthImage";
 import { PublicListingSection } from "./PublicListingSection";
+import { InterestModal } from "./InterestModal";
 import { waLink } from "./publicApi";
 
 /**
- * A vitrine que o visitante vê. Componente puro: recebe a view pronta e
- * desenha; quem busca dados são as rotas (pública e prévia).
+ * A vitrine que o visitante vê. Recebe a view pronta e desenha; quem busca
+ * dados são as rotas (pública e prévia). O único estado próprio é a folha de
+ * contato, que é interface, não dado.
  *
  * Usa o design system da Nexlar (tokens semânticos), não uma paleta própria:
  * a página é a marca aparecendo para quem ainda não é cliente, então tem que
@@ -38,12 +42,21 @@ export function BrokerStorefront({
   interactive?: boolean;
 }) {
   const mensagemGeral = `Olá, ${page.name}! Vi sua página na Nexlar e gostaria de conversar sobre imóveis.`;
+  // A folha de contato: aberta pelos CTAs de conversa. Na prévia o corretor
+  // está olhando a própria página, então não faz sentido virar lead de si.
+  const [contatoAberto, setContatoAberto] = useState(false);
+  const podeCapturar = interactive && Boolean(page.whatsapp);
+  const ctaDoHero = useRef<HTMLDivElement>(null);
+  const heroVisivel = useEstaNaTela(ctaDoHero);
 
   return (
     <div className="min-h-dvh bg-bg font-sans text-text">
       {/* ============================================ Faixa hero em Azul Noite */}
       <header
-        className="relative overflow-hidden bg-primary pb-12 sm:pb-16"
+        // Alturas encolhidas no mobile (foto, respiros) para a tira de imóveis
+        // começar a aparecer ainda na primeira tela. No desktop sobra espaço,
+        // então lá o hero mantém a escala original.
+        className="relative overflow-hidden bg-primary pb-8 sm:pb-14"
         style={{
           // Profundidade no Azul Noite + um brilho do Laranja Nexlar contido no
           // canto superior, longe do texto (atrás do texto ele lava a leitura).
@@ -52,25 +65,35 @@ export function BrokerStorefront({
             "linear-gradient(180deg, var(--brand-navy-800), var(--brand-navy-950))",
         }}
       >
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-5 pt-5 sm:px-8">
-          <span className="text-body-sm font-extrabold tracking-tight text-white/85">
-            nex<span className="text-accent">lar</span>
-          </span>
-          {page.agencyName && (
-            <span className="truncate text-caption font-medium text-white/60">{page.agencyName}</span>
+        {/* O canto mais nobre da página é de quem a página é. A assinatura da
+            Nexlar continua existindo, no rodapé, onde assinatura de plataforma
+            pertence. Aqui em cima fica a imobiliária, quando há, e o nome do
+            corretor quando ele trabalha por conta. */}
+        <div className="mx-auto flex max-w-4xl items-center gap-3 px-5 pt-5 sm:px-8">
+          {page.agencyLogoUrl ? (
+            <img
+              src={page.agencyLogoUrl}
+              alt={page.agencyName ?? "Imobiliária"}
+              className="h-7 w-auto max-w-[9rem] object-contain"
+            />
+          ) : (
+            <span className="truncate text-body-sm font-bold tracking-tight text-white/85">
+              {page.agencyName ?? page.name}
+            </span>
           )}
         </div>
 
-        <div className="mx-auto mt-10 flex max-w-4xl flex-col items-start gap-6 px-5 sm:mt-14 sm:flex-row sm:items-center sm:gap-10 sm:px-8">
+        <div className="mx-auto mt-7 flex max-w-4xl flex-col items-start gap-5 px-5 sm:mt-14 sm:flex-row sm:items-center sm:gap-10 sm:px-8">
           {/* Foto em squircle: mais editorial que o círculo de rede social. */}
           {page.photoUrl ? (
-            <img
+            <FotoDaVitrine
               src={page.photoUrl}
               alt={`Foto de ${page.name}`}
-              className="h-28 w-28 flex-none rounded-2xl object-cover shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40"
+              doDono={!interactive}
+              className="h-24 w-24 flex-none rounded-2xl object-cover shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40"
             />
           ) : (
-            <span className="flex h-28 w-28 flex-none items-center justify-center rounded-2xl bg-accent text-h1 font-extrabold text-accent-on shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40">
+            <span className="flex h-24 w-24 flex-none items-center justify-center rounded-2xl bg-accent text-h1 font-extrabold text-accent-on shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40">
               {iniciais(page.name)}
             </span>
           )}
@@ -100,19 +123,37 @@ export function BrokerStorefront({
         </div>
 
         {/* CTAs dentro do escuro, onde têm mais força. */}
-        <div className="mx-auto mt-8 flex max-w-4xl flex-col gap-3 px-5 sm:flex-row sm:px-8">
-          {page.whatsapp && (
-            <a
-              href={waLink(page.whatsapp, mensagemGeral)}
-              target="_blank"
-              rel="noreferrer"
-              className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl px-7 text-body-lg font-bold text-white shadow-md transition-transform duration-base ease-standard hover:scale-[1.015]"
-              style={{ backgroundColor: WHATSAPP }}
-            >
-              <IconeWhatsApp />
-              Chamar no WhatsApp
-            </a>
-          )}
+        <div
+          ref={ctaDoHero}
+          className="mx-auto mt-6 flex max-w-4xl flex-col gap-3 px-5 sm:mt-8 sm:flex-row sm:px-8"
+        >
+          {/* Antes isto era um link direto para o WhatsApp: quem tocava saía da
+              vitrine e o corretor ficava sem lead, sem origem e sem funil.
+              Agora passa pela folha de contato, que registra e só então leva à
+              conversa. Na prévia continua link, para o corretor testar. */}
+          {page.whatsapp &&
+            (podeCapturar ? (
+              <button
+                type="button"
+                onClick={() => setContatoAberto(true)}
+                className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl px-7 text-body-lg font-bold text-white shadow-md transition-transform duration-base ease-standard hover:scale-[1.015]"
+                style={{ backgroundColor: WHATSAPP }}
+              >
+                <IconeWhatsApp />
+                Chamar no WhatsApp
+              </button>
+            ) : (
+              <a
+                href={waLink(page.whatsapp, mensagemGeral)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl px-7 text-body-lg font-bold text-white shadow-md transition-transform duration-base ease-standard hover:scale-[1.015]"
+                style={{ backgroundColor: WHATSAPP }}
+              >
+                <IconeWhatsApp />
+                Chamar no WhatsApp
+              </a>
+            ))}
           {page.totalProperties > 0 && (
             <a
               href="#imoveis"
@@ -122,20 +163,15 @@ export function BrokerStorefront({
             </a>
           )}
         </div>
+
+        <TiraDeDestaques page={page} clickable={interactive} />
       </header>
 
       <main className="mx-auto max-w-4xl px-5 pb-28 sm:px-8 sm:pb-16">
-        {/* ------------------------------------------------------------ Sobre */}
-        {page.bio && (
-          <section className="mt-10 sm:mt-14">
-            <Eyebrow>Sobre</Eyebrow>
-            <p className="mt-3 max-w-2xl whitespace-pre-line text-h3 font-normal leading-normal text-text sm:text-h2 sm:font-normal">
-              {page.bio}
-            </p>
-          </section>
-        )}
-
         {/* ---------------------------------------------------------- Imóveis */}
+        {/* Vêm antes da biografia de propósito: quem abre a vitrine de um
+            corretor veio ver imóvel. A história dele importa, mas depois, na
+            hora de decidir se confia em quem está vendendo. */}
         {interactive ? (
           <PublicListingSection slug={page.slug} whatsapp={page.whatsapp} brokerName={page.name} />
         ) : (
@@ -162,6 +198,16 @@ export function BrokerStorefront({
               </ul>
             </section>
           )
+        )}
+
+        {/* ------------------------------------------------------------ Sobre */}
+        {page.bio && (
+          <section className="mt-12 sm:mt-16">
+            <Eyebrow>Sobre</Eyebrow>
+            <p className="mt-3 max-w-2xl whitespace-pre-line text-h3 font-normal leading-normal text-text sm:text-h2 sm:font-normal">
+              {page.bio}
+            </p>
+          </section>
         )}
 
         {/* ---------------------------------------------------------- Contato */}
@@ -232,20 +278,43 @@ export function BrokerStorefront({
         </footer>
       </main>
 
-      {/* Barra fixa no celular: o contato sempre a um polegar de distância. */}
-      {page.whatsapp && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-bg p-3 backdrop-blur sm:hidden">
-          <a
-            href={waLink(page.whatsapp, mensagemGeral)}
-            target="_blank"
-            rel="noreferrer"
-            className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl text-body-lg font-bold text-white shadow-sm"
-            style={{ backgroundColor: WHATSAPP }}
-          >
-            <IconeWhatsApp />
-            Chamar {primeiroNome(page.name)} no WhatsApp
-          </a>
+      {/* Barra fixa no celular: o contato sempre a um polegar de distância.
+          Só entra quando o botão do hero sai da tela. Os dois juntos eram o
+          mesmo convite duas vezes, e o de baixo ainda comia altura útil
+          justamente na tela em que o visitante decide se fica. */}
+      {page.whatsapp && !heroVisivel && (
+        <div className="animate-rise fixed inset-x-0 bottom-0 z-20 border-t border-border bg-bg p-3 backdrop-blur sm:hidden">
+          {podeCapturar ? (
+            <button
+              type="button"
+              onClick={() => setContatoAberto(true)}
+              className="flex w-full min-h-[52px] items-center justify-center gap-2.5 rounded-xl text-body-lg font-bold text-white shadow-sm"
+              style={{ backgroundColor: WHATSAPP }}
+            >
+              <IconeWhatsApp />
+              Chamar {primeiroNome(page.name)} no WhatsApp
+            </button>
+          ) : (
+            <a
+              href={waLink(page.whatsapp, mensagemGeral)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl text-body-lg font-bold text-white shadow-sm"
+              style={{ backgroundColor: WHATSAPP }}
+            >
+              <IconeWhatsApp />
+              Chamar {primeiroNome(page.name)} no WhatsApp
+            </a>
+          )}
         </div>
+      )}
+
+      {contatoAberto && page.whatsapp && (
+        <InterestModal
+          slug={page.slug}
+          brokerWhatsapp={page.whatsapp}
+          onClose={() => setContatoAberto(false)}
+        />
       )}
     </div>
   );
@@ -255,9 +324,143 @@ export function BrokerStorefront({
 // Pedaços
 // ---------------------------------------------------------------------------
 
+/** Se o elemento está na tela agora. Usado para não repetir o mesmo CTA. */
+function useEstaNaTela(alvo: React.RefObject<HTMLElement>): boolean {
+  const [visivel, setVisivel] = useState(true);
+
+  useEffect(() => {
+    const no = alvo.current;
+    if (!no) return;
+    const observador = new IntersectionObserver(([entrada]) => setVisivel(entrada.isIntersecting));
+    observador.observe(no);
+    return () => observador.disconnect();
+  }, [alvo]);
+
+  return visivel;
+}
+
+/**
+ * Imagem da vitrine. Na página pública é `<img>` puro, como deve ser. Na
+ * prévia as URLs apontam para as rotas do dono (a pública só serve página no
+ * ar), e `<img>` não manda Authorization, então ali quem carrega é o AuthImage.
+ */
+function FotoDaVitrine({
+  src,
+  alt,
+  className,
+  doDono,
+}: {
+  src: string;
+  alt: string;
+  className: string;
+  doDono: boolean;
+}) {
+  if (doDono) return <AuthImage src={src} alt={alt} className={className} />;
+  return <img src={src} alt={alt} loading="lazy" className={className} />;
+}
+
 export function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-caption font-extrabold uppercase tracking-wide text-accent">{children}</p>
+  );
+}
+
+/**
+ * Imóveis ainda dentro do hero. Antes da primeira tela terminar, o visitante
+ * via só a apresentação do corretor: para chegar num imóvel ele tinha que
+ * passar pela biografia, pelo título da seção, pela busca e por três filtros.
+ * Quem abre a página de um corretor veio ver imóvel; a tira responde a isso na
+ * hora, e o resto da listagem continua logo abaixo para quem quer procurar.
+ *
+ * Destaques primeiro, e no máximo quatro: aqui é vitrine de calçada, não
+ * catálogo. A rolagem horizontal deixa o quarto cartão meio visível, que é o
+ * que diz "tem mais" sem precisar escrever.
+ */
+function TiraDeDestaques({
+  page,
+  clickable,
+}: {
+  page: PublicBrokerPageView;
+  clickable: boolean;
+}) {
+  const vitrine = [...page.properties]
+    .sort((a, b) => Number(b.highlighted) - Number(a.highlighted))
+    .slice(0, 4);
+  if (vitrine.length === 0) return null;
+
+  return (
+    <div className="mt-8 sm:mt-10">
+      <div className="mx-auto max-w-4xl px-5 sm:px-8">
+        <p className="text-caption font-extrabold uppercase tracking-wide text-white/60">
+          {vitrine.some((p) => p.highlighted) ? "Em destaque" : "Da carteira"}
+        </p>
+      </div>
+      {/* O padding no scroller, e não no pai, para o primeiro cartão alinhar
+          com o texto e o último não colar na borda ao fim da rolagem. */}
+      <ul className="mx-auto flex max-w-4xl snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 pt-3 sm:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {vitrine.map((p) => (
+          <CartaoDeCalcada key={p.code} property={p} slug={page.slug} clickable={clickable} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Cartão compacto da tira: foto, preço e uma linha. Nada mais cabe aqui. */
+function CartaoDeCalcada({
+  property: p,
+  slug,
+  clickable,
+}: {
+  property: PublicPropertyCard;
+  slug: string;
+  clickable: boolean;
+}) {
+  const conteudo = (
+    <>
+      <div className="relative aspect-[4/3] overflow-hidden bg-white/10">
+        {p.coverUrl ? (
+          <FotoDaVitrine
+            src={p.coverUrl}
+            alt={p.title}
+            doDono={!clickable}
+            className="h-full w-full object-cover transition-transform duration-500 ease-standard group-hover:scale-[1.05]"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-white/40">
+            <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 10.5L12 4l8 6.5M5.5 9.5V20h13V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+        {p.highlighted && (
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-accent px-2.5 py-0.5 text-caption font-bold uppercase tracking-wide text-accent-on">
+            Destaque
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col gap-0.5 p-3">
+        <p className="text-body font-bold leading-tight text-white">{p.priceLabel}</p>
+        <p className="truncate text-caption text-white/65">
+          {[p.type, p.locationLine].filter(Boolean).join(" · ")}
+        </p>
+      </div>
+    </>
+  );
+
+  const classe =
+    "group block w-[15rem] flex-none snap-start overflow-hidden rounded-xl bg-white/[0.07] ring-1 ring-white/15 transition-colors duration-fast hover:bg-white/[0.12]";
+
+  return (
+    <li className="flex-none">
+      {clickable ? (
+        <Link to={`/corretor/${slug}/imovel/${p.code}`} className={classe}>
+          {conteudo}
+        </Link>
+      ) : (
+        <div className={classe}>{conteudo}</div>
+      )}
+    </li>
   );
 }
 
@@ -309,12 +512,12 @@ export function CartaoPublico({
   const detalheUrl = `/corretor/${slug}/imovel/${p.code}`;
 
   const foto = (
-    <div className="relative aspect-[16/11] overflow-hidden bg-surface-sunken">
+    <div className="relative aspect-[16/10] overflow-hidden bg-surface-sunken">
       {p.coverUrl ? (
-        <img
+        <FotoDaVitrine
           src={p.coverUrl}
           alt={p.title}
-          loading="lazy"
+          doDono={!clickable}
           className="h-full w-full object-cover transition-transform duration-500 ease-standard group-hover:scale-[1.04]"
         />
       ) : (
@@ -339,21 +542,19 @@ export function CartaoPublico({
     </div>
   );
 
-  return (
-    <li className="group overflow-hidden rounded-xl bg-surface shadow-sm transition-shadow duration-base ease-standard hover:shadow-lg">
-      {clickable ? <Link to={detalheUrl}>{foto}</Link> : foto}
+  /**
+   * O card inteiro é o link. Antes só a foto, o título e um botão "Ver imóvel"
+   * levavam ao detalhe, e aquele botão custava uns 56px em cada card, numa
+   * lista onde a altura é o recurso escasso: com ela, quatro imóveis viravam
+   * quatro telas. Card clicável é o gesto que a pessoa já tenta primeiro.
+   */
+  const corpo = (
+    <>
+      {foto}
 
-      <div className="flex flex-col gap-1 p-5">
-        <p className="text-h1 text-text">{p.priceLabel}</p>
-        <h3 className="text-body font-semibold leading-snug text-text">
-          {clickable ? (
-            <Link to={detalheUrl} className="hover:text-accent">
-              {p.title}
-            </Link>
-          ) : (
-            p.title
-          )}
-        </h3>
+      <div className="flex flex-col gap-1 p-4">
+        <p className="text-h2 text-text">{p.priceLabel}</p>
+        <h3 className="text-body font-semibold leading-snug text-text">{p.title}</h3>
         {p.locationLine && (
           <p className="flex items-center gap-1 text-body-sm text-text-muted">
             <svg className="h-3.5 w-3.5 flex-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -368,29 +569,34 @@ export function CartaoPublico({
           <p className="mt-1 text-body-sm font-medium text-text-muted">{atributos.join("  ·  ")}</p>
         )}
 
-        {clickable ? (
-          <Link
-            to={detalheUrl}
+        {/* Na prévia não há detalhe para abrir, então o card mantém o botão de
+            conversa que o corretor conhece. */}
+        {!clickable && whatsapp && (
+          <a
+            href={waLink(whatsapp, `Olá, ${brokerName}! Vi o imóvel #${p.code} (${p.title}) na sua página da Nexlar e gostaria de mais informações.`)}
+            target="_blank"
+            rel="noreferrer"
             className="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary text-body-sm font-bold text-primary-on transition-colors duration-fast hover:bg-primary-hover"
           >
-            Ver imóvel
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        ) : (
-          whatsapp && (
-            <a
-              href={waLink(whatsapp, `Olá, ${brokerName}! Vi o imóvel #${p.code} (${p.title}) na sua página da Nexlar e gostaria de mais informações.`)}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary text-body-sm font-bold text-primary-on transition-colors duration-fast hover:bg-primary-hover"
-            >
-              Tenho interesse
-            </a>
-          )
+            Tenho interesse
+          </a>
         )}
       </div>
+    </>
+  );
+
+  const moldura =
+    "group block overflow-hidden rounded-xl bg-surface shadow-sm transition-shadow duration-base ease-standard hover:shadow-lg";
+
+  return (
+    <li>
+      {clickable ? (
+        <Link to={detalheUrl} className={moldura}>
+          {corpo}
+        </Link>
+      ) : (
+        <div className={moldura}>{corpo}</div>
+      )}
     </li>
   );
 }

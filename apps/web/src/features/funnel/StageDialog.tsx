@@ -78,8 +78,8 @@ export function StageDialog({ lead, initialStatus, onClose }: StageDialogProps) 
           label="Nova etapa"
           value={status}
           options={options}
-          onChange={(e) => {
-            setStatus(e.target.value as LeadStatus);
+          onValueChange={(v) => {
+            setStatus(v as LeadStatus);
             setFieldError(null);
           }}
         />

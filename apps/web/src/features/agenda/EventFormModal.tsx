@@ -244,7 +244,7 @@ export function EventFormModal({ type, event, prefill, lockedLead, onClose }: Pr
             <Select
               label="Tipo de tarefa"
               value={taskKind}
-              onChange={(e) => setTaskKind(e.target.value)}
+              onValueChange={setTaskKind}
               placeholder="Selecione (opcional)"
               options={TASK_KINDS.map((k) => ({ value: k, label: TASK_KIND_LABELS[k] }))}
             />
@@ -259,7 +259,7 @@ export function EventFormModal({ type, event, prefill, lockedLead, onClose }: Pr
               <Select
                 label="Lead vinculada"
                 value={leadId}
-                onChange={(e) => setLeadId(e.target.value)}
+                onValueChange={setLeadId}
                 options={leadOptions}
               />
             )}
@@ -320,7 +320,7 @@ export function EventFormModal({ type, event, prefill, lockedLead, onClose }: Pr
         <Select
           label="Lembrete"
           value={reminder}
-          onChange={(e) => setReminder(e.target.value)}
+          onValueChange={setReminder}
           options={REMINDER_OPTIONS}
         />
 
