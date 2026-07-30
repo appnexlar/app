@@ -89,10 +89,13 @@ export function PublicListingSection({
   return (
     <section id="imoveis" className="mt-12 scroll-mt-6 sm:mt-16">
       <Eyebrow>Imóveis</Eyebrow>
-      <div className="mt-2 flex items-baseline justify-between gap-4">
-        <h2 className="text-display text-text">Selecionados para você</h2>
+      {/* No celular a contagem desce para a linha de baixo. Ao lado do título
+          ela empurrava "Selecionados para você" para duas linhas e o número
+          ficava pendurado na altura da primeira, com cara de sobra. */}
+      <div className="mt-2 flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+        <h2 className="text-h1 text-text sm:text-display">Selecionados para você</h2>
         {dados && (
-          <span className="flex-none text-body-sm font-semibold text-text-muted">
+          <span className="text-body-sm font-semibold text-text-muted sm:flex-none">
             {dados.total} {dados.total === 1 ? "imóvel" : "imóveis"}
           </span>
         )}
@@ -116,7 +119,7 @@ export function PublicListingSection({
             onChange={(e) => mudar(setBusca)(e.target.value)}
             placeholder="Buscar por bairro, tipo ou código"
             aria-label="Buscar imóveis"
-            className="min-h-12 w-full rounded-xl border border-border bg-surface pl-11 pr-4 text-body text-text placeholder:text-text-subtle focus-visible:border-[var(--border-focus)] focus-visible:shadow-focus focus-visible:outline-none"
+            className="min-h-12 w-full rounded-md border border-border bg-surface pl-11 pr-4 text-body text-text placeholder:text-text-subtle focus-visible:border-[var(--border-focus)] focus-visible:shadow-focus focus-visible:outline-none"
           />
         </div>
 
@@ -133,12 +136,12 @@ export function PublicListingSection({
           >
             {FINALIDADES.map((f) => (
               <button
-                key={f.value}
+                key={f.value || "tudo"}
                 type="button"
                 role="radio"
                 aria-checked={finalidade === f.value}
                 onClick={() => mudar(setFinalidade)(f.value)}
-                className={`min-h-[38px] rounded-[6px] px-3.5 text-body-sm font-semibold transition-colors ${
+                className={`min-h-[38px] rounded-sm px-3.5 text-body-sm font-semibold transition-colors ${
                   finalidade === f.value ? "bg-surface text-text shadow-sm" : "text-text-muted hover:text-text"
                 }`}
               >
@@ -241,7 +244,7 @@ export function PublicListingSection({
                 type="button"
                 onClick={() => setPaginas((n) => n + 1)}
                 disabled={consulta.isFetching}
-                className="min-h-12 rounded-xl border border-border bg-surface px-8 text-body font-semibold text-text transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
+                className="min-h-12 rounded-md border border-border bg-surface px-8 text-body font-semibold text-text transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
               >
                 {consulta.isFetching ? "Carregando..." : "Carregar mais"}
               </button>

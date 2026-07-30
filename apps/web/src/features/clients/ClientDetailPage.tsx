@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Banner } from "../../components/ui/Banner";
 import { Button } from "../../components/ui/Button";
-import { initials } from "../../lib/name";
 import { clientPath, isUuid, useCanonicalPath } from "../../lib/routes";
 import { usePageEntityLabel } from "../shell/ShellContext";
 import { EventFormModal } from "../agenda/EventFormModal";
@@ -120,22 +119,17 @@ export function ClientDetailPage() {
     <div className="mx-auto flex max-w-3xl flex-col gap-5">
       {/* Cabeçalho */}
       <header className={`animate-rise flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm ${moreOpen ? "relative z-20" : ""}`}>
-        <div className="flex items-center gap-4">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-h3 font-bold text-primary">
-            {initials(client.fullName)}
+        {/* O nome já é o título da página, no cabeçalho. Aqui ficam só o estado,
+            o contato e as ações, sem repetir identidade nem avatar: a ficha da
+            lead já segue esse padrão e as duas telas precisam se parecer. */}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="rounded-full bg-[var(--success-soft)] px-2.5 py-0.5 text-caption font-semibold text-[var(--success-fg)]">
+            Cliente
           </span>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="truncate text-h2 text-text">{client.fullName}</h1>
-              <span className="shrink-0 rounded-full bg-[var(--success-soft)] px-2 py-0.5 text-caption font-semibold text-[var(--success-fg)]">
-                Cliente
-              </span>
-            </div>
-            <p className="mt-0.5 text-body-sm tabular-nums text-text-muted">
-              {displayWhatsapp(client.whatsapp)}
-              {client.email && <span className="text-text-subtle"> · {client.email}</span>}
-            </p>
-          </div>
+          <span className="text-body tabular-nums text-text">{displayWhatsapp(client.whatsapp)}</span>
+          {client.email && (
+            <span className="min-w-0 truncate text-body-sm text-text-subtle">{client.email}</span>
+          )}
         </div>
 
         {/* Foco de agora: o que orienta o corretor para a próxima etapa. */}

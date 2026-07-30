@@ -255,7 +255,7 @@ export function PropertyDetailBody({
                   href={l.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 text-body-sm font-semibold text-text transition-colors hover:border-accent hover:text-accent"
+                  className="flex min-h-12 items-center justify-between gap-3 rounded-md border border-border bg-surface px-4 text-body-sm font-semibold text-text transition-colors hover:border-accent hover:text-accent"
                 >
                   <span className="truncate">{l.caption || "Abrir link"}</span>
                   <svg className="h-4 w-4 flex-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">

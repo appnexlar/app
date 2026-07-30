@@ -83,24 +83,24 @@ export function BrokerStorefront({
           )}
         </div>
 
-        <div className="mx-auto mt-7 flex max-w-4xl flex-col items-start gap-5 px-5 sm:mt-14 sm:flex-row sm:items-center sm:gap-10 sm:px-8">
+        <div className="mx-auto mt-5 flex max-w-4xl flex-col items-start gap-4 px-5 sm:mt-14 sm:flex-row sm:items-center sm:gap-10 sm:px-8">
           {/* Foto em squircle: mais editorial que o círculo de rede social. */}
           {page.photoUrl ? (
             <FotoDaVitrine
               src={page.photoUrl}
               alt={`Foto de ${page.name}`}
               doDono={!interactive}
-              className="h-24 w-24 flex-none rounded-2xl object-cover shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40"
+              className="h-[4.5rem] w-[4.5rem] flex-none rounded-2xl object-cover shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40"
             />
           ) : (
-            <span className="flex h-24 w-24 flex-none items-center justify-center rounded-2xl bg-accent text-h1 font-extrabold text-accent-on shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40">
+            <span className="flex h-[4.5rem] w-[4.5rem] flex-none items-center justify-center rounded-2xl bg-accent text-h1 font-extrabold text-accent-on shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40">
               {iniciais(page.name)}
             </span>
           )}
 
           <div className="min-w-0">
             {page.verified && (
-              <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1 text-caption font-bold text-white">
+              <p className="mb-2.5 inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1 text-caption font-bold text-white sm:mb-3">
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -108,12 +108,12 @@ export function BrokerStorefront({
               </p>
             )}
 
-            <h1 className="text-[2.6rem] font-extrabold leading-tight tracking-tight text-primary-on sm:text-6xl">
+            <h1 className="text-[2.15rem] font-extrabold leading-tight tracking-tight text-primary-on sm:text-6xl">
               {page.name}
             </h1>
 
             {page.headline && (
-              <p className="mt-3 max-w-xl text-body-lg leading-snug text-white/90 sm:text-h3 sm:font-normal">
+              <p className="mt-2 max-w-xl text-body leading-snug text-white/90 sm:mt-3 sm:text-h3 sm:font-normal">
                 {page.headline}
               </p>
             )}
@@ -125,7 +125,7 @@ export function BrokerStorefront({
         {/* CTAs dentro do escuro, onde têm mais força. */}
         <div
           ref={ctaDoHero}
-          className="mx-auto mt-6 flex max-w-4xl flex-col gap-3 px-5 sm:mt-8 sm:flex-row sm:px-8"
+          className="mx-auto mt-5 flex max-w-4xl flex-col gap-2.5 px-5 sm:mt-8 sm:flex-row sm:gap-3 sm:px-8"
         >
           {/* Antes isto era um link direto para o WhatsApp: quem tocava saía da
               vitrine e o corretor ficava sem lead, sem origem e sem funil.
@@ -136,7 +136,7 @@ export function BrokerStorefront({
               <button
                 type="button"
                 onClick={() => setContatoAberto(true)}
-                className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl px-7 text-body-lg font-bold text-white shadow-md transition-transform duration-base ease-standard hover:scale-[1.015]"
+                className="flex min-h-12 items-center justify-center gap-2.5 rounded-md px-7 text-body-lg font-bold text-white shadow-md sm:min-h-[52px] transition-transform duration-base ease-standard hover:scale-[1.015]"
                 style={{ backgroundColor: WHATSAPP }}
               >
                 <IconeWhatsApp />
@@ -147,7 +147,7 @@ export function BrokerStorefront({
                 href={waLink(page.whatsapp, mensagemGeral)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl px-7 text-body-lg font-bold text-white shadow-md transition-transform duration-base ease-standard hover:scale-[1.015]"
+                className="flex min-h-12 items-center justify-center gap-2.5 rounded-md px-7 text-body-lg font-bold text-white shadow-md sm:min-h-[52px] transition-transform duration-base ease-standard hover:scale-[1.015]"
                 style={{ backgroundColor: WHATSAPP }}
               >
                 <IconeWhatsApp />
@@ -157,7 +157,7 @@ export function BrokerStorefront({
           {page.totalProperties > 0 && (
             <a
               href="#imoveis"
-              className="flex min-h-[52px] items-center justify-center rounded-xl border border-white/25 px-7 text-body-lg font-semibold text-primary-on transition-colors duration-fast hover:bg-white/10"
+              className="flex min-h-12 items-center justify-center rounded-md border border-white/25 px-7 text-body-lg font-semibold text-primary-on sm:min-h-[52px] transition-colors duration-fast hover:bg-white/10"
             >
               Ver imóveis ({page.totalProperties})
             </a>
@@ -178,9 +178,9 @@ export function BrokerStorefront({
           page.properties.length > 0 && (
             <section id="imoveis" className="mt-12 scroll-mt-6 sm:mt-16">
               <Eyebrow>Imóveis</Eyebrow>
-              <div className="mt-2 flex items-baseline justify-between gap-4">
-                <h2 className="text-display text-text">Selecionados para você</h2>
-                <span className="flex-none text-body-sm font-semibold text-text-muted">
+              <div className="mt-2 flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+                <h2 className="text-h1 text-text sm:text-display">Selecionados para você</h2>
+                <span className="text-body-sm font-semibold text-text-muted sm:flex-none">
                   {page.totalProperties} {page.totalProperties === 1 ? "imóvel" : "imóveis"}
                 </span>
               </div>
@@ -288,7 +288,7 @@ export function BrokerStorefront({
             <button
               type="button"
               onClick={() => setContatoAberto(true)}
-              className="flex w-full min-h-[52px] items-center justify-center gap-2.5 rounded-xl text-body-lg font-bold text-white shadow-sm"
+              className="flex w-full min-h-[52px] items-center justify-center gap-2.5 rounded-md text-body-lg font-bold text-white shadow-sm"
               style={{ backgroundColor: WHATSAPP }}
             >
               <IconeWhatsApp />
@@ -299,7 +299,7 @@ export function BrokerStorefront({
               href={waLink(page.whatsapp, mensagemGeral)}
               target="_blank"
               rel="noreferrer"
-              className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl text-body-lg font-bold text-white shadow-sm"
+              className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-md text-body-lg font-bold text-white shadow-sm"
               style={{ backgroundColor: WHATSAPP }}
             >
               <IconeWhatsApp />
@@ -386,23 +386,108 @@ function TiraDeDestaques({
   const vitrine = [...page.properties]
     .sort((a, b) => Number(b.highlighted) - Number(a.highlighted))
     .slice(0, 4);
+  const tira = useRef<HTMLUListElement>(null);
+  const { paraTras, paraFrente, rolar } = useRolagemDaTira(tira);
   if (vitrine.length === 0) return null;
 
   return (
-    <div className="mt-8 sm:mt-10">
-      <div className="mx-auto max-w-4xl px-5 sm:px-8">
+    <div className="mt-6 sm:mt-10">
+      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-5 sm:px-8">
         <p className="text-caption font-extrabold uppercase tracking-wide text-white/60">
           {vitrine.some((p) => p.highlighted) ? "Em destaque" : "Da carteira"}
         </p>
+        {/* Setas só no desktop. No celular o dedo já rola a tira e a borda do
+            cartão seguinte diz que tem mais; com mouse não existe pista
+            nenhuma, porque a barra de rolagem está escondida de propósito. */}
+        <div className="hidden gap-1.5 sm:flex">
+          <SetaDaTira direcao="tras" habilitada={paraTras} onClick={() => rolar(-1)} />
+          <SetaDaTira direcao="frente" habilitada={paraFrente} onClick={() => rolar(1)} />
+        </div>
       </div>
       {/* O padding no scroller, e não no pai, para o primeiro cartão alinhar
-          com o texto e o último não colar na borda ao fim da rolagem. */}
-      <ul className="mx-auto flex max-w-4xl snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 pt-3 sm:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          com o texto e o último não colar na borda ao fim da rolagem.
+          O `scroll-px` é o par obrigatório disso: sem ele o snap ignora o
+          respiro, gruda o primeiro cartão na borda da tela e a tira já nasce
+          rolada 20px, com a seta de voltar acesa sem ter para onde voltar. */}
+      <ul
+        ref={tira}
+        className="mx-auto flex max-w-4xl snap-x snap-mandatory scroll-px-5 gap-3 overflow-x-auto px-5 pb-1 pt-2.5 sm:scroll-px-8 sm:px-8 sm:pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {vitrine.map((p) => (
           <CartaoDeCalcada key={p.code} property={p} slug={page.slug} clickable={clickable} />
         ))}
       </ul>
     </div>
+  );
+}
+
+/**
+ * Estado das setas da tira: se ainda dá para ir para trás ou para frente, e a
+ * função que rola. Mede a rolagem real em vez de contar cartões, porque
+ * quantos cabem depende da largura da janela.
+ */
+function useRolagemDaTira(tira: React.RefObject<HTMLUListElement>) {
+  const [paraTras, setParaTras] = useState(false);
+  const [paraFrente, setParaFrente] = useState(false);
+
+  useEffect(() => {
+    const el = tira.current;
+    if (!el) return;
+    // A folga de 4px evita a seta piscar por arredondamento de subpixel no
+    // fim da rolagem, quando scrollLeft nunca chega exatamente ao limite.
+    const medir = () => {
+      setParaTras(el.scrollLeft > 4);
+      setParaFrente(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+    medir();
+    el.addEventListener("scroll", medir, { passive: true });
+    const observador = new ResizeObserver(medir);
+    observador.observe(el);
+    return () => {
+      el.removeEventListener("scroll", medir);
+      observador.disconnect();
+    };
+  }, [tira]);
+
+  const rolar = (sentido: 1 | -1) => {
+    const el = tira.current;
+    if (!el) return;
+    // Um cartão por clique (largura do primeiro item + o gap de 12px), que é
+    // o passo que o snap vai respeitar de qualquer forma.
+    const passo = (el.firstElementChild?.getBoundingClientRect().width ?? 240) + 12;
+    el.scrollBy({ left: passo * sentido, behavior: "smooth" });
+  };
+
+  return { paraTras, paraFrente, rolar };
+}
+
+function SetaDaTira({
+  direcao,
+  habilitada,
+  onClick,
+}: {
+  direcao: "tras" | "frente";
+  habilitada: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!habilitada}
+      aria-label={direcao === "tras" ? "Ver imóveis anteriores" : "Ver mais imóveis"}
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-white transition-colors duration-fast hover:bg-white/15 focus-visible:shadow-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+    >
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d={direcao === "tras" ? "M15 18l-6-6 6-6" : "M9 6l6 6-6 6"}
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
   );
 }
 
@@ -418,7 +503,7 @@ function CartaoDeCalcada({
 }) {
   const conteudo = (
     <>
-      <div className="relative aspect-[4/3] overflow-hidden bg-white/10">
+      <div className="relative aspect-[3/2] overflow-hidden bg-white/10 sm:aspect-[4/3]">
         {p.coverUrl ? (
           <FotoDaVitrine
             src={p.coverUrl}
@@ -439,7 +524,7 @@ function CartaoDeCalcada({
           </span>
         )}
       </div>
-      <div className="flex flex-col gap-0.5 p-3">
+      <div className="flex flex-col gap-0.5 px-3 py-2.5">
         <p className="text-body font-bold leading-tight text-white">{p.priceLabel}</p>
         <p className="truncate text-caption text-white/65">
           {[p.type, p.locationLine].filter(Boolean).join(" · ")}
@@ -473,7 +558,7 @@ function LinhaDeAtuacao({ page }: { page: PublicBrokerPageView }) {
 
   if (onde.length === 0 && oQue.length === 0) return null;
   return (
-    <div className="mt-4 flex flex-col gap-1.5 text-body-sm font-medium text-white/80">
+    <div className="mt-3 flex flex-col gap-1 text-body-sm font-medium text-white/80 sm:mt-4 sm:gap-1.5">
       {onde.length > 0 && (
         <p className="flex items-center gap-1.5">
           <svg className="h-4 w-4 flex-none text-accent" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -666,7 +751,7 @@ function BotaoCanal({
       rel="noreferrer"
       aria-label={rotulo}
       title={rotulo}
-      className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-accent-soft text-accent transition-colors duration-fast hover:bg-accent hover:text-accent-on"
+      className="flex h-11 w-11 flex-none items-center justify-center rounded-md bg-accent-soft text-accent transition-colors duration-fast hover:bg-accent hover:text-accent-on"
     >
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         {ICONES[icone]}

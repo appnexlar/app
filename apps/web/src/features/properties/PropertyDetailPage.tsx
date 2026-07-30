@@ -15,6 +15,7 @@ import {
   duplicateProperty,
   fetchProperty,
 } from "./api";
+import { usePageEntityLabel } from "../shell/ShellContext";
 import { SendToLeadModal } from "../sharing/SendToLeadModal";
 import { PropertySharesSection } from "../sharing/PropertySharesSection";
 import { AuthImage } from "./AuthImage";
@@ -60,6 +61,9 @@ export function PropertyDetailPage() {
     queryFn: () => fetchProperty(id as string),
     enabled: Boolean(id),
   });
+  // Sem isto o cabeçalho anunciava "Detalhes" e o título real vinha logo
+  // abaixo: dois títulos empilhados, sendo que o de cima não dizia nada.
+  usePageEntityLabel(query.data?.title);
 
   useEffect(() => {
     if (!statusMenuOpen && !moreMenuOpen) return;
@@ -159,11 +163,12 @@ export function PropertyDetailPage() {
       <header className="flex flex-col gap-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
+            {/* O título do imóvel é o título da página, no cabeçalho. Aqui fica
+                a ficha curta que identifica o registro, sem repetir o nome. */}
             <p className="text-caption font-semibold uppercase tracking-wide text-text-subtle">
               {formatCode(p.code)} · {CATEGORY_LABELS[p.category]} ·{" "}
               {TYPE_LABELS[p.type] ?? p.type} · {PURPOSE_LABELS[p.purpose]}
             </p>
-            <h2 className="mt-1 text-h1 text-text">{p.title}</h2>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span
                 className={`rounded-full px-2.5 py-1 text-caption font-semibold ${TONE_CLASSES[STATUS_TONES[p.status]]}`}

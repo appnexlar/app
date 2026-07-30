@@ -171,7 +171,9 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
             </ol>
           </nav>
         )}
-        <h1 className="truncate text-h1 text-text">{isSection ? title : current.label}</h1>
+        {/* Duas linhas, não uma com reticências: título de imóvel é longo e
+            cortar no meio esconde justamente o que identifica o registro. */}
+        <h1 className="line-clamp-2 text-h1 text-text">{isSection ? title : current.label}</h1>
       </div>
     </>
   );
