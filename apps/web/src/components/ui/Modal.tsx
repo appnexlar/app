@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 
 interface ModalProps {
@@ -23,7 +24,12 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
 
   if (!open) return null;
 
-  return (
+  // Portal para o body: as seções das fichas usam animate-rise, cuja animação
+  // preenchida (fill-mode both) mantém cada seção como stacking context para
+  // sempre. Um modal renderizado DENTRO de uma seção fica preso nela e as
+  // seções seguintes pintam por cima, overlay e tudo. No body, o z-modal
+  // compete no contexto da página, como deve. Mesmo remédio do menu do Select.
+  return createPortal(
     <div className="fixed inset-0 z-[var(--z-modal)] flex items-end justify-center sm:items-center">
       <div
         className="absolute inset-0 bg-[var(--overlay)] animate-[fade_0.2s_ease]"
@@ -34,7 +40,9 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-rise relative w-full max-w-md rounded-t-2xl bg-surface p-6 shadow-lg sm:rounded-2xl"
+        // max-h + rolagem própria: com o body travado, um modal mais alto que a
+        // tela ficava com o topo cortado e inalcançável no celular.
+        className="animate-rise relative max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-surface p-6 shadow-lg sm:max-h-[88dvh] sm:rounded-2xl"
       >
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-h2 text-text">{title}</h2>
@@ -51,6 +59,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

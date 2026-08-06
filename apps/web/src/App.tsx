@@ -37,6 +37,7 @@ import {
 import { TermsPage } from "./features/legal/TermsPage";
 import { PrivacyPage } from "./features/legal/PrivacyPage";
 import { PublicSharePage } from "./features/sharing/PublicSharePage";
+import { FinancingPublicPage } from "./features/financing/FinancingPublicPage";
 import { SessionBoot } from "./features/auth/SessionBoot";
 
 export function App() {
@@ -59,6 +60,9 @@ export function App() {
         <Route path="/s/:token/imovel/:itemId" element={<PublicSelectionItemPage />} />
         <Route path="/selecao/:token" element={<PublicSelectionPage />} />
         <Route path="/selecao/:token/imovel/:itemId" element={<PublicSelectionItemPage />} />
+
+        {/* Dados para simulação de financiamento: o cliente preenche sem login. */}
+        <Route path="/f/:token" element={<FinancingPublicPage />} />
 
         {/* A vitrine do corretor: pública, sem login. */}
         <Route path="/corretor/:slug" element={<PublicBrokerPage />} />

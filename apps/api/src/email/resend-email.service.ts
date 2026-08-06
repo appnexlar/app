@@ -5,11 +5,13 @@ import {
   type EmailVerificationEmail,
   type PasswordResetEmail,
   type WelcomeEmail,
+  type FinancingAccessCodeEmail,
 } from "./email.service";
 import {
   emailVerificationTemplate,
   passwordResetTemplate,
   welcomeTemplate,
+  financingAccessCodeTemplate,
   type Mensagem,
 } from "./templates";
 
@@ -48,6 +50,10 @@ export class ResendEmailService extends EmailService {
   async sendWelcome({ to, fullName }: WelcomeEmail): Promise<void> {
     const appUrl = this.config.get<string>("WEB_APP_URL", "http://localhost:5173");
     await this.send(to, welcomeTemplate(fullName, appUrl));
+  }
+
+  async sendFinancingAccessCode({ to, firstName, brokerName, code }: FinancingAccessCodeEmail): Promise<void> {
+    await this.send(to, financingAccessCodeTemplate(firstName, brokerName, code));
   }
 
   private async send(to: string, mensagem: Mensagem): Promise<void> {

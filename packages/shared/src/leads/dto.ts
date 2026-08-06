@@ -182,6 +182,7 @@ export const LEAD_ACTIVITY_TYPES = [
   "simulacao",
   "selecao",
   "conversao",
+  "financiamento",
 ] as const;
 export type LeadActivityType = (typeof LEAD_ACTIVITY_TYPES)[number];
 

@@ -142,6 +142,39 @@ export function emailVerificationTemplate(fullName: string, verifyUrl: string): 
   };
 }
 
+export function financingAccessCodeTemplate(
+  firstName: string,
+  brokerName: string,
+  code: string,
+): Mensagem {
+  // O código vai grande e em texto, não em botão: a pessoa vai digitá-lo na
+  // tela que já está aberta, não clicar. Espaço entre os dígitos ajuda a ler.
+  const codigoFormatado = code.split("").join(" ");
+  return {
+    subject: `${code} é seu código de acesso`,
+    html: layout({
+      titulo: "Seu código de acesso",
+      paragrafos: [
+        `Olá, ${firstName}.`,
+        `Use o código abaixo para abrir o formulário de dados que ${brokerName} enviou para você:`,
+        `<span style="display:inline-block;font-size:28px;font-weight:700;letter-spacing:6px;color:#1c2c39;">${codigoFormatado}</span>`,
+      ],
+      rodape:
+        "O código vale por 10 minutos e só funciona no link que você recebeu. " +
+        "Se não foi você que pediu, ignore este e-mail.",
+    }),
+    text: [
+      `Olá, ${firstName}.`,
+      "",
+      `Seu código de acesso ao formulário enviado por ${brokerName}:`,
+      code,
+      "",
+      "O código vale por 10 minutos e só funciona no link que você recebeu.",
+      "Se não foi você que pediu, ignore este e-mail.",
+    ].join("\n"),
+  };
+}
+
 export function welcomeTemplate(fullName: string, appUrl: string): Mensagem {
   const primeiroNome = fullName.split(" ")[0];
   return {

@@ -9,6 +9,7 @@ import { Banner } from "../../components/ui/Banner";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { usePageEntityLabel } from "../shell/ShellContext";
 import { LeadPropertiesBlock } from "./LeadPropertiesBlock";
+import { FinancingBlock } from "../financing/FinancingBlock";
 import { SendFromLeadModal } from "../sharing/SendFromLeadModal";
 import { StageDialog } from "../funnel/StageDialog";
 import { ConvertDialog } from "../clients/ConvertDialog";
@@ -220,6 +221,8 @@ export function LeadDetailPage() {
         lead={{ id: lead.id, code: lead.code, whatsapp: lead.whatsapp }}
         onSend={() => setSendOpen(true)}
       />
+
+      <FinancingBlock lead={{ id: lead.id, name: lead.fullName, email: lead.email ?? null }} />
 
       <InfoCard lead={lead} />
 

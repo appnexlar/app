@@ -17,6 +17,14 @@ export interface EmailVerificationEmail {
   verifyUrl: string;
 }
 
+export interface FinancingAccessCodeEmail {
+  to: string;
+  firstName: string;
+  brokerName: string;
+  /** Código de 6 dígitos, em claro só aqui e no e-mail. */
+  code: string;
+}
+
 /**
  * Contrato de envio de e-mail. Três transacionais: confirmação de cadastro,
  * boas-vindas (depois de confirmado) e recuperação de senha.
@@ -25,6 +33,7 @@ export abstract class EmailService {
   abstract sendEmailVerification(email: EmailVerificationEmail): Promise<void>;
   abstract sendPasswordReset(email: PasswordResetEmail): Promise<void>;
   abstract sendWelcome(email: WelcomeEmail): Promise<void>;
+  abstract sendFinancingAccessCode(email: FinancingAccessCodeEmail): Promise<void>;
 }
 
 /** Implementação de desenvolvimento: registra no log em vez de enviar. */
@@ -46,5 +55,9 @@ export class ConsoleEmailService extends EmailService {
 
   async sendWelcome({ to, fullName }: WelcomeEmail): Promise<void> {
     this.logger.log(`[boas-vindas] Para: ${to} (${fullName})`);
+  }
+
+  async sendFinancingAccessCode({ to, firstName, code }: FinancingAccessCodeEmail): Promise<void> {
+    this.logger.log(`[código de acesso do financiamento] Para: ${to} (${firstName})\n  Código: ${code}`);
   }
 }
