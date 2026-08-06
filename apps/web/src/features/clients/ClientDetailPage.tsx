@@ -6,6 +6,7 @@ import { Button } from "../../components/ui/Button";
 import { clientPath, isUuid, useCanonicalPath } from "../../lib/routes";
 import { usePageEntityLabel } from "../shell/ShellContext";
 import { EventFormModal } from "../agenda/EventFormModal";
+import { FinancingBlock } from "../financing/FinancingBlock";
 import { ACTIVITY_LABELS, displayWhatsapp, whatsappLink } from "../leads/labels";
 import { fetchClient } from "./api";
 import { FinancialFormModal, NegotiationFormModal, ProfileFormModal } from "./ClientEditModals";
@@ -398,6 +399,10 @@ export function ClientDetailPage() {
 
       {/* Financeiro (sensível) */}
       {tab === "financeiro" && (
+      <>
+      {/* A coleta pelo cliente mora junto dos dados financeiros: é daqui que
+          o corretor pede renda, entrada e FGTS pelo link seguro (docs/09). */}
+      <FinancingBlock lead={{ id: client.id, name: client.fullName, email: client.email ?? null }} />
       <Card
         id="financeiro"
         title="Dados financeiros"
@@ -434,6 +439,7 @@ export function ClientDetailPage() {
           </div>
         )}
       </Card>
+      </>
       )}
 
       {/* Participantes */}

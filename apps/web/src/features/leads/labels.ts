@@ -78,6 +78,7 @@ export const ACTIVITY_LABELS: Record<LeadActivityType, string> = {
   simulacao: "Simulação",
   selecao: "Imóvel enviado",
   conversao: "Conversão em cliente",
+  financiamento: "Financiamento",
 };
 
 /** Formata o intervalo de orçamento em reais (ex.: R$ 300.000 a R$ 500.000). */

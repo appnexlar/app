@@ -80,6 +80,7 @@ enum ActivityType {
   simulacao
   selecao
   conversao
+  financiamento
 
   @@map("activity_type")
 }
@@ -345,6 +346,10 @@ model Broker {
   onboardingProfile OnboardingProfile?
   publicPage        BrokerPublicPage?
   notifications     Notification[]
+  financingRequests    FinancingDataRequest[]
+  financingDrafts      FinancingDataDraft[]
+  financingSubmissions FinancingDataSubmission[]
+  financingAccessCodes FinancingAccessCode[]
 
   @@map("broker")
 }
@@ -453,6 +458,7 @@ model Lead {
   clientFinancial   ClientFinancial?
   participants      ClientParticipant[]
   deletionRequests  DataDeletionRequest[]
+  financingRequests FinancingDataRequest[]
 
   @@index([brokerId])
   @@index([status])
@@ -724,6 +730,9 @@ model Consent {
   leadId      String   @map("lead_id") @db.Uuid
   purpose     String
   textVersion String   @map("text_version")
+  /// Quem registrou: null = corretor no sistema (histórico); "formulario_publico"
+  /// = o próprio cliente, pelo link seguro (docs/09).
+  origin      String?
   acceptedAt  DateTime @default(now()) @map("accepted_at") @db.Timestamptz(6)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
@@ -968,6 +977,7 @@ model Property {
   contacts        PropertyContact[]
   media           PropertyMedia[]
   sharedItems     SelectionItem[]
+  financingRequests FinancingDataRequest[]
 
   @@index([brokerId])
   @@index([brokerId, publicVisibility])
@@ -1118,6 +1128,141 @@ model Simulation {
   @@index([brokerId])
   @@index([leadId])
   @@map("simulation")
+}
+
+// ---------------------------------------------------------------------------
+// financing_data_request: coleta de dados para simulação de financiamento
+// ---------------------------------------------------------------------------
+// O corretor pede, o cliente preenche por link seguro, o corretor revisa e
+// aprova. A Nexlar organiza; quem analisa crédito é o banco (docs/09).
+/// Estados enxutos de propósito: abrir, começar a preencher e reenviar são
+/// fatos datados (firstOpenedAt, startedAt, currentVersion), não estados,
+/// no mesmo espírito de viewedAt/viewCount da seleção.
+enum FinancingRequestStatus {
+  rascunho
+  enviada
+  respondida
+  em_revisao
+  correcao_solicitada
+  aprovada_para_simulacao
+  expirada
+  revogada
+  arquivada
+
+  @@map("financing_request_status")
+}
+
+model FinancingDataRequest {
+  id       String @id @default(uuid()) @db.Uuid
+  brokerId String @map("broker_id") @db.Uuid
+  leadId   String @map("lead_id") @db.Uuid
+  /// Imóvel de interesse. Opcional: a coleta pode nascer da ficha, antes de
+  /// existir imóvel definido.
+  propertyId String? @map("property_id") @db.Uuid
+  /// Número curto para a URL interna (/leads/1042/financiamento/3), padrão da
+  /// lead e da seleção. Sem relação com o token público.
+  code   Int                    @unique @default(autoincrement())
+  status FinancingRequestStatus @default(rascunho)
+  /// SHA-256 do token do link público. O token em si só existe na URL enviada
+  /// ao cliente: vazar o banco não vaza o link (padrão dos tokens de auth,
+  /// corrigindo o que a seleção fez em texto puro).
+  tokenHash String? @unique @map("token_hash")
+  /// Blocos do formulário que o corretor pediu (vocabulário no shared).
+  requestedSections String[] @default([]) @map("requested_sections")
+  message           String?
+  /// Prazo escolhido pelo corretor; o backend calcula expiresAt no envio.
+  /// Editar nunca renova o prazo, igual à seleção.
+  expiresInDays Int?      @map("expires_in_days")
+  expiresAt     DateTime? @map("expires_at") @db.Timestamptz(6)
+  firstOpenedAt DateTime? @map("first_opened_at") @db.Timestamptz(6)
+  startedAt     DateTime? @map("started_at") @db.Timestamptz(6)
+  submittedAt   DateTime? @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt    DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  approvedAt    DateTime? @map("approved_at") @db.Timestamptz(6)
+  revokedAt     DateTime? @map("revoked_at") @db.Timestamptz(6)
+  archivedAt    DateTime? @map("archived_at") @db.Timestamptz(6)
+  /// Quantas versões o cliente já enviou. 0 = nenhuma. Reenvio após correção
+  /// incrementa; a submissão de cada versão é imutável.
+  currentVersion Int     @default(0) @map("current_version")
+  consentVersion String? @map("consent_version")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker      Broker                     @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead        Lead                       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  property    Property?                  @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  draft       FinancingDataDraft?
+  submissions FinancingDataSubmission[]
+  accessCodes FinancingAccessCode[]
+
+  @@index([brokerId])
+  @@index([leadId])
+  @@map("financing_data_request")
+}
+
+/// Rascunho mutável do preenchimento (autosave). Uma por solicitação. O
+/// payload é Json validado por seção no shared, padrão property.details.
+model FinancingDataDraft {
+  id        String @id @default(uuid()) @db.Uuid
+  brokerId  String @map("broker_id") @db.Uuid
+  requestId String @unique @map("request_id") @db.Uuid
+  payload   Json   @default("{}")
+  /// Seções que o cliente marcou como concluídas (progresso do formulário).
+  completedSections String[] @default([]) @map("completed_sections")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  /// Base da detecção de conflito do autosave entre dispositivos.
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker  Broker               @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  request FinancingDataRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([brokerId])
+  @@map("financing_data_draft")
+}
+
+/// Versão imutável do que o cliente enviou. Nunca recebe UPDATE: correção
+/// gera versão nova. É a prova do que foi declarado e quando.
+model FinancingDataSubmission {
+  id        String @id @default(uuid()) @db.Uuid
+  brokerId  String @map("broker_id") @db.Uuid
+  requestId String @map("request_id") @db.Uuid
+  version   Int
+  payload   Json
+  /// Consentimento registrado no envio desta versão.
+  consentId String? @map("consent_id") @db.Uuid
+  /// Quando a versão nasce de um pedido de correção: o que o corretor pediu.
+  correctionNote   String?  @map("correction_note")
+  correctionFields String[] @default([]) @map("correction_fields")
+  submittedAt      DateTime @default(now()) @map("submitted_at") @db.Timestamptz(6)
+
+  broker  Broker               @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  request FinancingDataRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, version])
+  @@index([brokerId])
+  @@map("financing_data_submission")
+}
+
+/// Código de uso único enviado por e-mail para confirmar a identidade do
+/// cliente antes de abrir o formulário. Mesmo molde do PasswordResetToken,
+/// com contador de tentativas porque código curto se adivinha por força
+/// bruta, link longo não.
+model FinancingAccessCode {
+  id           String    @id @default(uuid()) @db.Uuid
+  brokerId     String    @map("broker_id") @db.Uuid
+  requestId    String    @map("request_id") @db.Uuid
+  codeHash     String    @map("code_hash")
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt       DateTime? @map("used_at") @db.Timestamptz(6)
+  attemptCount Int       @default(0) @map("attempt_count")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker  Broker               @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  request FinancingDataRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@index([brokerId])
+  @@map("financing_access_code")
 }
 
 // ---------------------------------------------------------------------------

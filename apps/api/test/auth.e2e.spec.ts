@@ -40,6 +40,10 @@ class EmailCollector extends EmailService {
     this.welcomes.push(email);
   }
 
+  async sendFinancingAccessCode(): Promise<void> {
+    // Fora do escopo dos testes de auth.
+  }
+
   /** Token cru do último link de redefinição enviado para o e-mail informado. */
   lastTokenFor(to: string): string {
     const email = [...this.resets].reverse().find((e) => e.to === to);
