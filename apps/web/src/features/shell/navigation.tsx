@@ -129,10 +129,11 @@ const SUBROUTE_LABELS: Record<string, string> = {
   imoveis: "Imóveis da página",
   selecoes: "Seleções",
   previa: "Prévia",
+  financiamento: "Financiamento",
 };
 
 /** Segmentos que só existem para compor o caminho: não abrem tela sozinhos. */
-const SEM_TELA_PROPRIA = new Set(["selecoes"]);
+const SEM_TELA_PROPRIA = new Set(["selecoes", "financiamento"]);
 
 /**
  * Caminho de pão da página atual. Ex.: /imoveis/:id/editar →

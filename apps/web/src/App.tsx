@@ -38,6 +38,7 @@ import { TermsPage } from "./features/legal/TermsPage";
 import { PrivacyPage } from "./features/legal/PrivacyPage";
 import { PublicSharePage } from "./features/sharing/PublicSharePage";
 import { FinancingPublicPage } from "./features/financing/FinancingPublicPage";
+import { FinancingReviewPage } from "./features/financing/FinancingReviewPage";
 import { SessionBoot } from "./features/auth/SessionBoot";
 
 export function App() {
@@ -93,10 +94,12 @@ export function App() {
             <Route path="/leads/:id" element={<LeadDetailPage />} />
             <Route path="/leads/:id/imoveis-enviados" element={<LeadSharesPage />} />
             <Route path="/leads/:id/selecoes/:selectionId" element={<SelectionBuilderPage />} />
+            <Route path="/leads/:id/financiamento/:code" element={<FinancingReviewPage />} />
             <Route path="/leads/:id/selecoes/:selectionId/previa" element={<SelectionPreviewPage />} />
             <Route path="/funil" element={<FunnelPage />} />
             <Route path="/clientes" element={<ClientsPage />} />
             <Route path="/clientes/:id" element={<ClientDetailPage />} />
+            <Route path="/clientes/:id/financiamento/:code" element={<FinancingReviewPage />} />
             <Route path="/agenda" element={<AgendaPage />} />
             <Route path="/visitas" element={<VisitsPage />} />
             <Route path="/imoveis" element={<PropertiesPage />} />

@@ -1,9 +1,11 @@
-# 09 · Coleta de dados para simulação de financiamento: análise técnica
+# 09 · Coleta de dados para simulação de financiamento
 
-Entrega da Task 1 da épica. Analisa o que a Nexlar já tem, o que falta, os riscos
-e a proposta de implementação. **Nada foi implementado nesta task.**
+Análise técnica (Task 1, 29 jul 2026, base `main` em `5745966`) seguida do
+registro do que foi entregue. A seção 11, no fim, documenta a épica pronta:
+o que existe hoje, como funciona e o que ficou de fora conscientemente.
 
-Data da análise: 29 jul 2026. Base: `main` em `5745966`.
+**Estado: épica concluída (fatias A a F) em 5 ago 2026.** As fatias A a D
+foram para a `main` no PR #5; E e F vieram depois.
 
 ---
 
@@ -240,9 +242,94 @@ Fatia F  notificações, eventos, acompanhamento na ficha, e2e integrado,
 Cada fatia termina funcionando de ponta a ponta, com teste de dois corretores,
 quatro estados de tela e verificação em 375px, como manda o CLAUDE.md.
 
+**Todas as seis foram entregues.** A seção 11 descreve o resultado.
+
 ## 10. O que esta análise NÃO cobre
 
 - Compartilhamento automático com banco (fora por princípio da épica).
 - Consulta de FGTS ou score (declaratório por definição).
 - Multiorganização.
 - Criptografia de campo (limitação consciente registrada na seção 3).
+
+---
+
+## 11. O que foi entregue (5 ago 2026)
+
+### 11.1 A jornada, ponta a ponta
+
+**Corretor.** Na ficha da lead ou do cliente, o bloco "Simulação de
+financiamento" cria a solicitação (blocos pedidos, prazo, mensagem), gera o
+link e devolve a mensagem pronta de WhatsApp. O link aparece **uma vez**:
+perdeu, revoga e gera outro. A ficha acompanha o estado; quando o cliente
+responde, o botão vira "Revisar respostas" e leva a
+`/leads/:id/financiamento/:code`, onde ele lê tudo por seção e decide entre
+aprovar ou pedir correção.
+
+**Cliente.** Abre `/f/:token`, vê quem pediu e por quê, recebe um código de 6
+dígitos por e-mail e entra numa sessão curta. Preenche seis etapas com
+salvamento automático, pode ir e voltar entre elas, fechar e retomar pelo
+mesmo link. Na revisão final confere um resumo em linguagem comum, aceita o
+uso dos dados e envia. Depois disso o link se encerra.
+
+**Correção.** O pedido de correção reabre só as etapas escolhidas, com a nota
+do corretor no topo do formulário, e gera um link novo (o antigo morre). O
+reenvio cria a versão seguinte; a anterior fica guardada, imutável, com a nota
+que a motivou.
+
+### 11.2 Aplicação à ficha na aprovação
+
+Regra (decisão §5): **só campo preenchido sobrescreve**; branco nunca apaga o
+que o corretor já tinha. A submissão imutável preserva o que o cliente enviou.
+
+| De (formulário) | Para (ficha) |
+|---|---|
+| `dados_pessoais`: cpf, birthDate, maritalStatus, nationality, cep, address, city, state | `ClientProfile` |
+| `trabalho_renda`: situation → incomeType, occupation, renda líquida (ou bruta) → monthlyIncome | `ClientFinancial` |
+| `entrada_fgts`: downPaymentAmount, fgts na origem → hasFgts | `ClientFinancial` |
+| `imovel`: preferredBank, useFgts | `ClientFinancial` |
+| `dados_pessoais.dependentsCount`, participantes > 0 → hasIncomeComposition | `ClientFinancial` |
+| `participantes`: cada um que a ficha não conhece (por CPF, ou nome quando não há CPF) | `ClientParticipant` (só acrescenta, nunca remove nem edita) |
+| `imovel` + `entrada_fgts` | `Simulation` pendente pré-preenchida (banco, valor, entrada, financiado, prazo) |
+
+`situation` que não existe no enum da ficha (servidor público, pensionista,
+informal) vira `outro`: o sistema não inventa categoria. A auditoria registra
+contagens, nunca valores.
+
+### 11.3 Segurança aplicada
+
+- Token do link: 128 bits, **só o hash** no banco. Revogar, arquivar e expirar
+  apagam o hash: o link some de verdade.
+- Código de 6 dígitos: hash, validade de 10 minutos, uso único, um vivo por
+  vez, trava em 5 tentativas (pedir outro destrava).
+- Sessão pós-código: JWT em cookie httpOnly, escopo `financing-form`, amarrado
+  à solicitação, path restrito a `/api/public/financiamento`, 2 horas. Cookie
+  de uma solicitação não abre outra.
+- `Cache-Control: private, no-store` em todas as rotas públicas; rate limit por
+  rota; RLS nas quatro tabelas novas; `broker_id` sempre do JWT.
+- Validação por schema **antes** de tocar o rascunho: formato inválido não
+  entra nem como rascunho. A obrigatoriedade vale no envio, com a mesma régua
+  no front e no backend (`financingSubmissionPendencies`, no shared).
+- Estado do link antes da identidade confirmada não carrega dado pessoal além
+  do primeiro nome e do e-mail mascarado.
+
+### 11.4 Eventos, timeline e avisos
+
+`ProductEvent`: CREATED, SENT, OPENED, STARTED, SUBMITTED,
+CORRECTION_REQUESTED, APPROVED_FOR_SIMULATION, EXPIRED, REVOKED (deduplicados
+por solicitação, e por versão quando fazem sentido mais de uma vez).
+
+`LeadActivity` nos marcos: enviada, respondida/reenviada, correção solicitada,
+aprovada. Notificações no sino: primeira abertura, resposta recebida e prazo
+vencido sem envio. Nenhum evento ou notificação carrega renda, CPF ou token.
+
+### 11.5 Limitações conscientes
+
+- Sem criptografia de campo (disco do Supabase criptografado, tráfego em TLS).
+- Sem lembrete automático de prazo a vencer: exigiria agendador, que a
+  Nexlar ainda não tem. O corretor vê o prazo na ficha.
+- Rate limit em memória por processo: com uma réplica no Railway funciona; ao
+  escalar réplicas, migra para o banco.
+- A área geral "Dados para simulação" (Task 22 da épica) segue fora: a entrada
+  é a ficha, como foi decidido na §5.
+- O canal do link é o WhatsApp do corretor. Se o link vazar, o OTP por e-mail
+  é a segunda barreira; o risco residual está na §4.

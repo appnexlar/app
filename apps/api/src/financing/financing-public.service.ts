@@ -59,6 +59,11 @@ type PublicRecord = Prisma.FinancingDataRequestGetPayload<{
     lead: { select: { fullName: true; email: true; code: true } };
     broker: { select: { fullName: true } };
     draft: true;
+    submissions: {
+      select: { correctionNote: true; correctionFields: true };
+      orderBy: { version: "desc" };
+      take: 1;
+    };
   };
 }>;
 
@@ -66,6 +71,12 @@ const INCLUDE_PUBLIC = {
   lead: { select: { fullName: true, email: true, code: true } },
   broker: { select: { fullName: true } },
   draft: true,
+  // A última versão carrega a nota de correção, quando houver.
+  submissions: {
+    select: { correctionNote: true, correctionFields: true },
+    orderBy: { version: "desc" },
+    take: 1,
+  },
 } satisfies Prisma.FinancingDataRequestInclude;
 
 interface SessaoPayload {
@@ -114,6 +125,7 @@ export class FinancingPublicService {
 
     // randomInt é criptográfico e o intervalo mantém sempre 6 dígitos.
     const code = String(randomInt(100000, 1000000));
+    let primeiraAbertura = false;
 
     await this.prisma.$transaction(async (tx) => {
       // Um código vivo por vez: pedir outro mata o anterior, o que também
@@ -146,8 +158,21 @@ export class FinancingPublicService {
           },
           tx,
         );
+        primeiraAbertura = true;
       }
     });
+
+    // Só na primeira abertura: saber que o cliente começou vale um aviso; a
+    // cada pedido de código, não.
+    if (primeiraAbertura) {
+      await this.notifications.create(
+        request.brokerId,
+        "financiamento_aberto",
+        "Cliente abriu o formulário",
+        `${request.lead.fullName} abriu o link dos dados para simulação.`,
+        `/leads/${request.lead.code}`,
+      );
+    }
 
     await this.email.sendFinancingAccessCode({
       to: request.lead.email,
@@ -437,6 +462,10 @@ export class FinancingPublicService {
   }
 
   private montarFormulario(r: PublicRecord): FinancingPublicForm {
+    // A nota de correção só aparece enquanto a correção está aberta; depois
+    // do reenvio ela vira história e sai da frente do cliente.
+    const emCorrecao = r.status === "correcao_solicitada";
+    const ultima = r.submissions[0];
     return {
       leadFirstName: primeiroNome(r.lead.fullName),
       leadFullName: r.lead.fullName,
@@ -446,6 +475,10 @@ export class FinancingPublicService {
       expiresAt: r.expiresAt?.toISOString() ?? null,
       payload: (r.draft?.payload as FinancingPayload | undefined) ?? {},
       completedSections: (r.draft?.completedSections ?? []) as FinancingSection[],
+      correctionNote: emCorrecao ? (ultima?.correctionNote ?? null) : null,
+      correctionFields: emCorrecao
+        ? ((ultima?.correctionFields as FinancingSection[] | undefined) ?? null)
+        : null,
     };
   }
 }
