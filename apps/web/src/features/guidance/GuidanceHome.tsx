@@ -81,7 +81,7 @@ export function GuidanceHome() {
       {isLoading && <Esqueleto />}
 
       {isError && (
-        <div className="mt-4 flex flex-col gap-3">
+        <div className="mt-4 flex flex-col gap-4">
           <Banner variant="danger">Não foi possível carregar suas orientações agora.</Banner>
           <button
             type="button"
@@ -136,17 +136,17 @@ function Camada({
       )}
 
       {secondary.length > 0 && (
-        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5">
+        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-6">
           <h3 className="text-caption font-semibold uppercase tracking-wide text-text-subtle">
             Outras ações
           </h3>
-          <div className="mt-3 flex flex-col divide-y divide-border">
+          <div className="mt-4 flex flex-col divide-y divide-border">
             {secondary.map((rec) => (
               <button
                 key={rec.key}
                 type="button"
                 onClick={() => onAction(rec)}
-                className="group flex items-center gap-3 py-2.5 text-left transition-colors hover:text-accent focus-visible:text-accent"
+                className="group flex items-center gap-4 py-2 text-left transition-colors hover:text-accent focus-visible:text-accent"
               >
                 <span className="min-w-0 flex-1 text-body-sm font-medium text-text group-hover:text-accent">
                   {rec.title}

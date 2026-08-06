@@ -69,7 +69,7 @@ export function GuidanceCard({
 
   return (
     <div
-      className={`animate-rise relative overflow-hidden rounded-2xl border p-5 shadow-sm sm:p-6 ${visual.container}`}
+      className={`animate-rise relative overflow-hidden rounded-2xl border p-6 shadow-sm sm:p-6 ${visual.container}`}
     >
       {rec.dismissible && onDismiss && (
         <button
@@ -85,7 +85,7 @@ export function GuidanceCard({
         </button>
       )}
 
-      <div className="flex items-start gap-3.5">
+      <div className="flex items-start gap-4">
         <span
           className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl ${visual.selo}`}
           aria-hidden="true"
@@ -98,7 +98,7 @@ export function GuidanceCard({
           <span className="text-caption font-semibold uppercase tracking-wide text-text-muted">
             {visual.rotulo}
           </span>
-          <h3 className="mt-0.5 text-h3 text-text text-balance">{rec.title}</h3>
+          <h3 className="mt-1 text-h3 text-text text-balance">{rec.title}</h3>
           <p className="mt-1 text-body-sm text-text-muted">{rec.description}</p>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">

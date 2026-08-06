@@ -64,11 +64,11 @@ export function FileUpload({
   const invalid = Boolean(error);
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <span className="text-label text-text">{label}</span>
 
       {file ? (
-        <div className="flex items-center gap-3 rounded-md border border-border bg-surface p-3 shadow-xs">
+        <div className="flex items-center gap-4 rounded-md border border-border bg-surface p-4 shadow-xs">
           {previewUrl ? (
             <img
               src={previewUrl}

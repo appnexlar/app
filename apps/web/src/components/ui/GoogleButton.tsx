@@ -12,7 +12,7 @@ export function GoogleButton({ onClick, label, disabled }: GoogleButtonProps) {
       onClick={onClick}
       disabled={disabled}
       className={
-        "inline-flex w-full min-h-[var(--tap-target-min)] items-center justify-center gap-3 " +
+        "inline-flex w-full min-h-[var(--tap-target-min)] items-center justify-center gap-2 " +
         "rounded-md border border-border-strong bg-surface px-[18px] text-[15px] font-semibold text-text " +
         "transition-colors duration-fast ease-standard hover:bg-surface-sunken " +
         "disabled:cursor-not-allowed disabled:opacity-60 focus-visible:shadow-focus"

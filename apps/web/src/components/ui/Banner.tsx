@@ -41,9 +41,9 @@ export function Banner({ variant, children }: { variant: Variant; children: Reac
   return (
     <div
       role={variant === "danger" ? "alert" : "status"}
-      className={`flex items-start gap-2 rounded-md border px-3.5 py-3 text-body-sm ${styles[variant]}`}
+      className={`flex items-start gap-2 rounded-md border px-4 py-4 text-body-sm ${styles[variant]}`}
     >
-      <svg className="mt-0.5 h-[18px] w-[18px] flex-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg className="mt-1 h-[18px] w-[18px] flex-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         {icons[variant]}
       </svg>
       <span>{children}</span>

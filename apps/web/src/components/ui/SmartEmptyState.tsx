@@ -39,15 +39,15 @@ export function SmartEmptyState({
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent">
         {icon}
       </div>
-      <h2 className="mt-5 text-h2 text-text text-balance">{title}</h2>
+      <h2 className="mt-6 text-h2 text-text text-balance">{title}</h2>
       <p className="mt-2 max-w-sm text-body text-text-muted">{description}</p>
 
-      <div className="mt-6 flex flex-col items-center gap-3">
+      <div className="mt-6 flex flex-col items-center gap-4">
         <Acao acao={action} variant="accent" />
         {help && <Acao acao={help} variant="ghost" />}
       </div>
 
-      {hint && <p className="mt-3 text-caption text-text-subtle">{hint}</p>}
+      {hint && <p className="mt-4 text-caption text-text-subtle">{hint}</p>}
     </section>
   );
 }

@@ -112,7 +112,7 @@ export function DatePicker({
     selected === `${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`;
 
   return (
-    <div className="flex flex-col gap-1.5" ref={ref}>
+    <div className="flex flex-col gap-2" ref={ref}>
       <label htmlFor={id} className="flex items-baseline justify-between gap-2 text-label text-text">
         <span>{label}</span>
         {optionalLabel && (
@@ -128,7 +128,7 @@ export function DatePicker({
         aria-describedby={invalid ? errorId : undefined}
         aria-expanded={open}
         className={
-          "flex min-h-[var(--tap-target-min)] w-full items-center justify-between rounded-md border bg-surface px-3.5 text-body transition-colors duration-fast focus-visible:shadow-focus focus-visible:border-[var(--border-focus)] " +
+          "flex min-h-[var(--tap-target-min)] w-full items-center justify-between rounded-md border bg-surface px-4 text-body transition-colors duration-fast focus-visible:shadow-focus focus-visible:border-[var(--border-focus)] " +
           (invalid ? "border-danger " : "border-border ") +
           (value ? "text-text" : "text-text-subtle")
         }
@@ -141,7 +141,7 @@ export function DatePicker({
       </button>
 
       {open && (
-        <div className="w-full max-w-[320px] rounded-xl border border-border bg-surface p-3 shadow-md">
+        <div className="w-full max-w-[320px] rounded-xl border border-border bg-surface p-4 shadow-md">
           {/* Navegação: mês e ano com troca rápida */}
           <div className="flex items-center gap-2">
             <button
@@ -188,14 +188,14 @@ export function DatePicker({
           </div>
 
           {/* Dias da semana */}
-          <div className="mt-3 grid grid-cols-7 text-center text-caption font-medium text-text-subtle">
+          <div className="mt-4 grid grid-cols-7 text-center text-caption font-medium text-text-subtle">
             {WEEKDAYS.map((w, i) => (
               <span key={i} className="py-1">{w}</span>
             ))}
           </div>
 
           {/* Grade de dias */}
-          <div className="grid grid-cols-7 gap-0.5">
+          <div className="grid grid-cols-7 gap-1">
             {cells.map((day, i) =>
               day == null ? (
                 <span key={`e${i}`} />

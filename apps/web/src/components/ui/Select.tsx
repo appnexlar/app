@@ -178,7 +178,7 @@ export function Select({
       : `border-border bg-surface ${vazio ? "text-text-subtle" : "text-text"} hover:border-border-strong`;
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
+    <div className={`flex flex-col gap-2 ${className}`}>
       {!hideLabel && (
         <span id={idDoRotulo} className="text-label text-text">
           {label}
@@ -205,8 +205,8 @@ export function Select({
           onKeyDown={teclado}
           className={`flex w-full items-center gap-2 rounded-md border transition-colors duration-fast focus-visible:shadow-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${
             compact
-              ? "min-h-11 pl-3 pr-2.5 text-body-sm font-semibold"
-              : "min-h-[var(--tap-target-min)] pl-3.5 pr-3 text-body"
+              ? "min-h-11 pl-4 pr-2 text-body-sm font-semibold"
+              : "min-h-[var(--tap-target-min)] pl-4 pr-4 text-body"
           } ${corDoBotao}`}
         >
           <span className="min-w-0 flex-1 truncate text-left">{escolhido?.label ?? label}</span>
@@ -252,7 +252,7 @@ export function Select({
                   aria-selected={atual}
                   onClick={() => escolher(i)}
                   onMouseEnter={() => setEmFoco(i)}
-                  className={`flex cursor-pointer items-center gap-2 whitespace-nowrap px-3 py-2.5 text-body-sm transition-colors ${
+                  className={`flex cursor-pointer items-center gap-2 whitespace-nowrap px-4 py-2 text-body-sm transition-colors ${
                     i === emFoco ? "bg-surface-sunken" : ""
                   } ${atual ? "font-semibold text-accent" : "text-text"}`}
                 >
