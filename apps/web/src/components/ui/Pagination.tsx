@@ -40,13 +40,13 @@ export function Pagination({
   // Compacto no celular para a janela inteira (até 7 números mais as setas)
   // caber numa linha só a 375px; folgado a partir de sm.
   const botao =
-    "flex h-9 min-w-[36px] items-center justify-center rounded-lg px-1.5 text-body-sm tabular-nums " +
+    "flex h-9 min-w-[36px] items-center justify-center rounded-lg px-2 text-body-sm tabular-nums " +
     "transition-colors duration-fast disabled:opacity-40 sm:h-10 sm:min-w-[40px] sm:px-2";
 
   return (
     <nav
       aria-label="Paginação"
-      className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5"
+      className="flex flex-wrap items-center justify-center gap-1 sm:gap-2"
     >
       <button
         type="button"

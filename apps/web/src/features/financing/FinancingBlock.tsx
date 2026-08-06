@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Landmark } from "lucide-react";
 import {
@@ -25,7 +26,7 @@ interface FinancingBlockProps {
 }
 
 /** Tom do selo por status: informação, não alarme (danger só para expirada). */
-const STATUS_TONES: Record<FinancingRequestStatus, string> = {
+export const STATUS_TONES: Record<FinancingRequestStatus, string> = {
   rascunho: "bg-surface-sunken text-text-muted",
   enviada: "bg-[var(--highlight-soft)] text-[var(--highlight-fg)]",
   respondida: "bg-success-soft text-[var(--success-fg)]",
@@ -46,6 +47,9 @@ const STATUS_TONES: Record<FinancingRequestStatus, string> = {
  */
 export function FinancingBlock({ lead }: FinancingBlockProps) {
   const queryClient = useQueryClient();
+  // A revisão mora dentro da ficha atual (/leads/8 ou /clientes/10), para o
+  // voltar e o caminho de pão contarem a verdade.
+  const { pathname } = useLocation();
   const [pedirAberto, setPedirAberto] = useState(false);
   const [linkGerado, setLinkGerado] = useState<FinancingSendResult | null>(null);
   const [confirmar, setConfirmar] = useState<{ acao: "revogar" | "arquivar"; alvo: FinancingRequestSummary } | null>(null);
@@ -148,6 +152,19 @@ export function FinancingBlock({ lead }: FinancingBlockProps) {
                 <span className="text-body-sm text-text-muted">{descrever(s)}</span>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {(s.status === "respondida" ||
+                  s.status === "em_revisao" ||
+                  s.status === "correcao_solicitada" ||
+                  s.status === "aprovada_para_simulacao") && (
+                  <Link
+                    to={`${pathname}/financiamento/${s.code}`}
+                    className="min-h-9 content-center text-body-sm font-semibold text-accent hover:underline"
+                  >
+                    {s.status === "respondida" || s.status === "em_revisao"
+                      ? "Revisar respostas"
+                      : "Ver respostas"}
+                  </Link>
+                )}
                 {(s.status === "rascunho" || s.status === "expirada" || s.status === "revogada") && (
                   <Acao
                     onClick={() => reenviar.mutate(s.code)}

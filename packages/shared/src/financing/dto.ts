@@ -456,6 +456,9 @@ export interface FinancingPublicForm {
   expiresAt: string | null;
   payload: FinancingPayload;
   completedSections: FinancingSection[];
+  /** Presentes quando o corretor pediu correção: o que ajustar e por quê. */
+  correctionNote: string | null;
+  correctionFields: FinancingSection[] | null;
 }
 
 /** Resposta do envio do cliente: a versão congelada e quando foi. */
@@ -463,6 +466,58 @@ export interface FinancingSubmitResult {
   version: number;
   submittedAt: string;
   brokerName: string;
+}
+
+// ---------------------------------------------------------------------------
+// Revisão do corretor (Fatia E)
+// ---------------------------------------------------------------------------
+
+export const financingRequestCorrectionSchema = z.object({
+  /** Blocos que o cliente deve revisar. */
+  sections: z
+    .array(z.enum(FINANCING_SECTIONS))
+    .min(1, "Escolha pelo menos um bloco para corrigir.")
+    .transform((v) => [...new Set(v)]),
+  note: z
+    .string()
+    .trim()
+    .min(5, "Explique para o cliente o que precisa ser ajustado.")
+    .max(500),
+  expiresInDays: z
+    .number()
+    .refine((v): v is FinancingExpiryDays => FINANCING_EXPIRY_OPTIONS.includes(v as FinancingExpiryDays), {
+      message: "Prazo inválido.",
+    })
+    .optional(),
+});
+export type FinancingRequestCorrectionDto = z.infer<typeof financingRequestCorrectionSchema>;
+
+/** Uma versão enviada pelo cliente, para o histórico da revisão. */
+export interface FinancingSubmissionSummary {
+  version: number;
+  submittedAt: string;
+  correctionNote: string | null;
+  correctionFields: FinancingSection[] | null;
+}
+
+/** A revisão: a solicitação, a última resposta congelada e o histórico. */
+export interface FinancingReviewView {
+  request: FinancingRequestView;
+  payload: FinancingPayload;
+  version: number;
+  submittedAt: string;
+  versions: FinancingSubmissionSummary[];
+}
+
+/** O que a aprovação aplicou à ficha, para o corretor ver o efeito. */
+export interface FinancingApproveResult {
+  request: FinancingRequestView;
+  /** Campos de perfil e financeiro efetivamente preenchidos/atualizados. */
+  updatedFields: number;
+  /** Participantes novos criados na ficha. */
+  createdParticipants: number;
+  /** Id da simulação pré-preenchida. */
+  simulationId: string;
 }
 
 // ---------------------------------------------------------------------------

@@ -44,7 +44,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         // tela ficava com o topo cortado e inalcançável no celular.
         className="animate-rise relative max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-surface p-6 shadow-lg sm:max-h-[88dvh] sm:rounded-2xl"
       >
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="text-h2 text-text">{title}</h2>
           <button
             type="button"

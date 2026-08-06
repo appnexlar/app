@@ -1,7 +1,10 @@
 import type {
   CreateFinancingRequestDto,
+  FinancingApproveResult,
+  FinancingRequestCorrectionDto,
   FinancingRequestSummary,
   FinancingRequestView,
+  FinancingReviewView,
   FinancingSendResult,
   UpdateFinancingRequestDto,
 } from "@nexlar/shared";
@@ -39,4 +42,20 @@ export function revokeFinancingRequest(ref: string | number): Promise<FinancingR
 
 export function archiveFinancingRequest(ref: string | number): Promise<FinancingRequestView> {
   return http.post<FinancingRequestView>(`/financing-requests/${ref}/archive`, {});
+}
+
+/** As respostas do cliente. Abrir a revisão marca em_revisao no backend. */
+export function fetchFinancingReview(ref: string | number): Promise<FinancingReviewView> {
+  return http.get<FinancingReviewView>(`/financing-requests/${ref}/review`);
+}
+
+export function requestFinancingCorrection(
+  ref: string | number,
+  dto: FinancingRequestCorrectionDto,
+): Promise<FinancingSendResult> {
+  return http.post<FinancingSendResult>(`/financing-requests/${ref}/request-correction`, dto);
+}
+
+export function approveFinancing(ref: string | number): Promise<FinancingApproveResult> {
+  return http.post<FinancingApproveResult>(`/financing-requests/${ref}/approve`, {});
 }

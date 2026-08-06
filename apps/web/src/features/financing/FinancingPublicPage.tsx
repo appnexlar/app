@@ -340,6 +340,20 @@ function Formulario({
 
       <Etapas etapas={etapas} completed={form.completedSections} atual={etapa} onIr={setEtapa} />
 
+      {form.correctionNote && (
+        <div className="rounded-2xl bg-surface p-4 shadow-sm">
+          <p className="text-caption font-extrabold uppercase tracking-wide text-accent">
+            Pedido do seu corretor
+          </p>
+          <p className="mt-1 text-body-sm text-text-muted">"{form.correctionNote}"</p>
+          {form.correctionFields && form.correctionFields.length > 0 && (
+            <p className="mt-1.5 text-caption text-text-subtle">
+              Revise: {form.correctionFields.map((s) => FINANCING_SECTION_LABELS[s]).join(", ")}.
+            </p>
+          )}
+        </div>
+      )}
+
       {aviso && <Banner variant="danger">{aviso}</Banner>}
 
       {Secao ? (

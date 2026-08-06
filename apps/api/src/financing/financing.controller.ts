@@ -2,10 +2,14 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query 
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
   createFinancingRequestSchema,
+  financingRequestCorrectionSchema,
   updateFinancingRequestSchema,
   type CreateFinancingRequestDto,
+  type FinancingApproveResult,
+  type FinancingRequestCorrectionDto,
   type FinancingRequestSummary,
   type FinancingRequestView,
+  type FinancingReviewView,
   type FinancingSendResult,
   type UpdateFinancingRequestDto,
 } from "@nexlar/shared";
@@ -70,6 +74,36 @@ export class FinancingController {
     @Param("ref", FinancingRefPipe) id: string,
   ): Promise<FinancingSendResult> {
     return this.requests.send(brokerId, id);
+  }
+
+  @Get(":ref/review")
+  @ApiOperation({ summary: "Respostas do cliente para revisão (marca em_revisao)" })
+  review(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("ref", FinancingRefPipe) id: string,
+  ): Promise<FinancingReviewView> {
+    return this.requests.review(brokerId, id);
+  }
+
+  @Post(":ref/request-correction")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Pede correção: link novo, prazo renovado e nota para o cliente" })
+  requestCorrection(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("ref", FinancingRefPipe) id: string,
+    @Body(new ZodValidationPipe(financingRequestCorrectionSchema)) dto: FinancingRequestCorrectionDto,
+  ): Promise<FinancingSendResult> {
+    return this.requests.requestCorrection(brokerId, id, dto);
+  }
+
+  @Post(":ref/approve")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Aprova para simulação: aplica à ficha e pré-preenche a Simulation" })
+  approve(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("ref", FinancingRefPipe) id: string,
+  ): Promise<FinancingApproveResult> {
+    return this.requests.approve(brokerId, id);
   }
 
   @Post(":ref/revoke")

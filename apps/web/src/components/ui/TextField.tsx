@@ -22,7 +22,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     const invalid = Boolean(error);
 
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <label htmlFor={inputId} className="flex items-baseline justify-between gap-2 text-label text-text">
           <span>{label}</span>
           {optionalLabel && (
@@ -42,11 +42,11 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             aria-invalid={invalid}
             aria-describedby={invalid ? errorId : undefined}
             className={
-              "w-full min-h-[var(--tap-target-min)] rounded-md border bg-surface px-3.5 " +
+              "w-full min-h-[var(--tap-target-min)] rounded-md border bg-surface px-4 " +
               "text-body text-text placeholder:text-text-subtle transition-colors duration-fast " +
               "focus-visible:shadow-focus focus-visible:border-[var(--border-focus)] " +
               (leading ? "pl-10 " : "") +
-              (trailing ? "pr-11 " : "") +
+              (trailing ? "pr-12 " : "") +
               (invalid ? "border-danger " : "border-border ") +
               className
             }

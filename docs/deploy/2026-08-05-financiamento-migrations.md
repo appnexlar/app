@@ -9,15 +9,33 @@ O front e a API novos sobem sem depender do banco: nenhuma tela ou rota antiga
 só funcionam depois que o banco receber as tabelas. Ordem recomendada: rodar
 isto antes de aprovar o deploy da API no Railway.
 
-## Aviso: credenciais locais desatualizadas (5 ago 2026)
+## Incidente de 5 ago 2026: deploy falha quando o Supabase está pausado
 
-Tentei o `migrate status` (só leitura) e o pooler respondeu
-`tenant/user postgres.yrazxrizvqfpzmkvmvxs not found`, nos hosts `aws-0` e
-`aws-1`. Como a produção está no ar, o Railway tem credenciais válidas; o
-`apps/api/.env.production` da sua máquina é que ficou para trás. Antes do
-passo 1, atualize `DATABASE_URL` e `DIRECT_URL` nesse arquivo com a connection
-string atual do painel do Supabase (Connect → Session pooler para a porta
-5432 do `DIRECT_URL`; Transaction pooler para a 6543 do `DATABASE_URL`).
+Os dois primeiros deploys da épica falharam, e o Railway mostrou só
+`Healthcheck failure`, que não diz nada. O log do deploy contava a verdade:
+
+```
+PrismaClientInitializationError: Error querying the database:
+FATAL: (ENOTFOUND) tenant/user postgres.<ref> not found
+    at async Proxy.onModuleInit (.../prisma/prisma.service.js)
+```
+
+A API sobe, mapeia todas as rotas e morre ao conectar no banco, porque o
+`onModuleInit` do Prisma chama `$connect`. Sem processo vivo, o healthcheck
+falha. **A connection string estava certa; o projeto no Supabase é que não
+respondia** (projeto parado costuma ser pausado pela plataforma). Abrir o
+painel e usar o projeto o traz de volta; depois disso o deploy passa.
+
+Como reconhecer rápido, na próxima:
+
+```bash
+railway deployment list --service nexlar-api        # pega o id do que falhou
+railway logs <ID> --deployment --lines 50           # o erro real aparece no fim
+```
+
+O container antigo continua servindo com as conexões que já tinha abertas, e o
+`/api/health` responde `database: ok` mesmo com o banco fora para conexões
+novas. Ou seja: **health verde não prova que um deploy novo vai subir.**
 
 ## O que vai mudar
 

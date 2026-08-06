@@ -40,7 +40,7 @@ export function FilterChips<T extends string>({
             aria-pressed={active}
             onClick={() => onChange(option.value)}
             className={
-              "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-body-sm font-semibold transition-[background-color,border-color,color] duration-fast ease-standard focus-visible:shadow-focus " +
+              "inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-4 text-body-sm font-semibold transition-[background-color,border-color,color] duration-fast ease-standard focus-visible:shadow-focus " +
               (active
                 ? "border-accent bg-accent text-accent-on"
                 : "border-border bg-surface text-text-muted hover:border-border-strong hover:text-text")
