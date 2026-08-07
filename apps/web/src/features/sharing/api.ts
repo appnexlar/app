@@ -27,12 +27,17 @@ export function revokeShare(shareId: string): Promise<PropertyShareSummary> {
   return http.post<PropertyShareSummary>(`/shares/${shareId}/revoke`);
 }
 
-export function setShareResponse(shareId: string, response: SelectionResponse): Promise<void> {
-  return http.post<void>(`/shares/${shareId}/response`, { response });
+/** Resposta e prioridade são do imóvel (itemId) dentro do compartilhamento. */
+export function setShareResponse(
+  shareId: string,
+  itemId: string,
+  response: SelectionResponse,
+): Promise<void> {
+  return http.post<void>(`/shares/${shareId}/items/${itemId}/response`, { response });
 }
 
-export function setSharePriority(shareId: string, isPriority: boolean): Promise<void> {
-  return http.post<void>(`/shares/${shareId}/priority`, { isPriority });
+export function setSharePriority(shareId: string, itemId: string, isPriority: boolean): Promise<void> {
+  return http.post<void>(`/shares/${shareId}/items/${itemId}/priority`, { isPriority });
 }
 
 /** Página pública, sem login. */

@@ -401,6 +401,7 @@ describe("Isolamento por corretor", () => {
   // --- Compartilhamento de imóveis -----------------------------------------
   describe("/shares", () => {
     let shareBruno: string;
+    let itemBruno: string;
     let tokenPublicoBruno: string;
 
     beforeAll(async () => {
@@ -428,6 +429,12 @@ describe("Isolamento por corretor", () => {
       expect(envio.statusCode).toBe(201);
       shareBruno = envio.json().id;
       tokenPublicoBruno = envio.json().token ?? envio.json().publicToken;
+
+      const enviados = await requestAs(app, bruno, {
+        method: "GET",
+        url: `/api/leads/${lead.json().id}/shares`,
+      });
+      itemBruno = enviados.json()[0].itemId;
     });
 
     it("revogar envio alheio responde 404 e o link continua valendo", async () => {
@@ -449,7 +456,7 @@ describe("Isolamento por corretor", () => {
     it("registrar resposta em envio alheio responde 404", async () => {
       const cruzado = await requestAs(app, ana, {
         method: "POST",
-        url: `/api/shares/${shareBruno}/response`,
+        url: `/api/shares/${shareBruno}/items/${itemBruno}/response`,
         payload: { response: "tenho_interesse" },
       });
       expect(cruzado.statusCode).toBe(404);

@@ -129,6 +129,7 @@ export class SharingService {
         const cover = p.media.find((m) => m.isCover && m.kind === "foto" && m.status === "pronto");
         return {
           id: s.id,
+          itemId: item.id,
           publicToken: s.publicToken,
           propertyId: p.id,
           propertyCode: p.code,
@@ -154,13 +155,14 @@ export class SharingService {
   }
 
   /** Registra manualmente a resposta da lead sobre um imóvel enviado. */
-  async setResponse(brokerId: string, shareId: string, dto: SetResponseDto): Promise<void> {
+  async setResponse(brokerId: string, shareId: string, itemId: string, dto: SetResponseDto): Promise<void> {
     const selection = await this.prisma.propertySelection.findFirst({
       where: { id: shareId, brokerId },
       include: { items: true },
     });
     if (!selection) throw new NotFoundException("Compartilhamento não encontrado.");
-    const item = selection.items[0];
+    // A resposta é de um imóvel, não da seleção: a seleção pode ter vários.
+    const item = selection.items.find((i) => i.id === itemId);
     if (!item) throw new NotFoundException("Imóvel do compartilhamento não encontrado.");
 
     await this.prisma.$transaction(async (tx) => {
@@ -201,13 +203,14 @@ export class SharingService {
   }
 
   /** Marca (ou desmarca) um imóvel como prioritário para a lead. Só um por vez. */
-  async setPriority(brokerId: string, shareId: string, dto: SetPriorityDto): Promise<void> {
+  async setPriority(brokerId: string, shareId: string, itemId: string, dto: SetPriorityDto): Promise<void> {
     const selection = await this.prisma.propertySelection.findFirst({
       where: { id: shareId, brokerId },
       include: { items: { include: { property: { select: { title: true } } } } },
     });
     if (!selection) throw new NotFoundException("Compartilhamento não encontrado.");
-    const item = selection.items[0];
+    // Prioridade é do imóvel dentro da seleção, não da seleção inteira.
+    const item = selection.items.find((i) => i.id === itemId);
     if (!item) throw new NotFoundException("Imóvel do compartilhamento não encontrado.");
 
     await this.prisma.$transaction(async (tx) => {

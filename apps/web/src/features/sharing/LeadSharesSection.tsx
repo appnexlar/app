@@ -301,7 +301,7 @@ export function LeadSharesSection({
             <ul className="mt-4 overflow-hidden rounded-xl border border-border divide-y divide-border">
               {preview.map((share) => (
                 <ShareRow
-                  key={share.id}
+                  key={share.itemId}
                   share={share}
                   onOpenMenu={setMenuShare}
                   onOpenProperty={(s) => navigate(`/imoveis/${s.propertyId}`)}
@@ -387,12 +387,12 @@ export function ShareActionSheet({
     },
   });
   const respond = useMutation({
-    mutationFn: ({ id, response }: { id: string; response: LeadShareSummary["response"] }) =>
-      setShareResponse(id, response),
+    mutationFn: (response: LeadShareSummary["response"]) =>
+      setShareResponse(share.id, share.itemId, response),
     onSuccess: invalidate,
   });
   const priority = useMutation({
-    mutationFn: ({ id, value }: { id: string; value: boolean }) => setSharePriority(id, value),
+    mutationFn: (value: boolean) => setSharePriority(share.id, share.itemId, value),
     onSuccess: invalidate,
   });
 
@@ -423,7 +423,7 @@ export function ShareActionSheet({
                 <SheetItem
                   label={share.isPriority ? "Remover prioridade" : "Marcar como prioritário"}
                   onClick={() => {
-                    priority.mutate({ id: share.id, value: !share.isPriority });
+                    priority.mutate(!share.isPriority);
                     onClose();
                   }}
                 />
@@ -460,7 +460,7 @@ export function ShareActionSheet({
                     key={r}
                     type="button"
                     onClick={() => {
-                      respond.mutate({ id: share.id, response: r });
+                      respond.mutate(r);
                       onClose();
                     }}
                     className={
@@ -544,7 +544,7 @@ export function SharesExplorer({
   const list = (items: LeadShareSummary[]) => (
     <ul className="overflow-hidden rounded-xl border border-border divide-y divide-border">
       {items.map((s) => (
-        <ShareRow key={s.id} share={s} onOpenMenu={onOpenMenu} onOpenProperty={onOpenProperty} />
+        <ShareRow key={s.itemId} share={s} onOpenMenu={onOpenMenu} onOpenProperty={onOpenProperty} />
       ))}
     </ul>
   );
