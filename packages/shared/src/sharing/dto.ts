@@ -73,8 +73,10 @@ export interface PropertyShareSummary {
 
 /** Um imóvel enviado para a lead (seção "Imóveis enviados" da ficha da lead). */
 export interface LeadShareSummary {
-  /** id do compartilhamento (property_selection). */
+  /** id do compartilhamento (property_selection). Uma seleção pode ter vários imóveis, então ele se repete entre linhas. */
   id: string;
+  /** id do imóvel dentro do compartilhamento (selection_item). É o que identifica a linha da lista. */
+  itemId: string;
   publicToken: string;
   propertyId: string;
   propertyCode: number;

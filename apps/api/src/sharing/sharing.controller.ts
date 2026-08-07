@@ -74,28 +74,32 @@ export class SharingController {
     return this.sharing.revoke(brokerId, shareId);
   }
 
-  @Post("shares/:shareId/response")
+  // Resposta e prioridade são de um imóvel dentro do compartilhamento: a
+  // seleção pode levar vários, então a rota nomeia o item.
+  @Post("shares/:shareId/items/:itemId/response")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Registrar manualmente a resposta da lead sobre o imóvel" })
   setResponse(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("shareId", ParseUUIDPipe) shareId: string,
+    @Param("itemId", ParseUUIDPipe) itemId: string,
     @Body(new ZodValidationPipe(setResponseSchema)) dto: SetResponseDto,
   ): Promise<void> {
-    return this.sharing.setResponse(brokerId, shareId, dto);
+    return this.sharing.setResponse(brokerId, shareId, itemId, dto);
   }
 
-  @Post("shares/:shareId/priority")
+  @Post("shares/:shareId/items/:itemId/priority")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Marcar/desmarcar o imóvel como prioritário para a lead" })
   setPriority(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("shareId", ParseUUIDPipe) shareId: string,
+    @Param("itemId", ParseUUIDPipe) itemId: string,
     @Body(new ZodValidationPipe(setPrioritySchema)) dto: SetPriorityDto,
   ): Promise<void> {
-    return this.sharing.setPriority(brokerId, shareId, dto);
+    return this.sharing.setPriority(brokerId, shareId, itemId, dto);
   }
 
   @Get("public/shares/:token")
