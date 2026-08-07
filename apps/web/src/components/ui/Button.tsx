@@ -25,6 +25,15 @@ const variants: Record<Variant, string> = {
   danger: "bg-[var(--danger)] text-white hover:bg-[var(--danger-fg)] active:bg-[var(--danger-fg)]",
 };
 
+/**
+ * A mesma cara de botão para elementos que não são <button> (Link de rota,
+ * <a> externo). Fonte única: quem imita o Button na mão dessincroniza no
+ * primeiro ajuste de padding.
+ */
+export function buttonClasses(variant: Variant = "accent"): string {
+  return `${base} ${variants[variant]}`;
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "accent", loading = false, fullWidth = false, disabled, children, className = "", ...rest }, ref) => {
     return (

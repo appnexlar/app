@@ -8,6 +8,7 @@ import { fetchLead } from "../leads/api";
 import { fetchLeadShares } from "./api";
 import { SendFromLeadModal } from "./SendFromLeadModal";
 import { ShareActionSheet, SharesExplorer } from "./LeadSharesSection";
+import { ProposeVisitSheet } from "./ProposeVisitSheet";
 
 /**
  * Página dedicada com todos os imóveis enviados para a lead. Alcançada pelo
@@ -18,6 +19,7 @@ export function LeadSharesPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [menuShare, setMenuShare] = useState<LeadShareSummary | null>(null);
+  const [visitaShare, setVisitaShare] = useState<LeadShareSummary | null>(null);
   const [sendOpen, setSendOpen] = useState(false);
 
   const leadQuery = useQuery({
@@ -71,6 +73,7 @@ export function LeadSharesPage() {
           shares={shares}
           onOpenMenu={setMenuShare}
           onOpenProperty={(s) => navigate(`/imoveis/${s.propertyId}`)}
+          onProposeVisit={setVisitaShare}
         />
       )}
 
@@ -80,6 +83,19 @@ export function LeadSharesPage() {
           leadId={lead.id}
           leadWhatsapp={lead.whatsapp}
           onClose={() => setMenuShare(null)}
+        />
+      )}
+
+      {visitaShare && lead && (
+        <ProposeVisitSheet
+          titulo={visitaShare.visitRequestedAt ? "Combinar a visita" : "Propor visita"}
+          mensagem={
+            visitaShare.visitRequestedAt || visitaShare.response === "quero_visitar"
+              ? `Oi ${lead.fullName.split(" ")[0]}! Vi que você quer visitar o ${visitaShare.propertyTitle}. Bora combinar? Me diz o melhor dia e horário que eu organizo tudo.`
+              : `Oi ${lead.fullName.split(" ")[0]}! Que bom que você gostou do ${visitaShare.propertyTitle}. Quer marcar uma visita? Me diz o melhor dia e horário que eu organizo tudo.`
+          }
+          leadWhatsapp={lead.whatsapp}
+          onClose={() => setVisitaShare(null)}
         />
       )}
 

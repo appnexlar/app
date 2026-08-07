@@ -9,26 +9,31 @@ import { LeadSelectionsSection } from "../selections/LeadSelectionsSection";
 import { fetchLeadShares } from "../sharing/api";
 import { LeadSharesSection } from "../sharing/LeadSharesSection";
 
+interface LeadRef {
+  id: string;
+  code: number;
+  fullName: string;
+  whatsapp: string;
+}
+
 interface LeadPropertiesBlockProps {
-  lead: { id: string; code: number; whatsapp: string };
+  lead: LeadRef;
   onSend: () => void;
+  /** Abre a folha "Compartilhar imóveis" (a página é dona dela). */
+  onShare: () => void;
 }
 
 /**
- * Orquestra as duas formas de levar imóvel até a lead.
+ * As duas seções de imóveis da ficha, com UMA porta de entrada para envio:
+ * "Compartilhar imóveis". A tela antiga tinha "Enviar imóvel" no cabeçalho,
+ * "Enviar imóvel" na lista e "+ Criar seleção" na seção ao lado, três botões
+ * parecidos sem dizer em que diferem. A folha da escolha pertence à página
+ * (LeadDetailPage), porque o card "Próxima ação" também abre por ela.
  *
- * Existe porque, numa lead sem histórico, a ficha mostrava dois cartões vazios
- * quase idênticos ("Seleções de imóveis" e "Imóveis enviados"), cada um com o
- * seu botão, sem dizer em que eles diferem. Quem está começando não escolhe
- * entre duas portas iguais: trava. Enquanto não há nada enviado, a decisão vira
- * um bloco só, com a diferença escrita e uma recomendação. Assim que existe
- * qualquer registro, as seções voltam a ser o que sempre foram, porque aí o
- * corretor já sabe o que cada uma é.
- *
- * As duas consultas usam as mesmas chaves das seções filhas, então o React
- * Query reaproveita o cache e nada é buscado duas vezes.
+ * As consultas usam as mesmas chaves das seções filhas, então o React Query
+ * reaproveita o cache e nada é buscado duas vezes.
  */
-export function LeadPropertiesBlock({ lead, onSend }: LeadPropertiesBlockProps) {
+export function LeadPropertiesBlock({ lead, onSend, onShare }: LeadPropertiesBlockProps) {
   const selections = useQuery({
     queryKey: ["lead-selections", lead.id],
     queryFn: () => fetchLeadSelections(lead.id),
@@ -46,21 +51,35 @@ export function LeadPropertiesBlock({ lead, onSend }: LeadPropertiesBlockProps) 
     (selections.data?.length ?? 0) === 0 &&
     (shares.data?.length ?? 0) === 0;
 
-  if (semNada) return <PrimeiroEnvio lead={lead} onSend={onSend} />;
+  if (semNada) {
+    return (
+      <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <h2 className="text-label font-semibold text-text">Imóveis para esta lead</h2>
+        <p className="mt-1 text-body-sm text-text-muted">
+          Ela ainda não recebeu nenhum imóvel. Há duas formas de enviar, e elas servem a momentos
+          diferentes.
+        </p>
+        <div className="mt-4">
+          <EscolhaDeEnvio lead={lead} onSend={onSend} />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>
+      <LeadSharesSection lead={lead} onShare={onShare} />
       <LeadSelectionsSection leadId={lead.id} leadCode={lead.code} />
-      <LeadSharesSection lead={lead} onSend={onSend} />
     </>
   );
 }
 
 /**
- * A escolha inicial, escrita como o corretor pensa: não "seleção ou
- * compartilhamento", e sim "vários imóveis num link" ou "um imóvel agora".
+ * A escolha entre os dois envios, escrita como o corretor pensa: não "seleção
+ * ou compartilhamento", e sim "vários imóveis num link" ou "um imóvel agora".
+ * Usada no estado vazio (inline) e na folha "Compartilhar imóveis" da página.
  */
-function PrimeiroEnvio({ lead, onSend }: LeadPropertiesBlockProps) {
+export function EscolhaDeEnvio({ lead, onSend }: { lead: LeadRef; onSend: () => void }) {
   const navigate = useNavigate();
   const create = useMutation({
     mutationFn: () => createSelection(lead.id),
@@ -68,20 +87,12 @@ function PrimeiroEnvio({ lead, onSend }: LeadPropertiesBlockProps) {
   });
 
   return (
-    <section className="animate-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
-      <h2 className="text-label uppercase tracking-wide text-text-subtle">Imóveis para esta lead</h2>
-      <p className="mt-1.5 text-body-sm text-text-muted">
-        Ela ainda não recebeu nenhum imóvel. Há duas formas de enviar, e elas servem a momentos
-        diferentes.
-      </p>
-
+    <div className="flex flex-col gap-4">
       {create.isError && (
-        <div className="mt-4">
-          <Banner variant="danger">Não foi possível criar a seleção agora. Tente novamente.</Banner>
-        </div>
+        <Banner variant="danger">Não foi possível criar a seleção agora. Tente novamente.</Banner>
       )}
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Opcao
           icone={<Layers size={20} aria-hidden="true" />}
           destaque
@@ -110,7 +121,7 @@ function PrimeiroEnvio({ lead, onSend }: LeadPropertiesBlockProps) {
           }
         />
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -142,7 +153,7 @@ function Opcao({
       >
         {icone}
       </div>
-      <p className="mt-3 text-body font-semibold text-text">{titulo}</p>
+      <p className="mt-4 text-body font-semibold text-text">{titulo}</p>
       <p className="mt-1 flex-1 text-body-sm text-text-muted">{texto}</p>
       <div className="mt-4">{acao}</div>
     </div>

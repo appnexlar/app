@@ -5,7 +5,7 @@ import { MobileDrawer } from "./MobileDrawer";
 import { AppHeader } from "./AppHeader";
 import { NewLeadModal } from "../leads/NewLeadModal";
 import { ContextualHelpPanel } from "../guidance/ContextualHelpPanel";
-import type { ShellContextValue } from "./ShellContext";
+import type { PageAction, ShellContextValue } from "./ShellContext";
 
 const COLLAPSE_KEY = "nexlar.sidebar.collapsed";
 
@@ -20,6 +20,7 @@ export function AppLayout() {
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [entityLabel, setEntityLabel] = useState<string | null>(null);
   const [hasActionBar, setHasActionBar] = useState(false);
+  const [pageAction, setPageAction] = useState<PageAction | null>(null);
 
   const toggleCollapsed = () => {
     setCollapsed((v) => {
@@ -34,6 +35,10 @@ export function AppLayout() {
     setDrawerOpen(false);
     setEntityLabel(null);
     setHasActionBar(false);
+    // A ação da página NÃO é limpa aqui: o efeito do filho roda antes do
+    // efeito do pai, então limpar na troca de rota apagaria a ação que a
+    // página nova acabou de publicar. Quem limpa é o cleanup do usePageAction,
+    // que roda na desmontagem da página anterior.
   }, [location.pathname]);
 
   return (
@@ -44,6 +49,7 @@ export function AppLayout() {
         <AppHeader
           pathname={location.pathname}
           entityLabel={entityLabel}
+          pageAction={pageAction}
           onOpenDrawer={() => setDrawerOpen(true)}
           onNewLead={() => setNewLeadOpen(true)}
         />
@@ -56,6 +62,7 @@ export function AppLayout() {
                 openNewLead: () => setNewLeadOpen(true),
                 setEntityLabel,
                 setHasActionBar,
+                setPageAction,
               } satisfies ShellContextValue
             }
           />

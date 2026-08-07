@@ -81,6 +81,34 @@ export const ACTIVITY_LABELS: Record<LeadActivityType, string> = {
   financiamento: "Financiamento",
 };
 
+/**
+ * Categorias da linha do tempo, para filtrar sem ler tudo. O agrupamento segue
+ * o assunto como o corretor pensa ("cadê as visitas?"), não a tabela de origem.
+ */
+export type TimelineCategory = "imoveis" | "visitas" | "financiamento" | "comunicacao" | "andamento";
+
+export const ACTIVITY_CATEGORY: Record<LeadActivityType, TimelineCategory> = {
+  selecao: "imoveis",
+  visita: "visitas",
+  financiamento: "financiamento",
+  simulacao: "financiamento",
+  contato: "comunicacao",
+  nota: "comunicacao",
+  mudanca_status: "andamento",
+  conversao: "andamento",
+  tarefa_criada: "andamento",
+  tarefa_concluida: "andamento",
+  documento: "andamento",
+};
+
+export const TIMELINE_CATEGORY_LABELS: Record<TimelineCategory, string> = {
+  imoveis: "Imóveis",
+  visitas: "Visitas",
+  financiamento: "Financiamento",
+  comunicacao: "Comunicação",
+  andamento: "Andamento",
+};
+
 /** Formata o intervalo de orçamento em reais (ex.: R$ 300.000 a R$ 500.000). */
 export function displayBudget(min: number | null, max: number | null): string | null {
   const fmt = (v: number) => `R$ ${v.toLocaleString("pt-BR")}`;

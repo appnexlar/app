@@ -141,6 +141,7 @@ export class SharingService {
           priceLabel: this.priceLabel(p.purpose, price),
           status: this.unavailableReason(s) === "expirado" ? "expirada" : s.status,
           response: item.response,
+          respondedAt: item.respondedAt?.toISOString() ?? null,
           isPriority: item.isPriority,
           visitRequestedAt: item.visitRequestedAt?.toISOString() ?? null,
           viewCount: s.viewCount,

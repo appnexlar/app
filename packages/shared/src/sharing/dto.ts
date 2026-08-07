@@ -87,6 +87,8 @@ export interface LeadShareSummary {
   priceLabel: string;
   status: SelectionStatus;
   response: SelectionResponse;
+  /** Quando a resposta foi registrada (pela lead ou pelo corretor). */
+  respondedAt: string | null;
   isPriority: boolean;
   visitRequestedAt: string | null;
   viewCount: number;

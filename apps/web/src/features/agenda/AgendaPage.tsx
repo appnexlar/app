@@ -22,6 +22,7 @@ import {
 } from "./api";
 import { EventFormModal } from "./EventFormModal";
 import { VisitAvailabilitySection } from "./VisitAvailabilitySection";
+import { usePageAction } from "../shell/ShellContext";
 import {
   STATUS_LABELS,
   TYPE_LABELS,
@@ -87,6 +88,7 @@ export function AgendaPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [googleOpen, setGoogleOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AgendaEventSummary | null>(null);
+  usePageAction("Novo compromisso", () => setChooserOpen(true));
 
   // Quando o tamanho muda, garante uma view coerente (semana não existe no mobile).
   useEffect(() => {
@@ -187,24 +189,18 @@ export function AgendaPage() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
-      {/* Integração Google (preparada, conecta na próxima fatia) + ação primária */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Integração Google (preparada, conecta na próxima fatia). O "Novo
+          compromisso" saiu daqui e subiu para junto do título, no mesmo lugar
+          em que toda seção guarda a sua ação de criar. */}
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => setGoogleOpen(true)}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-caption font-medium text-text-muted transition-colors hover:bg-surface-sunken"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1 text-caption font-medium text-text-muted transition-colors hover:bg-surface-sunken"
         >
           <span className="h-2 w-2 rounded-full bg-[var(--text-subtle)]" aria-hidden="true" />
           Google Calendar: não conectado
         </button>
-        <Button
-          type="button"
-          variant="accent"
-          className="w-full sm:w-auto"
-          onClick={() => setChooserOpen(true)}
-        >
-          Novo compromisso
-        </Button>
       </div>
 
       {/* Resumo operacional: indicadores clicáveis */}

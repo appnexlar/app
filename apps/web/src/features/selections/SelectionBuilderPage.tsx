@@ -967,7 +967,14 @@ function ActiveView({
           <>
             <div className="mt-4 flex items-center gap-2 rounded-xl border border-border bg-surface-sunken px-3 py-2.5">
               <span className="min-w-0 flex-1 truncate text-body-sm tabular-nums text-text">{url}</span>
-              <Button type="button" variant="ghost" onClick={copiar} className="!px-3 shrink-0">
+              {/* Fundo branco de propósito: o ghost é transparente e, em cima
+                  da faixa recuada do link, o botão sumia dentro dela. */}
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={copiar}
+                className="shrink-0 !bg-surface !px-4 hover:!bg-surface-hover"
+              >
                 {copied ? "Copiado!" : "Copiar"}
               </Button>
             </div>
