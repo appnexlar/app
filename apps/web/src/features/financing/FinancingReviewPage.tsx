@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, PencilLine } from "lucide-react";
 import {
@@ -46,6 +46,20 @@ export function FinancingReviewPage() {
     queryFn: () => fetchFinancingReview(code),
   });
 
+  // Quem chega da ficha por "Pedir correção" (?acao=correcao) cai com o
+  // painel de correção já aberto, uma vez só: fechar depois é decisão da
+  // pessoa, não do parâmetro que ficou na URL.
+  const [params] = useSearchParams();
+  const abriuCorrecao = useRef(false);
+  const status = consulta.data?.request.status;
+  useEffect(() => {
+    if (abriuCorrecao.current) return;
+    if (params.get("acao") !== "correcao") return;
+    if (status !== "respondida" && status !== "em_revisao") return;
+    abriuCorrecao.current = true;
+    setCorrigindo(true);
+  }, [params, status]);
+
   const recarregarFicha = () => {
     void queryClient.invalidateQueries({ queryKey: ["financing-review", code] });
     void queryClient.invalidateQueries({ queryKey: ["lead-financing"] });
@@ -64,7 +78,7 @@ export function FinancingReviewPage() {
 
   if (consulta.isPending) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-3" aria-busy="true">
+      <div className="mx-auto flex max-w-3xl flex-col gap-4" aria-busy="true">
         <div className="h-20 animate-pulse rounded-2xl bg-surface-sunken" />
         <div className="h-48 animate-pulse rounded-2xl bg-surface-sunken" />
         <div className="h-48 animate-pulse rounded-2xl bg-surface-sunken" />
@@ -91,10 +105,10 @@ export function FinancingReviewPage() {
   const emAberto = request.status === "em_revisao" || request.status === "respondida";
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-5">
-      <header className="animate-rise flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5 shadow-sm">
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-          <span className={`rounded-full px-2.5 py-0.5 text-caption font-semibold ${STATUS_TONES[request.status]}`}>
+    <div className="mx-auto flex max-w-3xl flex-col gap-4">
+      <header className="animate-rise flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className={`rounded-full px-2 py-1 text-caption font-semibold ${STATUS_TONES[request.status]}`}>
             {FINANCING_STATUS_LABELS[request.status]}
           </span>
           <span className="text-body-sm text-text-muted">
@@ -127,8 +141,8 @@ export function FinancingReviewPage() {
       )}
 
       {(request.sections as FinancingSection[]).map((secao) => (
-        <section key={secao} className="animate-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
-          <h2 className="text-label uppercase tracking-wide text-text-subtle">
+        <section key={secao} className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+          <h2 className="text-label font-semibold text-text">
             {FINANCING_SECTION_LABELS[secao]}
           </h2>
           <DetalheSecao secao={secao} payload={review.payload} />
@@ -136,7 +150,7 @@ export function FinancingReviewPage() {
       ))}
 
       {emAberto && (
-        <div className="flex flex-col gap-2.5 sm:flex-row-reverse">
+        <div className="flex flex-col gap-2 sm:flex-row-reverse">
           <Button
             type="button"
             variant="accent"
@@ -208,7 +222,7 @@ function DetalheSecao({ secao, payload }: { secao: FinancingSection; payload: Fi
     const lista = payload.participantes?.participants ?? [];
     if (lista.length === 0) return <Vazio texto="O cliente vai financiar sozinho." />;
     return (
-      <div className="mt-3 flex flex-col gap-3">
+      <div className="mt-4 flex flex-col gap-4">
         {lista.map((p, i) => (
           <div key={i} className="rounded-xl bg-surface-sunken p-4">
             <p className="text-body-sm font-semibold text-text">
@@ -233,7 +247,7 @@ function DetalheSecao({ secao, payload }: { secao: FinancingSection; payload: Fi
     const lista = payload.compromissos?.commitments ?? [];
     if (lista.length === 0) return <Vazio texto="Nenhum compromisso mensal declarado." />;
     return (
-      <div className="mt-3 flex flex-col gap-3">
+      <div className="mt-4 flex flex-col gap-4">
         {lista.map((c, i) => (
           <div key={i} className="rounded-xl bg-surface-sunken p-4">
             <p className="text-body-sm font-semibold text-text">{COMMITMENT_TYPE_LABELS[c.type]}</p>
@@ -393,7 +407,7 @@ function CorrectionModal({
           que já foi enviado fica guardado como versão.
         </p>
 
-        <fieldset className="flex flex-col gap-2.5">
+        <fieldset className="flex flex-col gap-2">
           <legend className="text-label text-text">O que precisa ser revisto?</legend>
           {sections.map((s) => (
             <Checkbox
@@ -416,7 +430,7 @@ function CorrectionModal({
             rows={3}
             maxLength={500}
             placeholder="Ex.: Confirme a renda líquida com o holerite mais recente."
-            className="mt-1.5 w-full rounded-md border border-border bg-surface px-3.5 py-2.5 text-body text-text placeholder:text-text-subtle focus:border-accent focus:outline-none"
+            className="mt-2 w-full rounded-md border border-border bg-surface px-4 py-2 text-body text-text placeholder:text-text-subtle focus:border-accent focus:outline-none"
           />
         </div>
 
@@ -429,7 +443,7 @@ function CorrectionModal({
 
         {aviso && <Banner variant="danger">{aviso}</Banner>}
 
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2">
           <Button type="submit" variant="accent" fullWidth loading={enviar.isPending}>
             Gerar link de correção
           </Button>

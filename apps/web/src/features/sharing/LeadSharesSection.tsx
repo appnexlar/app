@@ -17,6 +17,7 @@ import {
   whatsappDigits,
 } from "./api";
 import { leadSharesPath } from "../../lib/routes";
+import { ProposeVisitSheet } from "./ProposeVisitSheet";
 import {
   RESPONSE_OPTIONS,
   SHARE_RESPONSE_LABELS,
@@ -38,53 +39,6 @@ const TONE_TEXT: Record<string, string> = {
   danger: "text-[var(--danger-fg)]",
   neutral: "text-text-muted",
 };
-
-/** Próxima ação sugerida (embrião do assistente): visita > interesse > aguardar. */
-function nextAction(share: LeadShareSummary): string {
-  if (sharePropertyUnavailable(share)) return "Avisar a lead e enviar uma opção parecida";
-  if (share.status === "revogada") return "Gerar novo link, se necessário";
-  if (share.visitRequestedAt) return "Confirmar a visita com a lead";
-  if (share.response === "tenho_interesse") return "Propor uma visita";
-  if (share.response === "quero_visitar") return "Confirmar a visita com a lead";
-  if (share.response === "talvez") return "Enviar um empurrãozinho no WhatsApp";
-  if (share.response === "sem_interesse") return "Enviar outra opção do perfil";
-  if (share.viewCount > 0) return "Perguntar o que achou";
-  return "Aguardando a lead abrir o link";
-}
-
-type FocusCta = { kind: "whatsapp" | "send" | "resend" | "none"; label: string };
-
-/** O botão certo para o foco atual: quase sempre falar com a lead. */
-function focusCta(share: LeadShareSummary): FocusCta {
-  if (sharePropertyUnavailable(share)) return { kind: "send", label: "Enviar opção parecida" };
-  if (share.status === "revogada") return { kind: "resend", label: "Gerar novo link" };
-  if (share.visitRequestedAt || share.response === "quero_visitar")
-    return { kind: "whatsapp", label: "Confirmar no WhatsApp" };
-  if (share.response === "tenho_interesse")
-    return { kind: "whatsapp", label: "Propor visita no WhatsApp" };
-  if (share.response === "talvez") return { kind: "whatsapp", label: "Mandar um empurrãozinho" };
-  if (share.response === "sem_interesse") return { kind: "send", label: "Enviar outra opção" };
-  if (share.viewCount > 0) return { kind: "whatsapp", label: "Perguntar o que achou" };
-  return { kind: "whatsapp", label: "Chamar no WhatsApp" };
-}
-
-/**
- * O imóvel que merece atenção agora: o marcado como prioritário; sem ele, o
- * mais engajado (visita > interesse > talvez > visto). Ancla o "Foco de agora".
- */
-function pickFocus(shares: LeadShareSummary[]): LeadShareSummary | null {
-  if (shares.length === 0) return null;
-  const priority = shares.find((s) => s.isPriority);
-  if (priority) return priority;
-  const rank = (s: LeadShareSummary): number => {
-    if (s.visitRequestedAt) return 5;
-    if (s.response === "quero_visitar" || s.response === "tenho_interesse") return 4;
-    if (s.response === "talvez") return 3;
-    if (s.viewCount > 0) return 2;
-    return 1;
-  };
-  return [...shares].sort((a, b) => rank(b) - rank(a))[0];
-}
 
 /**
  * Baldes de acompanhamento para dar hierarquia quando há muitos imóveis
@@ -130,39 +84,30 @@ export function sortShares(shares: LeadShareSummary[]): LeadShareSummary[] {
   });
 }
 
+interface LeadRef {
+  id: string;
+  code: number;
+  fullName: string;
+  whatsapp: string;
+}
+
 /**
- * Bloco de imóveis enviados na ficha da lead: Foco de agora, resumo e uma
- * prévia curta. A lista completa vive em página própria (ver SharesExplorer),
- * alcançada pelo botão "Ver todos".
+ * Imóveis enviados na ficha da lead: resumo (quando há volume) e uma prévia
+ * curta com a resposta de cada um por extenso, sem reticências no que importa.
+ * A recomendação do que fazer agora mora no card "Próxima ação" da página; a
+ * lista aqui é o registro completo, com a ação contextual em cada linha.
  */
-export function LeadSharesSection({
-  lead,
-  onSend,
-}: {
-  lead: { id: string; code: number; whatsapp: string };
-  onSend: () => void;
-}) {
+export function LeadSharesSection({ lead, onShare }: { lead: LeadRef; onShare: () => void }) {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [menuShare, setMenuShare] = useState<LeadShareSummary | null>(null);
+  const [visitaShare, setVisitaShare] = useState<LeadShareSummary | null>(null);
 
   const query = useQuery({
     queryKey: ["lead-shares", lead.id],
     queryFn: () => fetchLeadShares(lead.id),
   });
 
-  // Reenvio direto do "Foco de agora" (a folha de ações tem o seu próprio).
-  const resend = useMutation({
-    mutationFn: resendShare,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lead-shares", lead.id] });
-      queryClient.invalidateQueries({ queryKey: ["lead", lead.id] });
-    },
-  });
-
   const shares = query.data ?? [];
-  const focus = pickFocus(shares);
-  const cta = focus ? focusCta(focus) : null;
   const summary = {
     enviados: shares.length,
     visualizados: shares.filter((s) => s.viewCount > 0 || s.response !== "nao_visualizado").length,
@@ -178,99 +123,37 @@ export function LeadSharesSection({
   const preview = sorted.slice(0, PREVIEW_LIMIT);
   const hasMore = shares.length > PREVIEW_LIMIT;
 
+  const primeiroNome = lead.fullName.split(" ")[0];
+
   return (
     <>
-      {/* Foco de agora: a próxima ação certa fica no topo, no espírito do
-          assistente. Ancorada no imóvel prioritário (ou no mais engajado). */}
-      {focus && cta && (
-        <section className="animate-rise overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-          <div className="flex items-center gap-2 border-b border-border px-4 py-2.5 sm:px-5">
-            <TargetIcon className="h-4 w-4 text-accent" />
-            <span className="text-label uppercase tracking-wide text-text-subtle">Foco de agora</span>
-          </div>
-          <div className="p-4 sm:p-5">
-            <p className="text-h3 text-text">{nextAction(focus)}</p>
-
-            <button
-              type="button"
-              onClick={() => navigate(`/imoveis/${focus.propertyId}`)}
-              className="mt-3 flex w-full items-center gap-3 rounded-xl border border-border bg-surface-sunken/40 p-2.5 text-left transition-colors hover:bg-surface-sunken"
-            >
-              <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-sunken">
-                {focus.coverUrl ? (
-                  <AuthImage src={focus.coverUrl} alt={focus.propertyTitle} className="h-full w-full object-cover" />
-                ) : (
-                  <CoverFallback />
-                )}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-1.5">
-                  <span className="truncate text-body-sm font-semibold text-text">{focus.propertyTitle}</span>
-                  {focus.isPriority && <StarIcon className="h-3.5 w-3.5 shrink-0 text-accent" filled />}
-                </span>
-                <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <StatusBadge share={focus} />
-                  <span className="text-caption text-text-subtle">{focus.priceLabel}</span>
-                </span>
-              </span>
-              <svg className="h-5 w-5 shrink-0 text-text-subtle" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-
-            {cta.kind === "whatsapp" ? (
-              <button
-                type="button"
-                onClick={() => openWhatsapp(focus, lead.whatsapp)}
-                className="mt-4 flex min-h-[var(--tap-target-min)] w-full items-center justify-center gap-2 rounded-xl bg-success px-4 text-body font-semibold text-white shadow-xs transition-[transform,filter] duration-fast ease-standard hover:brightness-105 active:scale-[0.99] focus-visible:shadow-focus"
-              >
-                <WhatsAppGlyph className="h-5 w-5" />
-                {cta.label}
-              </button>
-            ) : cta.kind === "resend" ? (
-              <Button
-                type="button"
-                variant="accent"
-                fullWidth
-                className="mt-4"
-                disabled={resend.isPending}
-                onClick={() => resend.mutate(focus.id)}
-              >
-                {resend.isPending ? "Gerando..." : cta.label}
-              </Button>
-            ) : (
-              <Button type="button" variant="accent" fullWidth className="mt-4" onClick={onSend}>
-                {cta.label}
-              </Button>
-            )}
-          </div>
-        </section>
-      )}
-
       {/* Resumo dos imóveis: só a partir de um volume que justifique o apanhado.
           Com poucos imóveis a lista logo abaixo já comunica tudo sem repetir. */}
       {shares.length >= 4 && (
-        <section className="animate-rise rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5">
-          <h2 className="text-label uppercase tracking-wide text-text-subtle">
-            Resumo dos imóveis
-          </h2>
+        <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+          <h2 className="text-label font-semibold text-text">Resumo dos imóveis</h2>
           <ResumoStrip summary={summary} />
         </section>
       )}
 
       {/* Índice na ficha: prévia dos mais relevantes + atalho para a página. */}
-      <section className="animate-rise rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-label uppercase tracking-wide text-text-subtle">
+      <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="text-label font-semibold text-text">
               Imóveis enviados
-              {shares.length > 0 && <span className="ml-1.5 text-text-muted">({shares.length})</span>}
+              {shares.length > 0 && <span className="ml-1 text-text-subtle">({shares.length})</span>}
             </h2>
-            <p className="mt-0.5 text-body-sm text-text-subtle">o que a lead recebeu e como respondeu</p>
+            <p className="mt-1 text-body-sm text-text-subtle">o que a lead recebeu e como respondeu</p>
           </div>
           {shares.length > 0 && (
-            <Button type="button" variant="accent" onClick={onSend} className="hidden shrink-0 sm:inline-flex">
-              Enviar imóvel
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onShare}
+              className="-my-1 shrink-0 !min-h-11 !px-4 text-body-sm"
+            >
+              Compartilhar
             </Button>
           )}
         </div>
@@ -278,7 +161,7 @@ export function LeadSharesSection({
         {query.isPending ? (
           <div className="mt-4 h-24 animate-pulse rounded-xl bg-surface-sunken" />
         ) : query.isError ? (
-          <div className="mt-3">
+          <div className="mt-4">
             <Banner variant="danger">Não foi possível carregar os imóveis enviados.</Banner>
           </div>
         ) : shares.length === 0 ? (
@@ -292,8 +175,8 @@ export function LeadSharesSection({
             <p className="mt-1 max-w-sm text-body-sm text-text-muted">
               Envie imóveis da sua carteira que combinem com o perfil desta lead.
             </p>
-            <Button type="button" variant="accent" className="mt-5" onClick={onSend}>
-              Enviar imóvel
+            <Button type="button" variant="accent" className="mt-4" onClick={onShare}>
+              Compartilhar imóveis
             </Button>
           </div>
         ) : (
@@ -305,6 +188,7 @@ export function LeadSharesSection({
                   share={share}
                   onOpenMenu={setMenuShare}
                   onOpenProperty={(s) => navigate(`/imoveis/${s.propertyId}`)}
+                  onProposeVisit={setVisitaShare}
                 />
               ))}
             </ul>
@@ -314,7 +198,7 @@ export function LeadSharesSection({
               <button
                 type="button"
                 onClick={() => navigate(leadSharesPath(lead.code))}
-                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
+                className="mt-4 flex min-h-[var(--tap-target-min)] w-full items-center justify-center gap-2 rounded-xl border border-border text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
               >
                 Ver todos os {shares.length} imóveis enviados
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -322,11 +206,6 @@ export function LeadSharesSection({
                 </svg>
               </button>
             )}
-
-            {/* No mobile o botão fica no fim da lista, perto do polegar. */}
-            <Button type="button" variant="accent" fullWidth onClick={onSend} className="mt-4 sm:hidden">
-              Enviar imóvel
-            </Button>
           </>
         )}
       </section>
@@ -337,6 +216,19 @@ export function LeadSharesSection({
           leadId={lead.id}
           leadWhatsapp={lead.whatsapp}
           onClose={() => setMenuShare(null)}
+        />
+      )}
+
+      {visitaShare && (
+        <ProposeVisitSheet
+          titulo={visitaShare.visitRequestedAt ? "Combinar a visita" : "Propor visita"}
+          mensagem={
+            visitaShare.visitRequestedAt || visitaShare.response === "quero_visitar"
+              ? `Oi ${primeiroNome}! Vi que você quer visitar o ${visitaShare.propertyTitle}. Bora combinar? Me diz o melhor dia e horário que eu organizo tudo.`
+              : `Oi ${primeiroNome}! Que bom que você gostou do ${visitaShare.propertyTitle}. Quer marcar uma visita? Me diz o melhor dia e horário que eu organizo tudo.`
+          }
+          leadWhatsapp={lead.whatsapp}
+          onClose={() => setVisitaShare(null)}
         />
       )}
     </>
@@ -402,7 +294,7 @@ export function ShareActionSheet({
         <Modal open onClose={onClose} title={share.propertyTitle}>
           {view === "acoes" ? (
             <div className="flex flex-col">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
                 <StatusBadge share={share} />
                 <span className="text-body-sm text-text-muted">{share.priceLabel}</span>
                 {share.viewCount > 0 && (
@@ -454,7 +346,7 @@ export function ShareActionSheet({
           ) : (
             <div className="flex flex-col">
               <p className="text-body-sm text-text-muted">Como a lead respondeu sobre este imóvel?</p>
-              <div className="mt-3 flex flex-col gap-2">
+              <div className="mt-4 flex flex-col gap-2">
                 {RESPONSE_OPTIONS.map((r) => (
                   <button
                     key={r}
@@ -510,10 +402,13 @@ export function SharesExplorer({
   shares,
   onOpenMenu,
   onOpenProperty,
+  onProposeVisit,
 }: {
   shares: LeadShareSummary[];
   onOpenMenu: (s: LeadShareSummary) => void;
   onOpenProperty: (s: LeadShareSummary) => void;
+  /** Mesma ação contextual da ficha: sem ela, a página completa oferece menos. */
+  onProposeVisit?: (s: LeadShareSummary) => void;
 }) {
   const [filter, setFilter] = useState<ShareBucket | "todos">("todos");
   const [search, setSearch] = useState("");
@@ -544,7 +439,13 @@ export function SharesExplorer({
   const list = (items: LeadShareSummary[]) => (
     <ul className="overflow-hidden rounded-xl border border-border divide-y divide-border">
       {items.map((s) => (
-        <ShareRow key={s.itemId} share={s} onOpenMenu={onOpenMenu} onOpenProperty={onOpenProperty} />
+        <ShareRow
+          key={s.itemId}
+          share={s}
+          onOpenMenu={onOpenMenu}
+          onOpenProperty={onOpenProperty}
+          onProposeVisit={onProposeVisit}
+        />
       ))}
     </ul>
   );
@@ -565,14 +466,14 @@ export function SharesExplorer({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por título ou bairro"
-            className="w-full rounded-xl border border-border bg-surface py-2.5 pl-10 pr-9 text-body text-text placeholder:text-text-subtle"
+            className="w-full rounded-xl border border-border bg-surface py-2 pl-10 pr-10 text-body text-text placeholder:text-text-subtle"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch("")}
               aria-label="Limpar busca"
-              className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-text-subtle transition-colors hover:bg-surface-sunken hover:text-text"
+              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-text-subtle transition-colors hover:bg-surface-sunken hover:text-text"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -580,7 +481,7 @@ export function SharesExplorer({
             </button>
           )}
         </div>
-        <div className="scrollbar-none mt-3 flex gap-2 overflow-x-auto">
+        <div className="scrollbar-none mt-2 flex gap-2 overflow-x-auto">
           <FilterChip label="Todos" count={shares.length} active={filter === "todos"} onClick={() => setFilter("todos")} />
           {BUCKET_ORDER.filter((b) => bucketCounts[b] > 0).map((b) => (
             <FilterChip
@@ -602,11 +503,11 @@ export function SharesExplorer({
           </p>
         </div>
       ) : grouped ? (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6">
           {groups.map((g) => (
             <div key={g.bucket}>
-              <h3 className="mb-2 text-label uppercase tracking-wide text-text-subtle">
-                {BUCKET_LABEL[g.bucket]} <span className="text-text-muted">({g.items.length})</span>
+              <h3 className="mb-2 text-label font-semibold text-text">
+                {BUCKET_LABEL[g.bucket]} <span className="font-normal text-text-subtle">({g.items.length})</span>
               </h3>
               {list(g.items)}
             </div>
@@ -666,11 +567,11 @@ function ResumoStrip({
     },
   ];
   return (
-    <div className="mt-3 flex divide-x divide-border">
+    <div className="mt-4 flex divide-x divide-border">
       {cells.map((c) => (
         <div key={c.label} className="flex min-w-0 flex-1 flex-col items-center px-1 py-1 text-center">
           <div className={`text-h3 font-extrabold tabular-nums sm:text-h2 ${c.tone}`}>{c.value}</div>
-          <div className="mt-0.5 truncate text-[11px] leading-tight text-text-subtle sm:text-caption">
+          <div className="mt-1 truncate text-[11px] leading-tight text-text-subtle sm:text-caption">
             {c.label}
           </div>
         </div>
@@ -680,21 +581,30 @@ function ResumoStrip({
 }
 
 /**
- * Linha compacta da lista. A linha inteira abre o imóvel (botão de fundo);
- * o "..." fica acima (z-10) e abre a folha de ações.
+ * Linha da lista: título em até duas linhas (reticências escondem justamente
+ * o que diferencia "Cobertura duplex com vista" de "Cobertura duplex sem"),
+ * resposta com data, e a ação contextual quando a resposta pede movimento.
+ * A linha inteira abre o imóvel (botão de fundo); o que fica por cima (CTA e
+ * "...") sobe com z-10.
  */
 function ShareRow({
   share,
   onOpenMenu,
   onOpenProperty,
+  onProposeVisit,
 }: {
   share: LeadShareSummary;
   onOpenMenu: (s: LeadShareSummary) => void;
   onOpenProperty: (s: LeadShareSummary) => void;
+  onProposeVisit?: (s: LeadShareSummary) => void;
 }) {
   const status = shareDisplayStatus(share);
+  const bucket = shareBucket(share);
+  const querVisita = Boolean(share.visitRequestedAt) || share.response === "quero_visitar";
+  const mostraVisita = onProposeVisit && bucket === "interesse";
+
   return (
-    <li className="relative flex items-center gap-3 bg-surface px-3 py-2.5 transition-colors hover:bg-surface-sunken/60 sm:px-4">
+    <li className="relative flex gap-4 bg-surface p-4 transition-colors hover:bg-surface-sunken/60">
       <button
         type="button"
         onClick={() => onOpenProperty(share)}
@@ -702,7 +612,7 @@ function ShareRow({
         className="absolute inset-0 focus-visible:shadow-focus"
       />
 
-      <span className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-sunken">
+      <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-sunken">
         {share.coverUrl ? (
           <AuthImage src={share.coverUrl} alt={share.propertyTitle} className="h-full w-full object-cover" />
         ) : (
@@ -711,22 +621,38 @@ function ShareRow({
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5">
-          <span className="truncate text-body-sm font-semibold text-text">{share.propertyTitle}</span>
-          {share.isPriority && <StarIcon className="h-3.5 w-3.5 shrink-0 text-accent" filled />}
+        <p className="flex items-start gap-2">
+          <span className="line-clamp-2 text-body-sm font-semibold leading-snug text-text">
+            {share.propertyTitle}
+          </span>
+          {share.isPriority && <StarIcon className="mt-1 h-3.5 w-3.5 shrink-0 text-accent" filled />}
         </p>
-        <p className="mt-0.5 truncate text-body-sm">
+        <p className="mt-1 text-body-sm">
           <span className="font-bold text-text">{share.priceLabel}</span>
           <span className="text-text-subtle"> · </span>
           <span className={`font-semibold ${TONE_TEXT[status.tone]}`}>{status.label}</span>
         </p>
+        <p className="mt-1 text-caption text-text-subtle">{quando(share)}</p>
+
+        {mostraVisita && (
+          <button
+            type="button"
+            onClick={() => onProposeVisit(share)}
+            className="relative z-10 mt-1 inline-flex min-h-[var(--tap-target-min)] items-center gap-1 rounded-md text-body-sm font-semibold text-accent transition-colors hover:underline"
+          >
+            {querVisita ? "Combinar visita" : "Propor visita"}
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <button
         type="button"
         aria-label={`Ações de ${share.propertyTitle}`}
         onClick={() => onOpenMenu(share)}
-        className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-md text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
+        className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center self-start rounded-md text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <circle cx="12" cy="5" r="1.9" />
@@ -738,8 +664,27 @@ function ShareRow({
   );
 }
 
+/** Quando aconteceu o que a linha mostra: resposta > visita > envio. */
+function quando(share: LeadShareSummary): string {
+  if (share.visitRequestedAt) return `visita pedida ${dataCurta(share.visitRequestedAt)}`;
+  if (share.respondedAt && share.response !== "nao_visualizado" && share.response !== "visualizado")
+    return `respondeu ${dataCurta(share.respondedAt)}`;
+  if (share.sentAt) return `enviado ${dataCurta(share.sentAt)}`;
+  return `criado ${dataCurta(share.createdAt)}`;
+}
+
+function dataCurta(iso: string): string {
+  const date = new Date(iso);
+  const hoje = new Date();
+  const inicioDoDia = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dias = Math.round((inicioDoDia(hoje) - inicioDoDia(date)) / 86_400_000);
+  if (dias === 0) return "hoje";
+  if (dias === 1) return "ontem";
+  return `em ${date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}`;
+}
+
 /** Quando o imóvel não tem foto de capa: ícone de casa em vez de bloco vazio. */
-function CoverFallback() {
+export function CoverFallback() {
   return (
     <span className="flex h-full w-full items-center justify-center text-text-subtle">
       <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -752,7 +697,7 @@ function CoverFallback() {
 function StatusBadge({ share }: { share: LeadShareSummary }) {
   const s = shareDisplayStatus(share);
   return (
-    <span className={`rounded-full px-2 py-0.5 text-caption font-semibold ${TONE_CLASSES[s.tone]}`}>
+    <span className={`rounded-full px-2 py-1 text-caption font-semibold ${TONE_CLASSES[s.tone]}`}>
       {s.label}
     </span>
   );
@@ -774,7 +719,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={
-        "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-body-sm font-semibold transition-colors " +
+        "flex min-h-9 shrink-0 items-center gap-2 rounded-full border px-4 text-body-sm font-semibold transition-colors " +
         (active
           ? "border-accent bg-accent-soft text-accent"
           : "border-border bg-surface text-text-muted hover:bg-surface-sunken")
@@ -783,23 +728,6 @@ function FilterChip({
       {label}
       <span className={active ? "text-accent" : "text-text-subtle"}>{count}</span>
     </button>
-  );
-}
-
-function TargetIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="12" cy="12" r="3.4" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
-  );
-}
-
-function WhatsAppGlyph({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.611-.916-2.206-.242-.58-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885" />
-    </svg>
   );
 }
 

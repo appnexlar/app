@@ -24,7 +24,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         <img
           src={collapsed ? "/logo-mark.svg" : "/logo-wordmark.svg"}
           alt="Nexlar"
-          className={collapsed ? "h-7 w-7 object-contain object-left" : "h-6 w-auto"}
+          className={collapsed ? "h-7 w-auto" : "h-6 w-auto"}
         />
       </div>
 

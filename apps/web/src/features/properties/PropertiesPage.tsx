@@ -28,7 +28,7 @@ import {
 } from "./api";
 import { SendToLeadModal } from "../sharing/SendToLeadModal";
 import { SelectLeadForSelectionModal } from "../selections/SelectLeadForSelectionModal";
-import { usePageActionBar } from "../shell/ShellContext";
+import { usePageAction, usePageActionBar } from "../shell/ShellContext";
 import { AuthImage } from "./AuthImage";
 import {
   CATEGORY_LABELS,
@@ -59,6 +59,8 @@ const MAX_SELECIONADOS = 30;
 export function PropertiesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  // A carteira é o lugar de cadastrar imóvel, então a ação nasce aqui.
+  usePageAction("Cadastrar imóvel", () => navigate("/imoveis/novo"));
   const [q, setQ] = useState("");
   const [purpose, setPurpose] = useState("");
   const [category, setCategory] = useState("");

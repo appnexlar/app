@@ -399,11 +399,15 @@ export interface PublicVisitView {
 export interface SelectionSummary {
   id: string;
   code: number;
+  /** Segredo do link público, para o corretor copiar direto da ficha. */
+  publicToken: string;
   status: SelectionStatus;
   itemCount: number;
   likedCount: number;
   dismissedCount: number;
   visitRequestedCount: number;
+  /** Itens com alguma resposta real (interesse, talvez ou descarte). */
+  respondedCount: number;
   activatedAt: string | null;
   expiresAt: string | null;
   viewedAt: string | null;

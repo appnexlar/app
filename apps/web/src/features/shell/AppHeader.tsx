@@ -3,22 +3,35 @@ import { ChevronLeft, ChevronRight, Menu, Plus } from "lucide-react";
 import { ICON } from "../../components/ui/icon";
 import { AccountMenu } from "./AccountMenu";
 import { NotificationBell } from "../notifications/NotificationBell";
+import type { PageAction } from "./ShellContext";
 import { breadcrumbsFor, pageTitleFor } from "./navigation";
 
 interface AppHeaderProps {
   pathname: string;
   /** Nome da entidade atual (ex.: o cliente), no lugar do genérico "Detalhes". */
   entityLabel?: string | null;
+  /** Ação de criar declarada pela seção atual (ver usePageAction). */
+  pageAction?: PageAction | null;
   onOpenDrawer: () => void;
   onNewLead: () => void;
 }
 
 /**
- * Barra superior. No mobile: menu, logo e título compactos, como app.
- * No desktop: caminho de pão (o logo grande mora na sidebar) e UMA ação
- * primária contextual: "Novo imóvel" dentro de Imóveis, "Novo lead" no resto.
+ * Barra superior e identidade da página.
+ *
+ * A barra carrega só o que não muda de sentido: menu, marca, avisos e conta.
+ * A ação de criar mora DENTRO da página, ao lado do título que a explica, e
+ * quem a declara é cada seção (ver usePageAction). A exceção é a Home, que
+ * não tem lista própria para criar nada: lá a barra leva "Novo lead", porque
+ * cadastrar lead é a porta de entrada do produto.
  */
-export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: AppHeaderProps) {
+export function AppHeader({
+  pathname,
+  entityLabel,
+  pageAction,
+  onOpenDrawer,
+  onNewLead,
+}: AppHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const rawCrumbs = breadcrumbsFor(pathname);
@@ -29,7 +42,6 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
       ? rawCrumbs.map((c, i) => (i === rawCrumbs.length - 1 ? { ...c, label: entityLabel } : c))
       : rawCrumbs;
   const title = pageTitleFor(pathname);
-  const inProperties = pathname.startsWith("/imoveis");
   // Página de seção (sem subrota): marca + título grande no mobile. Tela interna:
   // botão de voltar + título da tela, como um app.
   const isSection = crumbs.length === 1;
@@ -91,22 +103,10 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
           />
         </div>
 
-        {/* Regra da barra: UM elemento de destaque (a ação de criar), o resto
-            neutro e do mesmo tamanho. No celular a ação vira um botão redondo
-            de 40px, par do sino, e a conta sai da barra: identidade, perfil e
-            sair já moram no menu, e app não repete porta. */}
+        {/* A barra guarda o que vale em qualquer página: avisos e conta. A
+            única ação daqui é a da Home, que não tem lista onde ancorá-la. */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {inProperties ? (
-            <button
-              type="button"
-              onClick={() => navigate("/imoveis/novo")}
-              aria-label="Novo imóvel"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-on transition-colors hover:bg-accent-hover active:scale-[0.98] sm:w-auto sm:gap-2 sm:rounded-md sm:px-4 sm:text-body-sm sm:font-semibold"
-            >
-              <Plus size={ICON.bar} className="shrink-0 sm:size-[18px]" aria-hidden="true" />
-              <span className="hidden sm:inline">Novo imóvel</span>
-            </button>
-          ) : (
+          {isHome && (
             <button
               type="button"
               onClick={onNewLead}
@@ -171,9 +171,25 @@ export function AppHeader({ pathname, entityLabel, onOpenDrawer, onNewLead }: Ap
             </ol>
           </nav>
         )}
-        {/* Duas linhas, não uma com reticências: título de imóvel é longo e
-            cortar no meio esconde justamente o que identifica o registro. */}
-        <h1 className="line-clamp-2 text-h1 text-text">{isSection ? title : current.label}</h1>
+        {/* Título e ação na mesma linha: o botão fica colado no nome da seção
+            que explica o que ele cria. Duas linhas para o título, não uma com
+            reticências: título de imóvel é longo e cortar no meio esconde
+            justamente o que identifica o registro. */}
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="line-clamp-2 min-w-0 flex-1 text-h1 text-text">
+            {isSection ? title : current.label}
+          </h1>
+          {pageAction && (
+            <button
+              type="button"
+              onClick={pageAction.onClick}
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md bg-accent px-4 text-body-sm font-semibold text-accent-on transition-colors duration-fast hover:bg-accent-hover active:scale-[0.98] focus-visible:shadow-focus"
+            >
+              <Plus size={18} className="shrink-0" aria-hidden="true" />
+              {pageAction.label}
+            </button>
+          )}
+        </div>
       </div>
     </>
   );

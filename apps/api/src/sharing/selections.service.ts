@@ -176,11 +176,17 @@ export class SelectionsService {
     return selections.map((s) => ({
       id: s.id,
       code: s.code,
+      publicToken: s.publicToken,
       status: s.status,
       itemCount: s.items.length,
       likedCount: s.items.filter((i) => i.response === "tenho_interesse").length,
       dismissedCount: s.items.filter((i) => i.response === "sem_interesse").length,
       visitRequestedCount: s.items.filter((i) => i.visitRequestedAt != null).length,
+      // Resposta real da lead: interesse, talvez ou descarte. "visualizado" é
+      // rastro de abertura, não decisão, então continua contando como pendente.
+      respondedCount: s.items.filter(
+        (i) => i.response !== "nao_visualizado" && i.response !== "visualizado",
+      ).length,
       activatedAt: s.activatedAt?.toISOString() ?? null,
       expiresAt: s.expiresAt?.toISOString() ?? null,
       viewedAt: s.viewedAt?.toISOString() ?? null,

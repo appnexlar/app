@@ -8,7 +8,7 @@ import { SearchField } from "../../components/ui/SearchField";
 import { FilterChips, type FilterChip } from "../../components/ui/FilterChips";
 import { SmartEmptyState } from "../../components/ui/SmartEmptyState";
 import { GuidanceInline } from "../guidance/GuidanceInline";
-import { useShell } from "../shell/ShellContext";
+import { usePageAction, useShell } from "../shell/ShellContext";
 import { leadPath } from "../../lib/routes";
 import { fetchLeads } from "./api";
 import {
@@ -55,6 +55,7 @@ function matches(lead: LeadSummary, termo: string): boolean {
 /** Lista de leads do corretor, mais recentes primeiro, com busca e filtro. */
 export function LeadsPage() {
   const { openNewLead } = useShell();
+  usePageAction("Novo lead", openNewLead);
   const query = useQuery({ queryKey: ["leads"], queryFn: fetchLeads });
   const [termo, setTermo] = useState("");
   const [faixa, setFaixa] = useState<Faixa>("todos");
