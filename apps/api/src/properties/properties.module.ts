@@ -6,5 +6,8 @@ import { PropertyMediaService } from "./property-media.service";
 @Module({
   controllers: [PropertiesController],
   providers: [PropertiesService, PropertyMediaService],
+  // A importação por URL cria o rascunho pelos MESMOS serviços do cadastro
+  // manual: nada entra no banco por um caminho paralelo.
+  exports: [PropertiesService],
 })
 export class PropertiesModule {}

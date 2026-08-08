@@ -15,7 +15,8 @@ import {
   type PropertyPurpose,
   type UpdatePropertyDto,
 } from "@nexlar/shared";
-import { Button } from "../../components/ui/Button";
+import { Button, buttonClasses } from "../../components/ui/Button";
+import { ChevronLeft } from "lucide-react";
 import { Banner } from "../../components/ui/Banner";
 import { TextField } from "../../components/ui/TextField";
 import { Select } from "../../components/ui/Select";
@@ -39,13 +40,14 @@ import {
   PURPOSE_LABELS,
   TYPE_LABELS,
   formatCode,
-  formatMoney,
 } from "./labels";
 import { DETAIL_FIELDS, ORIGIN_FIELDS, type FieldDef } from "./fields";
 import { MapPicker } from "./MapPicker";
 import { ContactsEditor } from "./ContactsEditor";
 import { MediaManager } from "./MediaManager";
 import { PartnerLookup } from "./PartnerLookup";
+import { usePageActionBar, usePageEntityLabel } from "../shell/ShellContext";
+import { StepReview } from "./ReviewStep";
 
 /**
  * Cadastro do imóvel em 7 etapas (J: carteira do corretor). A etapa 1 cria o
@@ -188,10 +190,38 @@ function fromDetail(p: PropertyDetail): WizardForm {
   };
 }
 
+/**
+ * Registros antigos podem carregar em `type` o RÓTULO ("Apartamento") em vez
+ * do slug ("apartamento") do vocabulário atual. O select não acha esse valor e
+ * o campo parece vazio, mas o form segue preenchido: ao salvar, a API recusa
+ * com uma mensagem técnica e o corretor fica sem saber o que fazer.
+ *
+ * Aqui o cadastro reconhece o caso, explica em português e sugere o tipo
+ * equivalente quando dá para deduzir com segurança (mesma palavra, sem acento
+ * e sem caixa). Nunca corrige sozinho: quem confirma é o corretor.
+ */
+function tipoEquivalente(valor: string, opcoes: readonly string[]): string | null {
+  const chave = normalizarTipo(valor);
+  if (!chave) return null;
+  const porSlug = opcoes.find((o) => normalizarTipo(o) === chave);
+  if (porSlug) return porSlug;
+  return opcoes.find((o) => normalizarTipo(TYPE_LABELS[o] ?? o) === chave) ?? null;
+}
+
+function normalizarTipo(valor: string): string {
+  return valor
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+}
+
 export function PropertyWizard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  // O rodapé é fixo: avisa o shell para o botão de ajuda flutuar acima dele.
+  usePageActionBar(true);
 
   const [propertyId, setPropertyId] = useState<string | null>(id ?? null);
   const [code, setCode] = useState<number | null>(null);
@@ -227,6 +257,15 @@ export function PropertyWizard() {
   };
 
   const typeOptions = form.category ? CATEGORY_TYPES[form.category] : [];
+  // Tipo fora do vocabulário atual (registro antigo): o campo parece vazio,
+  // mas o form carrega o valor velho e o salvamento quebraria na API.
+  const tipoDesconhecido =
+    !!form.type && typeOptions.length > 0 && !typeOptions.includes(form.type) ? form.type : null;
+  const tipoSugerido = tipoDesconhecido ? tipoEquivalente(tipoDesconhecido, typeOptions) : null;
+  const isReview = step === STEPS.length - 1;
+  // Um título só na tela: o shell mostra o nome da etapa no lugar do rótulo
+  // genérico do caminho de pão ("Novo imóvel" / "Editar").
+  usePageEntityLabel(isReview ? "Revisar imóvel" : STEPS[step]);
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["properties"] });
@@ -282,6 +321,7 @@ export function PropertyWizard() {
     if (!form.purpose) errors.purpose = "Informe a finalidade";
     if (!form.category) errors.category = "Informe a categoria";
     if (!form.type) errors.type = "Informe o tipo";
+    else if (tipoDesconhecido) errors.type = "Escolha o tipo do imóvel na lista";
     if (!form.origin) errors.origin = "Informe como o imóvel chegou até você";
     setStepErrors(errors);
     return Object.keys(errors).length === 0;
@@ -365,6 +405,12 @@ export function PropertyWizard() {
     }
   }
 
+  /** Pula direto para uma etapa (usado pelo "Editar" de cada seção da revisão). */
+  function goToStep(target: number) {
+    setStep(target);
+    window.scrollTo({ top: 0 });
+  }
+
   async function publish() {
     if (!propertyId) return;
     setPublishing(true);
@@ -405,20 +451,49 @@ export function PropertyWizard() {
   const isSale = form.purpose === "venda" || form.purpose === "venda_locacao";
 
   return (
-    <div className="mx-auto max-w-2xl pb-24">
+    <div className={"mx-auto max-w-2xl " + (isReview ? "pb-40 sm:pb-28" : "pb-24")}>
+      {/* O título da página é o do shell (publicado por usePageEntityLabel):
+          um "Editar" ali em cima e um "Revisão" logo abaixo eram dois títulos
+          brigando. Aqui fica só a orientação: onde você está, quanto falta e o
+          que esta etapa pede. */}
       <header className="mb-6">
-        <p className="text-caption font-semibold uppercase tracking-wide text-text-subtle">
-          {code ? `${formatCode(code)} · ` : ""}Etapa {step + 1} de {STEPS.length}
-        </p>
-        <h2 className="mt-1 text-h1 text-text">{STEPS[step]}</h2>
-        <div className="mt-4 flex gap-1.5" aria-hidden="true">
+        <div className="flex min-h-[var(--tap-target-min)] items-center justify-between gap-4">
+          <p className="text-body-sm text-text-muted">
+            {code ? `${formatCode(code)} · ` : ""}Etapa {step + 1} de {STEPS.length}
+          </p>
+          {/* Sair salvando é exceção, não decisão da etapa: fica discreto no
+              topo e deixa o rodapé só com a navegação. */}
+          {propertyId && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => void saveStep(false, true)}
+              className="-mr-2 inline-flex min-h-[var(--tap-target-min)] shrink-0 items-center rounded-md px-2 text-body-sm font-semibold text-text-muted transition-colors duration-fast hover:text-text focus-visible:shadow-focus disabled:opacity-60"
+            >
+              Salvar e sair
+            </button>
+          )}
+        </div>
+        <div
+          className="mt-2 flex gap-1"
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={STEPS.length}
+          aria-valuenow={step + 1}
+          aria-label={`Etapa ${step + 1} de ${STEPS.length}`}
+        >
           {STEPS.map((label, i) => (
             <div
               key={label}
-              className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? "bg-accent" : "bg-surface-sunken"}`}
+              className={`h-1 flex-1 rounded-full transition-colors ${i <= step ? "bg-accent" : "bg-border"}`}
             />
           ))}
         </div>
+        {isReview && (
+          <p className="mt-4 text-body text-text-muted">
+            Confira as informações antes de disponibilizar o imóvel.
+          </p>
+        )}
       </header>
 
       {error && (
@@ -468,6 +543,8 @@ export function PropertyWizard() {
             set={set}
             errors={stepErrors}
             typeOptions={typeOptions}
+            tipoDesconhecido={tipoDesconhecido}
+            tipoSugerido={tipoSugerido}
           />
         )}
         {step === 1 && <StepLocation form={form} set={set} />}
@@ -478,63 +555,65 @@ export function PropertyWizard() {
         )}
         {step === 5 && propertyId && <MediaManager propertyId={propertyId} />}
         {step === 6 && (
-          <StepReview form={form} isSale={isSale} isRent={isRent} />
+          <StepReview data={form} propertyId={propertyId} onEditStep={goToStep} />
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur sm:px-6">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
-          <Button
+      {/* Rodapé com DUAS ações no máximo, sempre as mesmas posições: voltar à
+          esquerda, seguir à direita ocupando a largura do polegar. Sair
+          salvando fica no topo da página; na revisão, o rascunho já está salvo
+          etapa a etapa, então a única decisão nova é publicar. */}
+      {/* Duas ações no máximo, sempre nas mesmas posições. Nas etapas de
+          preenchimento cabem lado a lado; na revisão o CTA é mais longo e
+          ganha a linha inteira no celular, com o voltar discreto abaixo.
+          pb-safe garante que o gesto do iPhone não briga com o botão. */}
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-6">
+        <div
+          className={
+            "mx-auto flex max-w-2xl gap-3 " +
+            (isReview
+              ? "flex-col-reverse items-stretch sm:flex-row sm:items-center"
+              : "items-center")
+          }
+        >
+          {/* Na revisão a secundária é um link de ação: dois botões com
+              moldura empilhados leem como duas escolhas de mesmo peso. */}
+          <button
             type="button"
-            variant="ghost"
             onClick={() => {
               if (step === 0) navigate("/imoveis");
               else setStep((s) => s - 1);
             }}
+            className={
+              isReview
+                ? "inline-flex min-h-[var(--tap-target-min)] items-center justify-center gap-1 rounded-md px-2 text-body-sm font-semibold text-text-muted transition-colors duration-fast hover:text-text focus-visible:shadow-focus"
+                : buttonClasses("ghost") + " shrink-0 whitespace-nowrap"
+            }
           >
-            {step === 0 ? "Cancelar" : "Voltar"}
-          </Button>
-          <div className="flex items-center gap-2.5">
-            {propertyId && step < STEPS.length - 1 && (
-              <Button
-                type="button"
-                variant="ghost"
-                loading={saving}
-                onClick={() => void saveStep(false, true)}
-              >
-                Salvar e sair
-              </Button>
-            )}
-            {step < STEPS.length - 1 ? (
-              <Button
-                type="button"
-                variant="accent"
-                loading={saving}
-                onClick={() => void saveStep(true)}
-              >
-                Continuar
-              </Button>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  loading={saving}
-                  onClick={() => void saveStep(false, true)}
-                >
-                  Salvar como rascunho
-                </Button>
-                <Button
-                  type="button"
-                  variant="accent"
-                  loading={publishing}
-                  onClick={() => void publish()}
-                >
-                  Tornar disponível
-                </Button>
-              </>
-            )}
-          </div>
+            {isReview && <ChevronLeft size={16} aria-hidden="true" />}
+            {step === 0 ? "Cancelar" : isReview ? "Voltar para edição" : "Voltar"}
+          </button>
+          {isReview ? (
+            <Button
+              type="button"
+              variant="accent"
+              className="whitespace-nowrap sm:ml-auto sm:min-w-52"
+              loading={publishing}
+              onClick={() => void publish()}
+            >
+              Tornar imóvel disponível
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="accent"
+              className="flex-1 whitespace-nowrap sm:ml-auto sm:flex-none sm:min-w-44"
+              loading={saving}
+              onClick={() => void saveStep(true)}
+            >
+              Continuar
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -592,11 +671,17 @@ function StepIdentification({
   set,
   errors,
   typeOptions,
+  tipoDesconhecido,
+  tipoSugerido,
 }: {
   form: WizardForm;
   set: <K extends keyof WizardForm>(k: K, v: WizardForm[K]) => void;
   errors: Record<string, string>;
   typeOptions: readonly string[];
+  /** Tipo gravado que não existe mais na lista da categoria. */
+  tipoDesconhecido: string | null;
+  /** Tipo atual equivalente ao antigo, quando dá para deduzir. */
+  tipoSugerido: string | null;
 }) {
   return (
     <>
@@ -613,14 +698,38 @@ function StepIdentification({
         }}
       />
       {form.category && (
-        <Select
-          label="Tipo"
-          value={form.type}
-          error={errors.type}
-          placeholder="Escolha o tipo"
-          options={typeOptions.map((t) => ({ value: t, label: TYPE_LABELS[t] ?? t }))}
-          onValueChange={(v) => set("type", v)}
-        />
+        <div className="flex flex-col gap-2">
+          <Select
+            label="Tipo"
+            value={typeOptions.includes(form.type) ? form.type : ""}
+            error={errors.type}
+            placeholder="Escolha o tipo"
+            options={typeOptions.map((t) => ({ value: t, label: TYPE_LABELS[t] ?? t }))}
+            onValueChange={(v) => set("type", v)}
+          />
+          {/* Cadastro antigo com um tipo que saiu da lista: explica o que
+              houve em vez de deixar o campo mudo e quebrar só ao salvar. */}
+          {tipoDesconhecido && (
+            <Banner variant="info">
+              <span className="flex flex-col gap-2">
+                <span>
+                  Este imóvel foi cadastrado como <strong>{tipoDesconhecido}</strong>, que não está
+                  mais na lista de tipos. Escolha o tipo atual para poder salvar.
+                </span>
+                {tipoSugerido && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="self-start"
+                    onClick={() => set("type", tipoSugerido)}
+                  >
+                    Usar {TYPE_LABELS[tipoSugerido] ?? tipoSugerido}
+                  </Button>
+                )}
+              </span>
+            </Banner>
+          )}
+        </div>
       )}
       <ChipGroup
         label="Finalidade"
@@ -1182,89 +1291,3 @@ function StepOrigin({
 }
 
 // --- Etapa 7: Revisão --------------------------------------------------------
-
-function ReviewRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2.5">
-      <dt className="shrink-0 text-body-sm text-text-muted">{label}</dt>
-      <dd className="text-right text-body-sm font-semibold text-text">{value}</dd>
-    </div>
-  );
-}
-
-function StepReview({
-  form,
-  isSale,
-  isRent,
-}: {
-  form: WizardForm;
-  isSale: boolean;
-  isRent: boolean;
-}) {
-  const address = [
-    form.street && `${form.street}${form.addressNumber ? `, ${form.addressNumber}` : ""}`,
-    form.neighborhood,
-    form.city && `${form.city}${form.state ? `/${form.state}` : ""}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  return (
-    <>
-      <section className="divide-y divide-border rounded-xl border border-border bg-surface px-5 py-2 shadow-sm">
-        <dl className="divide-y divide-border">
-          <ReviewRow label="Título" value={form.title || "Não informado"} />
-          <ReviewRow
-            label="Categoria e tipo"
-            value={
-              form.category
-                ? `${CATEGORY_LABELS[form.category]} · ${TYPE_LABELS[form.type] ?? form.type}`
-                : "Não informado"
-            }
-          />
-          <ReviewRow
-            label="Finalidade"
-            value={form.purpose ? PURPOSE_LABELS[form.purpose] : "Não informada"}
-          />
-          <ReviewRow
-            label="Origem"
-            value={form.origin ? ORIGIN_LABELS[form.origin] : "Não informada"}
-          />
-          <ReviewRow label="Endereço" value={address || "Não informado"} />
-          <ReviewRow
-            label="Exibição da localização"
-            value={ADDRESS_DISPLAY_LABELS[form.addressDisplay]}
-          />
-          {isSale && (
-            <ReviewRow
-              label="Valor de venda"
-              value={
-                parseMoney(form.salePrice) != null
-                  ? formatMoney(parseMoney(form.salePrice) as number)
-                  : "A definir"
-              }
-            />
-          )}
-          {isRent && (
-            <ReviewRow
-              label="Valor mensal"
-              value={
-                parseMoney(form.rentPrice) != null
-                  ? formatMoney(parseMoney(form.rentPrice) as number)
-                  : "A definir"
-              }
-            />
-          )}
-          <ReviewRow
-            label="Características"
-            value={form.features.length > 0 ? form.features.join(", ") : "Nenhuma marcada"}
-          />
-        </dl>
-      </section>
-      <Banner variant="info">
-        Tornar disponível deixa o imóvel pronto para, em breve, entrar nas seleções enviadas às
-        suas leads. Você também pode manter como rascunho e concluir depois.
-      </Banner>
-    </>
-  );
-}

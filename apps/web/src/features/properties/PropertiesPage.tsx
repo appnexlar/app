@@ -15,6 +15,7 @@ import { Banner } from "../../components/ui/Banner";
 import { Select } from "../../components/ui/Select";
 import { SearchField } from "../../components/ui/SearchField";
 import { SmartEmptyState } from "../../components/ui/SmartEmptyState";
+import { NewPropertyChooser } from "./NewPropertyChooser";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { Pagination } from "../../components/ui/Pagination";
 import { ApiError } from "../../lib/http";
@@ -57,10 +58,11 @@ const MAX_SELECIONADOS = 30;
  * qualquer página em vez de avançar de dez em dez.
  */
 export function PropertiesPage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  // A carteira é o lugar de cadastrar imóvel, então a ação nasce aqui.
-  usePageAction("Cadastrar imóvel", () => navigate("/imoveis/novo"));
+  // A carteira é o lugar de cadastrar imóvel, então a ação nasce aqui. Ela
+  // abre a escolha entre importar por link e preencher à mão.
+  const [chooserOpen, setChooserOpen] = useState(false);
+  usePageAction("Cadastrar imóvel", () => setChooserOpen(true));
   const [q, setQ] = useState("");
   const [purpose, setPurpose] = useState("");
   const [category, setCategory] = useState("");
@@ -214,12 +216,15 @@ export function PropertiesPage() {
 
   if (total === 0 && !hasFilters) {
     return (
-      <SmartEmptyState
-        icon={<HouseIcon className="h-8 w-8" />}
-        title="Sua carteira de imóveis"
-        description="Com imóveis cadastrados, você seleciona os certos para cada lead e envia num link exclusivo. Comece pelo essencial: fotos e detalhes entram depois."
-        action={{ label: "Cadastrar primeiro imóvel", onClick: () => navigate("/imoveis/novo") }}
-      />
+      <>
+        <SmartEmptyState
+          icon={<HouseIcon className="h-8 w-8" />}
+          title="Sua carteira de imóveis"
+          description="Com imóveis cadastrados, você seleciona os certos para cada lead e envia num link exclusivo. Comece pelo essencial: fotos e detalhes entram depois."
+          action={{ label: "Cadastrar primeiro imóvel", onClick: () => setChooserOpen(true) }}
+        />
+        <NewPropertyChooser open={chooserOpen} onClose={() => setChooserOpen(false)} />
+      </>
     );
   }
 
@@ -492,6 +497,7 @@ export function PropertiesPage() {
       )}
 
       <SelectLeadForSelectionModal propertyIds={pickerIds} onClose={() => setPickerIds(null)} />
+      <NewPropertyChooser open={chooserOpen} onClose={() => setChooserOpen(false)} />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { LeadsModule } from "./leads/leads.module";
 import { ClientsModule } from "./clients/clients.module";
 import { AgendaModule } from "./agenda/agenda.module";
 import { PropertiesModule } from "./properties/properties.module";
+import { PropertyImportModule } from "./property-import/property-import.module";
 import { SharingModule } from "./sharing/sharing.module";
 import { FinancingModule } from "./financing/financing.module";
 import { PublicPageModule } from "./public-page/public-page.module";
@@ -43,6 +44,7 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
     ClientsModule,
     AgendaModule,
     PropertiesModule,
+    PropertyImportModule,
     SharingModule,
     FinancingModule,
     PublicPageModule,

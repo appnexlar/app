@@ -18,6 +18,7 @@ import { PublicSelectionPage } from "./features/selections/PublicSelectionPage";
 import { PublicSelectionItemPage } from "./features/selections/PublicSelectionItemPage";
 import { PropertiesPage } from "./features/properties/PropertiesPage";
 import { PropertyWizard } from "./features/properties/PropertyWizard";
+import { ImportPropertyPage } from "./features/properties/ImportPropertyPage";
 import { PropertyDetailPage } from "./features/properties/PropertyDetailPage";
 import { FunnelPage } from "./features/funnel/FunnelPage";
 import { ClientsPage } from "./features/clients/ClientsPage";
@@ -104,6 +105,7 @@ export function App() {
             <Route path="/visitas" element={<VisitsPage />} />
             <Route path="/imoveis" element={<PropertiesPage />} />
             <Route path="/imoveis/novo" element={<PropertyWizard />} />
+            <Route path="/imoveis/importar" element={<ImportPropertyPage />} />
             <Route path="/imoveis/:id" element={<PropertyDetailPage />} />
             <Route path="/imoveis/:id/editar" element={<PropertyWizard />} />
             <Route path="/documentos" element={<DocumentsPage />} />

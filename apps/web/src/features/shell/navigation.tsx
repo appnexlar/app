@@ -124,6 +124,7 @@ export interface Crumb {
 /** Rótulos de subrotas conhecidas (caminho de pão). */
 const SUBROUTE_LABELS: Record<string, string> = {
   novo: "Novo imóvel",
+  importar: "Importar por link",
   editar: "Editar",
   "imoveis-enviados": "Imóveis enviados",
   imoveis: "Imóveis da página",

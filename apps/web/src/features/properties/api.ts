@@ -10,6 +10,7 @@ import type {
   PropertyContactDto,
   PropertyContactSummary,
   PropertyDetail,
+  PropertyImportResult,
   PropertyListResponse,
   PropertyMediaSummary,
   PropertyStatus,
@@ -73,6 +74,11 @@ export function duplicateProperty(id: string): Promise<PropertySummary> {
 
 export function deleteProperty(id: string): Promise<void> {
   return http.delete<void>(`/properties/${id}`);
+}
+
+/** Importa um imóvel a partir da URL pública do anúncio (rascunho + resumo). */
+export function importProperty(url: string, force?: boolean): Promise<PropertyImportResult> {
+  return http.post<PropertyImportResult>("/properties/imports", force ? { url, force } : { url });
 }
 
 export function findDuplicates(params: {
