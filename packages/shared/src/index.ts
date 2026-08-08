@@ -5,6 +5,8 @@ export * from "./clients/dto";
 export * from "./leads/dto";
 export * from "./properties/dto";
 export * from "./properties/detail-fields";
+export * from "./properties/import";
+export * from "./properties/publish";
 export * from "./sharing/dto";
 export * from "./selections/dto";
 export * from "./financing/dto";

@@ -44,6 +44,22 @@ export class LeadRefPipe implements PipeTransform<string, Promise<string>> {
 }
 
 @Injectable()
+export class PropertyRefPipe implements PipeTransform<string, Promise<string>> {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async transform(value: string): Promise<string> {
+    const ref = garantirFormato(value);
+    if (typeof ref === "string") return ref;
+    const property = await this.prisma.property.findUnique({
+      where: { code: ref },
+      select: { id: true },
+    });
+    if (!property) throw new NotFoundException("Imóvel não encontrado.");
+    return property.id;
+  }
+}
+
+@Injectable()
 export class FinancingRefPipe implements PipeTransform<string, Promise<string>> {
   constructor(private readonly prisma: PrismaService) {}
 

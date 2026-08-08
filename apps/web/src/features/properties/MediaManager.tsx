@@ -55,7 +55,7 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
   const [externalError, setExternalError] = useState<string | null>(null);
 
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: ["property", propertyId] });
+    void queryClient.invalidateQueries({ queryKey: ["property"] });
     void queryClient.invalidateQueries({ queryKey: ["properties"] });
   };
 
@@ -144,11 +144,24 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
             onValueChange={(v) => setRoom(v as PhotoRoom | "")}
           />
         </div>
-        <div className="flex flex-wrap gap-2.5">
-          <Button type="button" variant="accent" onClick={() => photoInputRef.current?.click()}>
+        {/* No celular os dois ocupam a largura do card: empilhados com larguras
+            diferentes, viravam degrau. Do tablet em diante voltam a ter o
+            tamanho do próprio texto, lado a lado. */}
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="button"
+            variant="accent"
+            className="w-full sm:w-auto"
+            onClick={() => photoInputRef.current?.click()}
+          >
             Adicionar fotos
           </Button>
-          <Button type="button" variant="ghost" onClick={() => videoInputRef.current?.click()}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full sm:w-auto"
+            onClick={() => videoInputRef.current?.click()}
+          >
             Adicionar vídeo
           </Button>
         </div>
@@ -325,7 +338,7 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
         <Button
           type="button"
           variant="ghost"
-          className="self-start"
+          className="w-full sm:w-auto sm:self-start"
           loading={externalMutation.isPending}
           disabled={!externalUrl.trim()}
           onClick={() => externalMutation.mutate()}

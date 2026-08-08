@@ -187,7 +187,7 @@ export function LeadSharesSection({ lead, onShare }: { lead: LeadRef; onShare: (
                   key={share.itemId}
                   share={share}
                   onOpenMenu={setMenuShare}
-                  onOpenProperty={(s) => navigate(`/imoveis/${s.propertyId}`)}
+                  onOpenProperty={(s) => navigate(`/imoveis/${s.propertyCode}`)}
                   onProposeVisit={setVisitaShare}
                 />
               ))}
@@ -308,7 +308,7 @@ export function ShareActionSheet({
                   label="Abrir imóvel"
                   onClick={() => {
                     onClose();
-                    navigate(`/imoveis/${share.propertyId}`);
+                    navigate(`/imoveis/${share.propertyCode}`);
                   }}
                 />
                 <SheetItem label="Registrar resposta da lead" onClick={() => setView("resposta")} />

@@ -324,6 +324,7 @@ model Broker {
   agendaEvents  AgendaEvent[]
   documents     Document[]
   properties    Property[]
+  propertyImports PropertyImport[]
   visits        Visit[]
   simulations   Simulation[]
   selections    PropertySelection[]
@@ -978,6 +979,7 @@ model Property {
   media           PropertyMedia[]
   sharedItems     SelectionItem[]
   financingRequests FinancingDataRequest[]
+  imports         PropertyImport[]
 
   @@index([brokerId])
   @@index([brokerId, publicVisibility])
@@ -1036,6 +1038,50 @@ model PropertyMedia {
   @@index([brokerId])
   @@index([propertyId])
   @@map("property_media")
+}
+
+// ---------------------------------------------------------------------------
+// property_import — importação de imóvel por URL (docs/10)
+// ---------------------------------------------------------------------------
+// Auditoria de cada importação: de onde veio, o que a extração encontrou e
+// qual rascunho nasceu. Guarda só o RESULTADO estruturado (payload), nunca o
+// conteúdo integral da página. Excluir o imóvel não apaga o registro: a
+// trilha de auditoria sobrevive ao rascunho descartado (property_id vira nulo).
+model PropertyImport {
+  id       String @id @default(uuid()) @db.Uuid
+  brokerId String @map("broker_id") @db.Uuid
+
+  url        String
+  finalUrl   String? @map("final_url")
+  domain     String
+  status     PropertyImportStatus
+  httpStatus Int?    @map("http_status")
+
+  /// Extração canônica: campo a campo com valor, fonte e evidência.
+  payload Json?
+  /// Contagens do resumo mostrado ao corretor (encontrados, revisar, ausentes).
+  summary Json?
+  /// Código interno do erro quando a importação falha (ex.: inacessivel).
+  error   String?
+
+  propertyId String? @map("property_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  broker   Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  property Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@index([brokerId, createdAt])
+  @@index([propertyId])
+  @@map("property_import")
+}
+
+enum PropertyImportStatus {
+  concluida
+  duplicada
+  falhou
+
+  @@map("property_import_status")
 }
 
 // ---------------------------------------------------------------------------

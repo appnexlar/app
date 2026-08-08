@@ -13,7 +13,7 @@ import {
   type SetResponseDto,
 } from "@nexlar/shared";
 import { CurrentBroker } from "../common/decorators/current-broker.decorator";
-import { LeadRefPipe } from "../common/pipes/short-code.pipe";
+import { LeadRefPipe, PropertyRefPipe } from "../common/pipes/short-code.pipe";
 import { Public } from "../common/decorators/public.decorator";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 import { SharingService } from "./sharing.service";
@@ -28,7 +28,7 @@ export class SharingController {
   @ApiOperation({ summary: "Enviar um imóvel para uma lead (cria o compartilhamento)" })
   create(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) propertyId: string,
+    @Param("id", PropertyRefPipe) propertyId: string,
     @Body(new ZodValidationPipe(createShareSchema)) dto: CreateShareDto,
   ): Promise<PropertyShareSummary> {
     return this.sharing.createShare(brokerId, propertyId, dto);
@@ -39,7 +39,7 @@ export class SharingController {
   @ApiOperation({ summary: "Leads que receberam este imóvel" })
   listForProperty(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) propertyId: string,
+    @Param("id", PropertyRefPipe) propertyId: string,
   ): Promise<PropertyShareSummary[]> {
     return this.sharing.listForProperty(brokerId, propertyId);
   }

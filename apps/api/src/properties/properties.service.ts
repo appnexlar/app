@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import {
+  bloqueiosParaPublicar,
   CATEGORY_DETAILS_SCHEMAS,
   CATEGORY_TYPES,
   type ChangeStatusDto,
@@ -279,16 +280,16 @@ export class PropertiesService {
     const property = await this.getOwned(brokerId, id);
 
     if (dto.status === "disponivel") {
-      const missing: string[] = [];
-      if (!property.city) missing.push("cidade");
-      if (!property.neighborhood) missing.push("bairro");
-      const needsSale = property.purpose === "venda" || property.purpose === "venda_locacao";
-      const needsRent =
-        property.purpose === "locacao" ||
-        property.purpose === "venda_locacao" ||
-        property.purpose === "temporada";
-      if (needsSale && property.salePrice == null) missing.push("valor de venda");
-      if (needsRent && property.rentPrice == null) missing.push("valor da locação");
+      // A regra mora no pacote compartilhado para a revisão do cadastro poder
+      // avisar antes com as MESMAS condições. Quem barra continua sendo aqui:
+      // o front só antecipa o aviso, nunca decide.
+      const missing = bloqueiosParaPublicar({
+        purpose: property.purpose,
+        city: property.city,
+        neighborhood: property.neighborhood,
+        salePrice: property.salePrice != null ? Number(property.salePrice) : null,
+        rentPrice: property.rentPrice != null ? Number(property.rentPrice) : null,
+      }).map((b) => b.campo);
       if (missing.length > 0) {
         throw new BadRequestException(
           `Para deixar o imóvel disponível, preencha: ${missing.join(", ")}.`,
