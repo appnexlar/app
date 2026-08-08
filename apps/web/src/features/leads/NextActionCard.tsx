@@ -114,7 +114,7 @@ export function NextActionCard({ lead, onShare }: { lead: LeadRef; onShare: () =
 function TileImovel({ share }: { share: LeadShareSummary }) {
   return (
     <Link
-      to={`/imoveis/${share.propertyId}`}
+      to={`/imoveis/${share.propertyCode}`}
       className="mt-4 flex items-center gap-4 rounded-xl border border-border bg-surface-sunken/40 p-2 transition-colors hover:bg-surface-sunken"
     >
       <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-sunken">

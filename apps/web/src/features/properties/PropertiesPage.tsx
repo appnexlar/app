@@ -545,7 +545,7 @@ function PropertyRow({
       if (selecionavel) onToggleMark();
       return;
     }
-    navigate(`/imoveis/${property.id}`);
+    navigate(`/imoveis/${property.code}`);
   };
 
   return (
@@ -655,7 +655,7 @@ function PropertyRow({
           type="button"
           variant="ghost"
           className="hidden min-h-[38px] px-3 text-body-sm lg:inline-flex"
-          onClick={() => navigate(`/imoveis/${property.id}/editar`)}
+          onClick={() => navigate(`/imoveis/${property.code}/editar`)}
         >
           Editar
         </Button>
@@ -714,13 +714,13 @@ function RowMenu({
       </button>
       {open && (
         <div className="absolute right-0 top-full z-20 mt-1 w-60 overflow-hidden rounded-xl border border-border bg-surface py-1.5 shadow-md">
-          <button type="button" className={`${item} lg:hidden`} onClick={() => navigate(`/imoveis/${property.id}`)}>
+          <button type="button" className={`${item} lg:hidden`} onClick={() => navigate(`/imoveis/${property.code}`)}>
             Ver ficha
           </button>
           <button
             type="button"
             className={`${item} lg:hidden`}
-            onClick={() => navigate(`/imoveis/${property.id}/editar`)}
+            onClick={() => navigate(`/imoveis/${property.code}/editar`)}
           >
             Editar
           </button>

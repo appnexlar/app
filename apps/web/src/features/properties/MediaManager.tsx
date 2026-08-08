@@ -55,7 +55,7 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
   const [externalError, setExternalError] = useState<string | null>(null);
 
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: ["property", propertyId] });
+    void queryClient.invalidateQueries({ queryKey: ["property"] });
     void queryClient.invalidateQueries({ queryKey: ["properties"] });
   };
 

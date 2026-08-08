@@ -269,7 +269,10 @@ export function PropertyWizard() {
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["properties"] });
-    if (propertyId) void queryClient.invalidateQueries({ queryKey: ["property", propertyId] });
+    // Por prefixo: a URL identifica o imóvel pelo código curto e os filhos
+    // (mídia, contatos) o conhecem pelo uuid. Invalidar a chave exata deixaria
+    // uma das duas leituras velha na tela.
+    void queryClient.invalidateQueries({ queryKey: ["property"] });
   };
 
   function buildPatch(): UpdatePropertyDto {
@@ -419,7 +422,8 @@ export function PropertyWizard() {
       await updateProperty(propertyId, buildPatch());
       await changePropertyStatus(propertyId, { status: "disponivel" });
       invalidate();
-      navigate(`/imoveis/${propertyId}`);
+      // Sempre pelo código curto: URL legível é a regra do projeto.
+      navigate(`/imoveis/${code ?? propertyId}`);
     } catch (e) {
       setError(
         e instanceof ApiError && e.status !== 500
@@ -518,7 +522,7 @@ export function PropertyWizard() {
             <Button
               type="button"
               variant="ghost"
-              onClick={() => navigate(`/imoveis/${duplicates[0].id}`)}
+              onClick={() => navigate(`/imoveis/${duplicates[0].code}`)}
             >
               Abrir imóvel existente
             </Button>

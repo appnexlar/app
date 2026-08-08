@@ -72,7 +72,7 @@ export function LeadSharesPage() {
         <SharesExplorer
           shares={shares}
           onOpenMenu={setMenuShare}
-          onOpenProperty={(s) => navigate(`/imoveis/${s.propertyId}`)}
+          onOpenProperty={(s) => navigate(`/imoveis/${s.propertyCode}`)}
           onProposeVisit={setVisitaShare}
         />
       )}

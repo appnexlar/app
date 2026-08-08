@@ -72,14 +72,14 @@ export function ImportPropertyPage() {
       ) : result?.outcome === "criado" ? (
         <ResultCard
           result={result}
-          onReview={() => navigate(`/imoveis/${result.propertyId}/editar`)}
+          onReview={() => navigate(`/imoveis/${result.propertyCode}/editar`)}
           onDiscard={() => setConfirmDiscard(true)}
           discarding={discard.isPending}
         />
       ) : result?.outcome === "duplicado" ? (
         <DuplicateCard
           result={result}
-          onOpenExisting={(id) => navigate(`/imoveis/${id}`)}
+          onOpenExisting={(code) => navigate(`/imoveis/${code}`)}
           onForce={() => {
             setResult(null);
             importar.mutate({ force: true });
@@ -303,7 +303,7 @@ function DuplicateCard({
   onForce,
 }: {
   result: PropertyImportResult;
-  onOpenExisting: (id: string) => void;
+  onOpenExisting: (code: number) => void;
   onForce: () => void;
 }) {
   const first = result.duplicates[0];
@@ -328,7 +328,7 @@ function DuplicateCard({
 
       <div className="flex flex-col gap-2">
         {first && (
-          <Button type="button" variant="accent" fullWidth onClick={() => onOpenExisting(first.id)}>
+          <Button type="button" variant="accent" fullWidth onClick={() => onOpenExisting(first.code)}>
             Abrir imóvel existente
           </Button>
         )}

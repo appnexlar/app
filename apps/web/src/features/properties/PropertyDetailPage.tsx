@@ -77,7 +77,7 @@ export function PropertyDetailPage() {
   }, [statusMenuOpen, moreMenuOpen]);
 
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: ["property", id] });
+    void queryClient.invalidateQueries({ queryKey: ["property"] });
     void queryClient.invalidateQueries({ queryKey: ["properties"] });
   };
 
@@ -103,7 +103,7 @@ export function PropertyDetailPage() {
     mutationFn: () => duplicateProperty(id as string),
     onSuccess: (created) => {
       void queryClient.invalidateQueries({ queryKey: ["properties"] });
-      navigate(`/imoveis/${created.id}/editar`);
+      navigate(`/imoveis/${created.code}/editar`);
     },
   });
 
@@ -185,7 +185,7 @@ export function PropertyDetailPage() {
           <Button type="button" variant="accent" onClick={() => setSendOpen(true)}>
             Enviar para uma lead
           </Button>
-          <Button type="button" variant="ghost" onClick={() => navigate(`/imoveis/${p.id}/editar`)}>
+          <Button type="button" variant="ghost" onClick={() => navigate(`/imoveis/${p.code}/editar`)}>
             Editar
           </Button>
           <div className="relative" ref={menuRef}>

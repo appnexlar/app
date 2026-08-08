@@ -433,7 +433,7 @@ function CartaoImovel({
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex items-start justify-between gap-2">
             <Link
-              to={`/imoveis/${item.id}`}
+              to={`/imoveis/${item.code}`}
               className="min-w-0 text-body-sm font-semibold text-text hover:text-accent"
             >
               {item.title}

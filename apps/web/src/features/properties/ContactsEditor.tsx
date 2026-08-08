@@ -36,7 +36,7 @@ export function ContactsEditor({ propertyId }: { propertyId: string }) {
   const [toRemove, setToRemove] = useState<PropertyContactSummary | null>(null);
 
   const invalidate = () =>
-    void queryClient.invalidateQueries({ queryKey: ["property", propertyId] });
+    void queryClient.invalidateQueries({ queryKey: ["property"] });
 
   const createMutation = useMutation({
     mutationFn: () =>

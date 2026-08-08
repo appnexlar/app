@@ -126,6 +126,8 @@ describe("Isolamento por corretor", () => {
   describe("/properties", () => {
     let imovelAna: string;
     let imovelBruno: string;
+    let codeAna: number;
+    let codeBruno: number;
 
     const novoImovel = (title: string) => ({
       title,
@@ -151,6 +153,8 @@ describe("Isolamento por corretor", () => {
       for (const response of created) expect(response.statusCode).toBe(201);
       imovelAna = created[0].json().id;
       imovelBruno = created[1].json().id;
+      codeAna = created[0].json().code;
+      codeBruno = created[1].json().code;
     });
 
     it("list devolve só a carteira do corretor autenticado", async () => {
@@ -177,6 +181,44 @@ describe("Isolamento por corretor", () => {
         url: `/api/properties/${imovelBruno}`,
       });
       expect(proprio.statusCode).toBe(200);
+    });
+
+    /**
+     * A URL do imóvel usa o código curto (/imoveis/156), e código sequencial é
+     * adivinhável: o do vizinho é o meu mais um. A tradução código -> id não
+     * autoriza nada; quem filtra por broker_id é o service, e é isso que estes
+     * dois casos travam.
+     */
+    it("abre o próprio imóvel pelo código curto, igual ao uuid", async () => {
+      const porCode = await requestAs(app, bruno, {
+        method: "GET",
+        url: `/api/properties/${codeBruno}`,
+      });
+      expect(porCode.statusCode).toBe(200);
+      expect(porCode.json().id).toBe(imovelBruno);
+      expect(codeAna).not.toBe(codeBruno);
+    });
+
+    it("código curto de imóvel alheio responde 404, como o uuid", async () => {
+      for (const ref of [codeBruno, imovelBruno]) {
+        const cruzado = await requestAs(app, ana, {
+          method: "GET",
+          url: `/api/properties/${ref}`,
+        });
+        expect(cruzado.statusCode).toBe(404);
+      }
+      // Nem escrita: adivinhar o código não dá acesso a mudar nada.
+      const escrita = await requestAs(app, ana, {
+        method: "PATCH",
+        url: `/api/properties/${codeBruno}`,
+        payload: { title: "Título invadido pelo código" },
+      });
+      expect(escrita.statusCode).toBe(404);
+      const ficha = await requestAs(app, bruno, {
+        method: "GET",
+        url: `/api/properties/${imovelBruno}`,
+      });
+      expect(ficha.json().title).toBe("Apartamento do Bruno");
     });
 
     it("update em imóvel alheio responde 404 e não altera nada", async () => {

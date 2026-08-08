@@ -39,6 +39,7 @@ import {
   type UpdatePropertyDto,
 } from "@nexlar/shared";
 import { CurrentBroker } from "../common/decorators/current-broker.decorator";
+import { PropertyRefPipe } from "../common/pipes/short-code.pipe";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 import { PropertiesService } from "./properties.service";
 import { PropertyMediaService } from "./property-media.service";
@@ -105,7 +106,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Ficha completa do imóvel" })
   findOne(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
   ) {
     return this.properties.findOne(brokerId, id);
   }
@@ -114,7 +115,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Atualização progressiva (qualquer etapa do cadastro)" })
   update(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Body(new ZodValidationPipe(updatePropertySchema)) dto: UpdatePropertyDto,
   ) {
     return this.properties.update(brokerId, id, dto);
@@ -124,7 +125,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Muda o status; tornar disponível valida o mínimo apresentável" })
   changeStatus(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Body(new ZodValidationPipe(changeStatusSchema)) dto: ChangeStatusDto,
   ) {
     return this.properties.changeStatus(brokerId, id, dto);
@@ -134,7 +135,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Confirma a disponibilidade operacional do imóvel" })
   confirmAvailability(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Body(new ZodValidationPipe(confirmAvailabilitySchema)) dto: ConfirmAvailabilityDto,
   ) {
     return this.properties.confirmAvailability(brokerId, id, dto);
@@ -145,7 +146,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Duplica o imóvel como novo rascunho (sem mídias)" })
   duplicate(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
   ) {
     return this.properties.duplicate(brokerId, id);
   }
@@ -155,7 +156,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Exclui o imóvel definitivamente (apaga também os arquivos)" })
   async remove(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
   ) {
     await this.media.removeAllFiles(brokerId, id);
     return this.properties.remove(brokerId, id);
@@ -168,7 +169,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Registra uma pessoa envolvida no imóvel" })
   addContact(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Body(new ZodValidationPipe(propertyContactSchema)) dto: PropertyContactDto,
   ) {
     return this.properties.addContact(brokerId, id, dto);
@@ -178,7 +179,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Atualiza uma pessoa envolvida" })
   updateContact(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Param("contactId", ParseUUIDPipe) contactId: string,
     @Body(new ZodValidationPipe(propertyContactSchema)) dto: PropertyContactDto,
   ) {
@@ -190,7 +191,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Remove uma pessoa envolvida" })
   removeContact(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Param("contactId", ParseUUIDPipe) contactId: string,
   ) {
     return this.properties.removeContact(brokerId, id, contactId);
@@ -204,7 +205,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Upload de foto, vídeo, planta ou PDF (multipart)" })
   async uploadMedia(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Req() req: FastifyRequest,
   ) {
     const file = await req.file();
@@ -248,7 +249,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Adiciona link externo (vídeo, tour virtual, 360°)" })
   addExternalMedia(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Body(new ZodValidationPipe(externalMediaSchema)) dto: ExternalMediaDto,
   ) {
     return this.media.addExternal(brokerId, id, dto);
@@ -258,7 +259,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Atualiza legenda, ambiente, capa, ordem ou origem da mídia" })
   updateMedia(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Param("mediaId", ParseUUIDPipe) mediaId: string,
     @Body(new ZodValidationPipe(updateMediaSchema)) dto: UpdateMediaDto,
   ) {
@@ -269,7 +270,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Tenta novamente uma mídia com falha" })
   retryMedia(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Param("mediaId", ParseUUIDPipe) mediaId: string,
   ) {
     return this.media.retry(brokerId, id, mediaId);
@@ -280,7 +281,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Remove a mídia (marca como removida e apaga o arquivo)" })
   removeMedia(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Param("mediaId", ParseUUIDPipe) mediaId: string,
   ) {
     return this.media.removeMedia(brokerId, id, mediaId);
@@ -290,7 +291,7 @@ export class PropertiesController {
   @ApiOperation({ summary: "Serve o arquivo privado (sempre autenticado e do próprio corretor)" })
   async serveMedia(
     @CurrentBroker("brokerId") brokerId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", PropertyRefPipe) id: string,
     @Param("mediaId", ParseUUIDPipe) mediaId: string,
     @Res() reply: FastifyReply,
   ) {
