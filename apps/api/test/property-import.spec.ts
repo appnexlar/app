@@ -2,13 +2,15 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { extractFromHtml, normalizeUF, parseMoneyBR } from "../src/property-import/extraction";
+import { extractPageText } from "../src/property-import/page-text";
 import { mapExtraction } from "../src/property-import/import-mapper";
 import { decodeHtml } from "../src/property-import/page-fetch.service";
 import { UrlSecurityService } from "../src/property-import/url-security.service";
 
 /**
- * Fatia A da importação por URL: o porteiro anti-SSRF e a extração
- * determinística sobre TRÊS páginas reais (fixtures), uma de cada plataforma:
+ * Importação por URL, fatias A e B: o porteiro anti-SSRF, a extração
+ * estruturada (JSON-LD e og) e a leitura do texto visível, sempre sobre TRÊS
+ * páginas reais (fixtures), uma de cada plataforma:
  * ImobiBrasil (JK Macedo, ISO-8859-1), site próprio em Next (Mega Imóveis,
  * og customizado) e C2S (MG Imob, RealEstateListing).
  */
@@ -189,8 +191,85 @@ describe("Extração: Mega Imóveis (og customizado, sem JSON-LD)", () => {
     );
   });
 
-  it("sem preço estruturado, preço fica honesto: ausente (fatia B lê o texto)", () => {
-    expect(canonical.price).toBeUndefined();
+  it("sem preço estruturado, o preço sai do texto, com o rótulo certo", () => {
+    // A página escreve "Aluguel R$ 23.000,00" e, logo abaixo, um "Total
+    // R$ 27.545,27" que soma IPTU e condomínio. O total é o número maior e o
+    // mais perto: ele NÃO pode ser o preço.
+    expect(canonical.price?.value).toBe(23000);
+    expect(canonical.price?.source).toBe("texto");
+    expect(canonical.condoFee?.value).toBe(3500);
+    expect(canonical.iptu?.value).toBe(1045.27);
+  });
+
+  it("lê os cômodos e as áreas escritos na tela", () => {
+    expect(canonical.bedrooms?.value).toBe(5);
+    expect(canonical.bathrooms?.value).toBe(6);
+    expect(canonical.halfBaths?.value).toBe(2);
+    expect(canonical.livingRooms?.value).toBe(2);
+    expect(canonical.totalArea?.value).toBe(800);
+    expect(canonical.usableArea?.value).toBe(800);
+  });
+
+  it("lê as características listadas em chips, sem inventar as da descrição", () => {
+    expect(Object.keys(canonical.amenities).sort()).toEqual([
+      "balcony",
+      "furnished",
+      "office",
+      "pool",
+      "serviceArea",
+    ]);
+    // A descrição fala em hidromassagem e dependência completa, mas nenhuma
+    // delas está na lista de características: prosa não vira campo.
+    expect(canonical.amenities.serviceRoom).toBeUndefined();
+  });
+
+  it("junta a galeria inteira, e não só a foto de capa", () => {
+    expect(canonical.photos.length).toBe(30);
+    // Todas do anúncio 9430; nenhuma dos imóveis similares que a página lista.
+    expect(canonical.photos.every((url) => url.includes("/9430/"))).toBe(true);
+  });
+});
+
+describe("Texto da página (fatia B)", () => {
+  const jk = extractFromHtml(
+    fixture("jk.html"),
+    "https://www.jkmacedoimoveis.com.br/imovel/2573040/chacara-venda-mairipora-sp-recanto-ceu-azul",
+  );
+
+  it("não deixa o texto sobrescrever o que a ficha já disse", () => {
+    // O texto do JK também traz os quartos e a área. A ficha veio antes e fica.
+    expect(jk.bedrooms?.source).toBe("ficha");
+    expect(jk.totalArea?.source).toBe("ficha");
+    expect(jk.price?.source).toBe("ficha");
+  });
+
+  it("preenche o que faltou: condomínio, IPTU e salas", () => {
+    expect(jk.condoFee?.value).toBe(180);
+    expect(jk.iptu?.value).toBe(176.5);
+    expect(jk.livingRooms?.value).toBe(1);
+  });
+
+  it("exige a unidade para aceitar área ('Terreno Frente: 20,00' não é área)", () => {
+    expect(jk.lotArea).toBeUndefined();
+  });
+
+  it("corta o texto antes dos imóveis similares", () => {
+    const page = extractPageText(fixture("mega.html"));
+    expect(page.flat).toContain("aluguel");
+    expect(page.flat).not.toContain("similares");
+    // O primeiro anúncio da vitrine custa R$ 1.500,00 e some junto com ela.
+    expect(page.flat).not.toContain("1.500,00");
+  });
+
+  it("descarta enfeite do site na galeria, sem se confundir com URL assinada", () => {
+    const mg = extractFromHtml(
+      fixture("mg.html"),
+      "https://www.mgimob.com.br/imoveis/venda/residencial/fortaleza/rodolfo-teofilo/CA0979",
+    );
+    // As fotos da C2S vêm em URL assinada, cheia de base64: o bloqueio de
+    // "logo" e "icon" não pode casar por acaso dentro do identificador.
+    expect(mg.photos.length).toBeGreaterThanOrEqual(11);
+    expect(mg.photos.every((url) => url.includes("c2sapp.com"))).toBe(true);
   });
 });
 

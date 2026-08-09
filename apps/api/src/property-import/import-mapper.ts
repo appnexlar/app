@@ -156,9 +156,28 @@ export function mapExtraction(
   if (canonical.price) {
     if (purpose === "locacao" || purpose === "temporada") updateDto.rentPrice = canonical.price.value;
     else updateDto.salePrice = canonical.price.value;
-    push(fields, "price", priceLabel, canonical.price, moneyBR.format(canonical.price.value));
+    // Preço lido do texto da página pede conferência: é o campo onde um erro
+    // custa caro, e ali não existe a garantia do dado estruturado.
+    push(
+      fields,
+      "price",
+      priceLabel,
+      canonical.price,
+      moneyBR.format(canonical.price.value),
+      canonical.price.source === "texto" ? "revisar" : undefined,
+    );
   } else {
     missing(fields, "price", priceLabel);
+  }
+
+  // Condomínio e IPTU: quem aluga decide pelo total, não pelo aluguel.
+  if (canonical.condoFee) {
+    updateDto.condoFee = canonical.condoFee.value;
+    push(fields, "condoFee", "Condomínio", canonical.condoFee, moneyBR.format(canonical.condoFee.value));
+  }
+  if (canonical.iptu) {
+    updateDto.iptu = canonical.iptu.value;
+    push(fields, "iptu", "IPTU", canonical.iptu, moneyBR.format(canonical.iptu.value));
   }
 
   // --- Endereço --------------------------------------------------------------
@@ -178,8 +197,9 @@ export function mapExtraction(
   if (!canonical.neighborhood) missing(fields, "neighborhood", "Bairro");
 
   // --- Características (details, validadas pela categoria) -------------------
-  const allowedKeys = new Set(DETAIL_FIELDS[category].map((f) => f.key));
-  const details: Record<string, number> = {};
+  const campos = DETAIL_FIELDS[category];
+  const allowedKeys = new Set(campos.map((f) => f.key));
+  const details: Record<string, number | boolean> = {};
   const numeric: Array<{
     key: string;
     label: string;
@@ -189,6 +209,8 @@ export function mapExtraction(
     { key: "bedrooms", label: "Quartos", extracted: canonical.bedrooms, relevant: category === "residencial" },
     { key: "suites", label: "Suítes", extracted: canonical.suites, relevant: false },
     { key: "bathrooms", label: "Banheiros", extracted: canonical.bathrooms, relevant: category === "residencial" },
+    { key: "halfBaths", label: "Lavabos", extracted: canonical.halfBaths, relevant: false },
+    { key: "livingRooms", label: "Salas", extracted: canonical.livingRooms, relevant: false },
     { key: "parkingSpots", label: "Vagas", extracted: canonical.parkingSpots, relevant: category === "residencial" },
     { key: "totalArea", label: "Área total", extracted: canonical.totalArea, relevant: false },
     { key: "builtArea", label: "Área construída", extracted: canonical.builtArea, relevant: false },
@@ -222,6 +244,25 @@ export function mapExtraction(
     );
   }
   if (!anyArea) missing(fields, "details.area", "Área");
+
+  // Características de sim ou não vêm da lista de comodidades da página. Elas
+  // entram numa linha só do resumo: oito linhas de "Piscina: sim" afogariam a
+  // revisão justamente nos campos que importam mais.
+  const amenidades: string[] = [];
+  for (const [key, extracted] of Object.entries(canonical.amenities)) {
+    if (!allowedKeys.has(key) || !extracted.value) continue;
+    details[key] = true;
+    amenidades.push(campos.find((f) => f.key === key)?.label ?? key);
+  }
+  if (amenidades.length > 0) {
+    fields.push({
+      key: "details.amenities",
+      label: "Características",
+      state: "revisar",
+      value: amenidades.join(", "),
+      source: "texto",
+    });
+  }
 
   if (Object.keys(details).length > 0) {
     const parsed = CATEGORY_DETAILS_SCHEMAS[category].safeParse(details);
