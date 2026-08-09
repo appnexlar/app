@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/:caminho*",
-      "destination": "https://nexlar-api-production.up.railway.app/api/:caminho*"
+      "destination": "https://nexlarapi-production.up.railway.app/api/:caminho*"
     },
     {
       "source": "/((?!assets/).*)",
