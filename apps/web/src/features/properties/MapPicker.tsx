@@ -133,9 +133,12 @@ export function MapPicker({ latitude, longitude, searchHint, onChange }: MapPick
         </Button>
       </div>
       {searchError && <p className="text-caption text-[var(--danger-fg)]">{searchError}</p>}
+      {/* `relative z-0` prende o Leaflet no próprio contexto de empilhamento.
+          As camadas dele nascem com z-index de 400 a 1000 e, sem isso, passam
+          por cima do rodapé fixo do cadastro, escondendo o botão Continuar. */}
       <div
         ref={containerRef}
-        className="h-64 w-full overflow-hidden rounded-xl border border-border sm:h-72"
+        className="relative z-0 h-64 w-full overflow-hidden rounded-xl border border-border sm:h-72"
         aria-label="Mapa para posicionar o imóvel"
       />
       <p className="text-caption text-text-subtle">
