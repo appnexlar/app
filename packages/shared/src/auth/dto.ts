@@ -42,6 +42,42 @@ export const registerSchema = z.object({
 });
 export type RegisterDto = z.infer<typeof registerSchema>;
 
+// --- Portas de entrada ------------------------------------------------------
+/**
+ * O que a tela de entrada pode oferecer. Quem responde é a API, porque é ela
+ * que sabe se a credencial do Google está configurada; assim o front nunca
+ * mostra um botão que responderia 404.
+ */
+export interface AuthProviders {
+  google: boolean;
+}
+
+// --- Cadastro pelo Google ---------------------------------------------------
+/**
+ * Quem entra pelo Google não escolhe senha: a credencial fica lá. O que o
+ * Google não sabe (WhatsApp, documento, imobiliária) e o que só o corretor
+ * pode dar (aceite dos Termos) continuam sendo pedidos aqui.
+ *
+ * Nome e e-mail NÃO entram neste corpo de propósito. Eles vêm do convite
+ * assinado que o servidor guardou no cookie ao voltar do Google; aceitá-los do
+ * cliente deixaria qualquer pessoa criar conta com o e-mail de outra.
+ */
+export const registerWithGoogleSchema = z.object({
+  phone: z.string().max(40).trim().optional().or(z.literal("")),
+  agencyName: z.string().max(160).trim().optional().or(z.literal("")),
+  acceptTerms: z.literal(true, {
+    errorMap: () => ({ message: "Aceite os Termos e a Política para continuar." }),
+  }),
+  marketingOptIn: z.boolean().optional().default(false),
+});
+export type RegisterWithGoogleDto = z.infer<typeof registerWithGoogleSchema>;
+
+/** Identidade do convite em aberto, para a tela dizer quem está entrando. */
+export interface GooglePendingSignup {
+  fullName: string;
+  email: string;
+}
+
 // --- Login ------------------------------------------------------------------
 export const loginSchema = z.object({
   email: emailSchema,

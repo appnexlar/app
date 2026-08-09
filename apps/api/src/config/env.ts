@@ -27,6 +27,12 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().default("Nexlar <onboarding@resend.dev>"),
   WEB_ORIGIN: z.string().default("http://localhost:5173"),
   WEB_APP_URL: z.string().default("http://localhost:5173"),
+  // Entrar com o Google. Sem as duas chaves o recurso fica desligado e as
+  // rotas respondem 404: é melhor a porta não existir do que existir quebrada.
+  // O redirect_uri é derivado do WEB_APP_URL e precisa estar cadastrado igual
+  // no Google Cloud, senão o Google recusa antes de qualquer código nosso.
+  GOOGLE_CLIENT_ID: z.string().default(""),
+  GOOGLE_CLIENT_SECRET: z.string().default(""),
   // Storage privado de mídia.
   // local: disco, para desenvolvimento.
   // s3: bucket compatível com S3, obrigatório em produção, porque o disco do
@@ -46,6 +52,19 @@ const envSchema = z.object({
 })
   // Falha na subida, e não na primeira foto enviada, se o modo s3 estiver
   // escolhido sem as credenciais do bucket.
+  // Meia credencial é pior que nenhuma: o recurso pareceria ligado e falharia
+  // só na hora que o corretor clicasse no botão.
+  .superRefine((env, ctx) => {
+    const temId = env.GOOGLE_CLIENT_ID !== "";
+    const temSegredo = env.GOOGLE_CLIENT_SECRET !== "";
+    if (temId !== temSegredo) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [temId ? "GOOGLE_CLIENT_SECRET" : "GOOGLE_CLIENT_ID"],
+        message: "GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET andam juntos",
+      });
+    }
+  })
   .superRefine((env, ctx) => {
     if (env.STORAGE_DRIVER !== "s3") return;
     for (const chave of ["S3_ENDPOINT", "S3_ACCESS_KEY", "S3_SECRET_KEY"] as const) {
