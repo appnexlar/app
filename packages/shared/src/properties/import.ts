@@ -32,8 +32,12 @@ export type ImportPropertyDto = z.infer<typeof importPropertySchema>;
 export const IMPORT_FIELD_STATES = ["encontrado", "revisar", "nao_encontrado"] as const;
 export type ImportFieldState = (typeof IMPORT_FIELD_STATES)[number];
 
-/** De onde o valor saiu. "ficha" é o dado estruturado (JSON-LD), o mais forte. */
-export const IMPORT_FIELD_SOURCES = ["ficha", "og", "titulo", "descricao", "url"] as const;
+/**
+ * De onde o valor saiu, da fonte mais forte para a mais fraca. "ficha" é o
+ * dado estruturado (JSON-LD); "texto" é o que estava escrito na tela, lido
+ * quando a ficha não trouxe o campo.
+ */
+export const IMPORT_FIELD_SOURCES = ["ficha", "og", "titulo", "descricao", "texto", "url"] as const;
 export type ImportFieldSource = (typeof IMPORT_FIELD_SOURCES)[number];
 
 export interface ImportedField {

@@ -1,48 +1,34 @@
 import type { ImportFieldSource, PropertyCategory, PropertyPurpose } from "@nexlar/shared";
+import {
+  clean,
+  deaccent,
+  decodeEntities,
+  normalizeUF,
+  parseAreaBR,
+  parseCount,
+  parseMoneyBR,
+  setNumber,
+  snippet,
+  type CanonicalExtraction,
+  type Extracted,
+} from "./canonical";
+import { extractGalleryPhotos, extractPageText, scanPageText } from "./page-text";
 
 /**
- * Extração estruturada da página do anúncio (fatia A): JSON-LD, Open Graph e
- * os títulos/descrições "empacotados" que os sites imobiliários montam para o
- * Google. Tudo determinístico: regex e dicionário, nenhuma IA. O texto solto
- * do corpo da página fica para a fatia B.
+ * Extração da página do anúncio em duas fases.
+ *
+ * A primeira, aqui, lê o que o site declarou para o Google: JSON-LD, Open
+ * Graph e os títulos e descrições empacotados. É a leitura mais confiável, e
+ * por isso vem antes. A segunda (`page-text.ts`) lê o texto visível e só
+ * preenche o que ficou em branco.
  *
  * Regra de prioridade da épica: ficha (JSON-LD) > og > título > descrição >
- * URL. Cada valor sai com a fonte e uma evidência curta, para a revisão do
- * corretor e para a auditoria.
+ * texto > URL. Cada valor sai com a fonte e uma evidência curta, para a
+ * revisão do corretor e para a auditoria.
  */
 
-export interface Extracted<T> {
-  value: T;
-  source: ImportFieldSource;
-  evidence?: string;
-}
-
-export interface CanonicalExtraction {
-  title?: Extracted<string>;
-  description?: Extracted<string>;
-  purpose?: Extracted<PropertyPurpose>;
-  categoryType?: Extracted<{ category: PropertyCategory; type: string }>;
-  price?: Extracted<number>;
-  street?: Extracted<string>;
-  addressNumber?: Extracted<string>;
-  neighborhood?: Extracted<string>;
-  city?: Extracted<string>;
-  state?: Extracted<string>;
-  zip?: Extracted<string>;
-  bedrooms?: Extracted<number>;
-  suites?: Extracted<number>;
-  bathrooms?: Extracted<number>;
-  parkingSpots?: Extracted<number>;
-  totalArea?: Extracted<number>;
-  builtArea?: Extracted<number>;
-  privateArea?: Extracted<number>;
-  usableArea?: Extracted<number>;
-  lotArea?: Extracted<number>;
-  /** Área sem rótulo ("186 m²" solto): vale menos, o mapper marca "revisar". */
-  genericArea?: Extracted<number>;
-  externalCode?: Extracted<string>;
-  photos: string[];
-}
+export type { CanonicalExtraction, Extracted };
+export { normalizeUF, parseAreaBR, parseMoneyBR };
 
 type JsonNode = Record<string, unknown>;
 
@@ -51,7 +37,7 @@ type JsonNode = Record<string, unknown>;
 export function extractFromHtml(html: string, pageUrl: string): CanonicalExtraction {
   const nodes = parseJsonLd(html);
   const metas = parseMetaTags(html);
-  const out: CanonicalExtraction = { photos: [] };
+  const out: CanonicalExtraction = { amenities: {}, photos: [] };
 
   // Nós de anúncio: nunca o nó da imobiliária (o endereço dele é da agência).
   const listingNodes = nodes.filter((n) => isListingNode(n));
@@ -89,8 +75,8 @@ export function extractFromHtml(html: string, pageUrl: string): CanonicalExtract
     out.description = { value: longestDesc.text, source: longestDesc.source };
   }
 
-  // Preço: só de campo estruturado (ficha). Preço em texto solto é a fatia B,
-  // porque a página mistura preços de outros anúncios relacionados.
+  // Preço da ficha primeiro. O do texto vem depois, na segunda fase, e só se
+  // aqui não veio nada: campo estruturado não se discute com parágrafo.
   const price = extractPrice(listingNodes, actionNodes);
   if (price) out.price = price;
 
@@ -115,11 +101,17 @@ export function extractFromHtml(html: string, pageUrl: string): CanonicalExtract
   const code = extractExternalCode(listingNodes, metas.og, path);
   if (code) out.externalCode = code;
 
-  // Fotos: contadas, não importadas (a importação de mídia é outra fatia).
-  out.photos = extractPhotos(listingNodes, actionObjects, metas.ogAll);
-
   // Cidade/UF e bairro no padrão "Mairiporã / SP, bairro Recanto Ceu Azul".
   extractCityFromPacked(out, packedTexts);
+
+  // Segunda fase: o texto visível preenche o que ficou em branco até aqui.
+  scanPageText(out, extractPageText(html));
+
+  // Fotos: contadas, não importadas (a importação de mídia é outra fatia).
+  // A capa da ficha vem primeiro, e a galeria completa entra na sequência.
+  const capa = extractPhotos(listingNodes, actionObjects, metas.ogAll);
+  const galeria = extractGalleryPhotos(html, out.externalCode?.value);
+  out.photos = [...new Set([...capa, ...galeria])];
 
   return out;
 }
@@ -202,59 +194,7 @@ function extractPrice(listingNodes: JsonNode[], actionNodes: JsonNode[]): Extrac
   return undefined;
 }
 
-/**
- * Dinheiro em qualquer grafia brasileira ou de ficha: "R$ 518.000,00",
- * "518000", "490000.0", "518.000". Devolve reais com centavos (nunca
- * centavos inteiros: o banco guarda Decimal em reais).
- */
-export function parseMoneyBR(raw: string): number | null {
-  const s = raw.replace(/[R$\s ]/g, "");
-  if (!s || /[^\d.,]/.test(s)) return null;
-  let normalized: string;
-  if (s.includes(",") && s.includes(".")) {
-    normalized = s.replace(/\./g, "").replace(",", ".");
-  } else if (s.includes(",")) {
-    normalized = s.replace(",", ".");
-  } else if (/^\d{1,3}(\.\d{3})+$/.test(s)) {
-    // Só pontos, agrupados de 3 em 3: são milhares ("518.000").
-    normalized = s.replace(/\./g, "");
-  } else {
-    normalized = s;
-  }
-  const value = Number(normalized);
-  if (!Number.isFinite(value) || value <= 0 || value > 999_999_999_999) return null;
-  return Math.round(value * 100) / 100;
-}
-
-/** Área: mesma leitura numérica do dinheiro, com teto sanitário próprio. */
-export function parseAreaBR(raw: string): number | null {
-  const value = parseMoneyBR(raw);
-  if (value == null || value <= 0 || value > 10_000_000) return null;
-  return value;
-}
-
 // --- Endereço ----------------------------------------------------------------
-
-const UF_SET = new Set([
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
-  "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
-]);
-
-const UF_BY_NAME: Record<string, string> = {
-  acre: "AC", alagoas: "AL", amapa: "AP", amazonas: "AM", bahia: "BA", ceara: "CE",
-  "distrito federal": "DF", "espirito santo": "ES", goias: "GO", maranhao: "MA",
-  "mato grosso": "MT", "mato grosso do sul": "MS", "minas gerais": "MG", para: "PA",
-  paraiba: "PB", parana: "PR", pernambuco: "PE", piaui: "PI", "rio de janeiro": "RJ",
-  "rio grande do norte": "RN", "rio grande do sul": "RS", rondonia: "RO", roraima: "RR",
-  "santa catarina": "SC", "sao paulo": "SP", sergipe: "SE", tocantins: "TO",
-};
-
-export function normalizeUF(raw: string): string | null {
-  const trimmed = raw.trim();
-  const upper = trimmed.toUpperCase();
-  if (UF_SET.has(upper)) return upper;
-  return UF_BY_NAME[deaccent(trimmed.toLowerCase())] ?? null;
-}
 
 function extractAddress(out: CanonicalExtraction, propertyNodes: JsonNode[], og: Record<string, string>): void {
   for (const node of propertyNodes) {
@@ -400,12 +340,6 @@ const PACKED_PATTERNS: ReadonlyArray<
   ["lotArea", /area do terreno[^\d]{0,16}([\d.,]+)\s*m/, parseAreaBR],
 ];
 
-function parseCount(raw: string): number | null {
-  const value = Number(raw);
-  if (!Number.isInteger(value) || value <= 0 || value > 60) return null;
-  return value;
-}
-
 function extractPackedNumbers(
   out: CanonicalExtraction,
   texts: { text: string; source: ImportFieldSource }[],
@@ -519,54 +453,12 @@ function parseMetaTags(html: string): MetaTags {
 
 // --- Utilitários -------------------------------------------------------------
 
-const NAMED_ENTITIES: Record<string, string> = {
-  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
-  aacute: "á", agrave: "à", atilde: "ã", acirc: "â", auml: "ä",
-  eacute: "é", egrave: "è", ecirc: "ê",
-  iacute: "í", icirc: "î",
-  oacute: "ó", ograve: "ò", otilde: "õ", ocirc: "ô",
-  uacute: "ú", ucirc: "û", uuml: "ü", ccedil: "ç",
-  Aacute: "Á", Agrave: "À", Atilde: "Ã", Acirc: "Â",
-  Eacute: "É", Ecirc: "Ê", Iacute: "Í",
-  Oacute: "Ó", Otilde: "Õ", Ocirc: "Ô", Uacute: "Ú", Ccedil: "Ç",
-  sup2: "²", sup3: "³", ordm: "º", ordf: "ª", deg: "°", middot: "·",
-  ndash: "–", mdash: "—", bull: "•", hellip: "…", laquo: "«", raquo: "»",
-};
-
-export function decodeEntities(text: string): string {
-  return text
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => safeFromCode(parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, dec: string) => safeFromCode(parseInt(dec, 10)))
-    .replace(/&([a-zA-Z]+);/g, (full, name: string) => NAMED_ENTITIES[name] ?? full);
-}
-
-function safeFromCode(code: number): string {
-  if (!Number.isFinite(code) || code <= 0 || code > 0x10ffff) return "";
-  return String.fromCodePoint(code);
-}
-
-function clean(text: string): string {
-  return decodeEntities(text).replace(/\s+/g, " ").trim();
-}
-
-export function deaccent(text: string): string {
-  return text.normalize("NFD").replace(/\p{M}/gu, "");
-}
-
 /** Tira o "| Nome do Site" ou "- Nome do Site" do fim, se sobrar título de verdade. */
 function stripSiteName(title: string): string {
   const cut = title.replace(/\s*[|]\s*[^|]{2,60}$/, "");
   if (cut.length >= 10 && cut !== title) return cut.trim();
   const dash = title.replace(/\s+-\s+[^-]{2,40}$/, "");
   return dash.length >= 10 ? dash.trim() : title;
-}
-
-function snippet(text: string, pattern: RegExp): string | undefined {
-  const flat = deaccent(text.toLowerCase());
-  const m = pattern.exec(flat);
-  if (!m) return text.slice(0, 100);
-  const start = Math.max(0, m.index - 30);
-  return text.slice(start, Math.min(text.length, m.index + m[0].length + 30)).trim();
 }
 
 function setText(
