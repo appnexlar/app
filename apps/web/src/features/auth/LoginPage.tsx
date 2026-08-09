@@ -12,7 +12,7 @@ import { PasswordField } from "../../components/ui/PasswordField";
 import { AuthOptionButton, GoogleMark } from "../../components/ui/AuthOptionButton";
 import { Banner } from "../../components/ui/Banner";
 import { AuthLayout, OrDivider } from "./AuthLayout";
-import { useGoogleAuth } from "./useGoogleAuth";
+import { useAuthProviders, useGoogleAuth } from "./useGoogleAuth";
 import { authErrorMessage, login } from "./api";
 
 /**
@@ -29,10 +29,14 @@ import { authErrorMessage, login } from "./api";
  */
 export function LoginPage() {
   const { startGoogleAuth, saindo } = useGoogleAuth();
+  const { google: temGoogle, pronto } = useAuthProviders();
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [comEmail, setComEmail] = useState(false);
+  // Enquanto a resposta não chega, o botão fica desabilitado: errar para o
+  // lado de bloquear evita o clique que cairia em 404 na janela de carga.
+  const googleIndisponivel = !temGoogle;
 
   const sessionExpired = searchParams.get("sessao") === "expirada";
   // Suspensão descoberta no meio do uso: o corretor foi trazido para cá e
@@ -106,6 +110,7 @@ export function LoginPage() {
               label="Continuar com o Google"
               icon={<GoogleMark />}
               loading={saindo}
+              disabled={googleIndisponivel}
               onClick={startGoogleAuth}
             />
 
@@ -119,6 +124,14 @@ export function LoginPage() {
             />
           </div>
 
+          {/* Só depois da resposta: dizer "em breve" durante a carga seria
+              informação errada por um instante. */}
+          {pronto && googleIndisponivel && (
+            <p className="mt-6 text-center text-caption leading-relaxed text-text-subtle">
+              A entrada pelo Google chega em breve. Por enquanto, use seu e-mail
+              e senha.
+            </p>
+          )}
         </>
       ) : (
         <>

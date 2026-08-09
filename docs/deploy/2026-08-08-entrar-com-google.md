@@ -6,9 +6,17 @@ subida. Quem roda é você: o agente não escreve no banco de produção nem ent
 em painel com a sua conta.
 
 Enquanto o `GOOGLE_CLIENT_ID` não existir, o recurso fica **desligado por
-inteiro**: as rotas `/api/auth/google` respondem 404 e o botão não faz nada.
-Isso é proposital. Meia credencial faria a tela parecer pronta e quebrar no
-clique.
+inteiro**: as rotas `/api/auth/google` respondem 404. Isso é proposital. Meia
+credencial faria a tela parecer pronta e quebrar no clique.
+
+**A tela sabe disso sozinha.** Ela pergunta a `GET /api/auth/providers` quais
+portas existem e, sem credencial, mostra o botão do Google **desabilitado**,
+com a frase "chega em breve" embaixo. Quem quiser entrar usa o e-mail, que
+segue funcionando normalmente. Por isso dá para subir esta versão para
+produção antes de criar a credencial: nada aparece quebrado.
+
+Quando você colar as variáveis, o botão liga sozinho na próxima carga da
+página. **Não precisa publicar o site de novo**, porque quem decide é a API.
 
 ## Parte 1: criar a credencial no Google Cloud
 
@@ -122,12 +130,13 @@ no índice único do Postgres, então as contas de senha convivem sem problema.
 
 ### Ordem
 
-O banco vem **antes** do deploy da API, como sempre. Mas aqui existe uma ordem a
-mais: **as variáveis do Google precisam estar na Railway antes de a API subir**,
-senão ela sobe com o recurso desligado e o botão do site novo responde 404.
+O banco vem **antes** do deploy da API, como sempre.
 
-Na Railway, serviço `nexlar-api`, aba **Variables**, acrescente
-`GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` com os mesmos valores do local.
+As variáveis do Google na Railway (serviço `nexlar-api`, aba **Variables**) são
+`GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`, com os mesmos valores do local.
+Elas **não bloqueiam a subida**: sem elas o site sobe com o botão do Google
+desabilitado e o e-mail funcionando. Acrescente quando tiver a credencial; a
+Railway reinicia o serviço e o botão liga sozinho.
 
 ### Passo 1: ver o que está pendente, sem aplicar nada
 

@@ -42,6 +42,16 @@ export const registerSchema = z.object({
 });
 export type RegisterDto = z.infer<typeof registerSchema>;
 
+// --- Portas de entrada ------------------------------------------------------
+/**
+ * O que a tela de entrada pode oferecer. Quem responde é a API, porque é ela
+ * que sabe se a credencial do Google está configurada; assim o front nunca
+ * mostra um botão que responderia 404.
+ */
+export interface AuthProviders {
+  google: boolean;
+}
+
 // --- Cadastro pelo Google ---------------------------------------------------
 /**
  * Quem entra pelo Google não escolhe senha: a credencial fica lá. O que o

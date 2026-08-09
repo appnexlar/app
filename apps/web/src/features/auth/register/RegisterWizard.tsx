@@ -18,7 +18,7 @@ import { AuthOptionButton, GoogleMark } from "../../../components/ui/AuthOptionB
 import { Checkbox } from "../../../components/ui/Checkbox";
 import { Banner } from "../../../components/ui/Banner";
 import { AuthLayout, OrDivider } from "../AuthLayout";
-import { useGoogleAuth } from "../useGoogleAuth";
+import { useAuthProviders, useGoogleAuth } from "../useGoogleAuth";
 import { useAuth } from "../AuthContext";
 import {
   authErrorMessage,
@@ -153,9 +153,14 @@ export function RegisterWizard() {
    * cadastro em aberto. Sem convite, a resposta é 401 e a tela mostra as duas
    * escolhas em vez do formulário.
    */
+  const { google: temGoogle, pronto } = useAuthProviders();
+
   const convite = useQuery({
     queryKey: ["auth", "google-pending"],
     queryFn: googlePendingSignup,
+    // Sem Google no ambiente não existe convite possível, e perguntar só
+    // renderia um 401 a cada carregamento da tela.
+    enabled: temGoogle,
     retry: false,
     // A identidade não muda no meio do cadastro, e reconsultar ao voltar para
     // a aba faria a tela piscar sem motivo.
@@ -218,7 +223,9 @@ export function RegisterWizard() {
   // Enquanto o servidor não responde não dá para saber se esta pessoa está
   // começando ou voltando do Google, e escolher errado faria a tela trocar de
   // cara na frente dela.
-  if (convite.isPending) {
+  // Com o Google desligado a consulta do convite nem roda, e ficaria pendente
+  // para sempre: aí quem manda é só o `pronto`.
+  if (!pronto || (temGoogle && convite.isPending)) {
     return (
       <AuthLayout>
         <div
@@ -283,7 +290,13 @@ export function RegisterWizard() {
         </p>
       </header>
 
-      {!emCadastro && <SignupStart onEmail={() => setViaEmail(true)} />}
+      {!emCadastro && (
+        <SignupStart
+          googleIndisponivel={!temGoogle}
+          avisarIndisponivel={pronto && !temGoogle}
+          onEmail={() => setViaEmail(true)}
+        />
+      )}
 
       {emCadastro && step === 0 && (
         <AccountStep
@@ -335,7 +348,16 @@ export function RegisterWizard() {
  * afirmá-la, e a última existe para tirar o medo do escopo: um botão social
  * costuma dar a impressão de que vamos ler a agenda e os contatos.
  */
-function SignupStart({ onEmail }: { onEmail: () => void }) {
+function SignupStart({
+  googleIndisponivel,
+  avisarIndisponivel,
+  onEmail,
+}: {
+  googleIndisponivel: boolean;
+  /** Só depois da resposta da API: avisar durante a carga seria informação errada. */
+  avisarIndisponivel: boolean;
+  onEmail: () => void;
+}) {
   const { startGoogleAuth, saindo } = useGoogleAuth();
 
   return (
@@ -345,6 +367,7 @@ function SignupStart({ onEmail }: { onEmail: () => void }) {
           label="Continuar com o Google"
           icon={<GoogleMark />}
           loading={saindo}
+          disabled={googleIndisponivel}
           onClick={startGoogleAuth}
         />
 
@@ -357,6 +380,13 @@ function SignupStart({ onEmail }: { onEmail: () => void }) {
           onClick={onEmail}
         />
       </div>
+
+      {avisarIndisponivel && (
+        <p className="mt-6 text-center text-caption leading-relaxed text-text-subtle">
+          A criação de conta pelo Google chega em breve. Por enquanto, cadastre-se
+          com seu e-mail.
+        </p>
+      )}
 
       <p className="mt-8 text-center text-body-sm text-text-muted">
         Já tem conta?{" "}

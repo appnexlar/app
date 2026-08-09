@@ -1,4 +1,5 @@
 import type {
+  AuthProviders,
   AuthResponse,
   ForgotPasswordDto,
   GooglePendingSignup,
@@ -20,6 +21,11 @@ export function login(credentials: LoginDto): Promise<AuthResponse> {
 /** Cria a conta do corretor e já devolve a sessão. */
 export function register(data: RegisterDto): Promise<AuthResponse> {
   return http.post<AuthResponse>("/auth/register", data);
+}
+
+/** Quais formas de entrada este ambiente oferece. */
+export function authProviders(): Promise<AuthProviders> {
+  return http.get<AuthProviders>("/auth/providers");
 }
 
 /**

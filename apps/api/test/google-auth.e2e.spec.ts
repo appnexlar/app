@@ -73,7 +73,7 @@ describe("entrar com o Google (e2e)", () => {
     await resetDatabase(app);
     // O limite por IP é global e compartilhado entre os casos: sem zerar, o
     // último teste do arquivo levaria 429 sem ter nada a ver com a regra.
-    app.get(RateLimitStore).reset();
+    app.get(RateLimitStore).clearAll();
     google.identidade = {
       googleId: "google-sub-1",
       email: "ana@gmail.com",
@@ -124,6 +124,41 @@ describe("entrar com o Google (e2e)", () => {
     }
     return null;
   }
+
+  it("anuncia o Google como porta disponível quando há credencial", async () => {
+    const resposta = await app.inject({ method: "GET", url: "/api/auth/providers" });
+
+    expect(resposta.statusCode).toBe(200);
+    expect(resposta.json()).toEqual({ google: true });
+    // A resposta não pode contar nada além disso: nem client_id, nem e-mail.
+    expect(resposta.body).not.toContain("client");
+  });
+
+  it("some com o Google quando o ambiente não tem credencial", async () => {
+    // O dublê herda o `enabled` real, que lê a configuração. Aqui ele finge um
+    // ambiente sem credencial, que é como produção vai subir por enquanto.
+    const semCredencial = Object.defineProperty(google, "enabled", {
+      value: false,
+      configurable: true,
+    });
+
+    try {
+      const providers = await app.inject({ method: "GET", url: "/api/auth/providers" });
+      expect(providers.json()).toEqual({ google: false });
+
+      // E a porta some de verdade, não só do anúncio.
+      const inicio = await app.inject({ method: "GET", url: "/api/auth/google" });
+      expect(inicio.statusCode).toBe(404);
+
+      const callback = await app.inject({
+        method: "GET",
+        url: "/api/auth/google/callback?code=x&state=y",
+      });
+      expect(callback.statusCode).toBe(404);
+    } finally {
+      delete (semCredencial as { enabled?: unknown }).enabled;
+    }
+  });
 
   it("manda para o Google com state, nonce e escopo mínimo", async () => {
     const inicio = await app.inject({ method: "GET", url: "/api/auth/google" });

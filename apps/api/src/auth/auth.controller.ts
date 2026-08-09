@@ -21,6 +21,7 @@ import {
   resendVerificationSchema,
   resetPasswordSchema,
   verifyEmailSchema,
+  type AuthProviders,
   type AuthResponse,
   type ForgotPasswordDto,
   type GooglePendingSignup,
@@ -81,6 +82,22 @@ export class AuthController {
   }
 
   // --- Entrar com o Google --------------------------------------------------
+
+  /**
+   * Quais portas de entrada estão de pé. Existe para o front não desenhar um
+   * botão que responderia 404: enquanto a credencial do Google não estiver
+   * configurada no ambiente, a tela mostra só o e-mail. Ligar o recurso passa
+   * a ser questão de variável de ambiente, sem publicar o site de novo.
+   *
+   * Não revela nada: só diz que existe um jeito público de entrar.
+   */
+  @Public()
+  @Get("providers")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Formas de entrada disponíveis neste ambiente" })
+  providers(): AuthProviders {
+    return { google: this.google.enabled };
+  }
 
   /**
    * Começa o fluxo: abre um pedido (state e nonce no cookie) e manda o
