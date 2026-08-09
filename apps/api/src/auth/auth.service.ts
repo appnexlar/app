@@ -14,8 +14,10 @@ import type {
   AuthResponse,
   BrokerProfile,
   ForgotPasswordDto,
+  GooglePendingSignup,
   LoginDto,
   RegisterDto,
+  RegisterWithGoogleDto,
   ResendVerificationDto,
   ResetPasswordDto,
   VerifyEmailDto,
@@ -23,6 +25,7 @@ import type {
 import { PrismaService } from "../prisma/prisma.service";
 import { EmailService } from "../email/email.service";
 import { RefreshTokenError, TokenService } from "./token.service";
+import type { GoogleIdentity } from "./google-oauth.service";
 import { LoginAttemptService } from "./login-attempt.service";
 import { CODIGO_CONTA_SUSPENSA } from "../common/guards/jwt-auth.guard";
 
@@ -35,6 +38,18 @@ export interface SessionResult {
   broker: BrokerProfile;
   tokens: { accessToken: string; refreshToken: string; expiresIn: number };
 }
+
+/**
+ * Desfecho da volta do Google. "sessao" é quem já tem conta; "cadastro" é
+ * quem ainda não tem e precisa aceitar os Termos e completar o perfil.
+ */
+export type GoogleSignInResult =
+  | { tipo: "sessao"; sessao: SessionResult }
+  | { tipo: "cadastro"; convite: string };
+
+/** Convite vencido, usado duas vezes ou adulterado: tudo responde igual. */
+export const CONVITE_GOOGLE_EXPIRADO =
+  "Seu cadastro pelo Google expirou. Comece de novo para continuar.";
 
 @Injectable()
 export class AuthService {
@@ -80,6 +95,119 @@ export class AuthService {
     return this.buildSession(broker);
   }
 
+  // --- Entrar com o Google --------------------------------------------------
+
+  /**
+   * O que fazer com quem acabou de voltar do Google. Três caminhos:
+   *
+   *  - já tem conta vinculada: entra;
+   *  - tem conta de senha com o mesmo e-mail: vincula e entra (só porque o
+   *    Google afirmou que o e-mail é verificado; quem garante isso é o
+   *    GoogleOAuthService, e sem essa garantia o vínculo seria um sequestro de
+   *    conta com passo único);
+   *  - não tem conta: nada é criado ainda. Volta um convite assinado, porque
+   *    faltam o aceite dos Termos e o perfil, e conta sem aceite é problema de
+   *    LGPD, não detalhe de formulário.
+   */
+  async googleSignIn(identity: GoogleIdentity): Promise<GoogleSignInResult> {
+    const porGoogleId = await this.prisma.broker.findUnique({
+      where: { googleId: identity.googleId },
+    });
+    if (porGoogleId) {
+      assertNaoSuspensa(porGoogleId);
+      return { tipo: "sessao", sessao: await this.buildSession(porGoogleId) };
+    }
+
+    const porEmail = await this.prisma.broker.findUnique({ where: { email: identity.email } });
+    if (porEmail) {
+      assertNaoSuspensa(porEmail);
+      const vinculado = await this.prisma.broker.update({
+        where: { id: porEmail.id },
+        data: {
+          googleId: identity.googleId,
+          // Entrar pelo Google prova o mesmo que clicar no nosso link de
+          // confirmação: que a pessoa controla a caixa de e-mail.
+          emailVerifiedAt: porEmail.emailVerifiedAt ?? new Date(),
+        },
+      });
+      // Vincular um jeito novo de entrar é evento de segurança, e fica gravado.
+      await this.prisma.auditLog.create({
+        data: {
+          brokerId: vinculado.id,
+          action: "auth.google.vinculado",
+          entityType: "broker",
+          entityId: vinculado.id,
+          metadata: { tinhaSenha: porEmail.passwordHash !== null },
+        },
+      });
+      return { tipo: "sessao", sessao: await this.buildSession(vinculado) };
+    }
+
+    return { tipo: "cadastro", convite: await this.criarConviteGoogle(identity) };
+  }
+
+  /** Convite de cadastro: JWT curto, assinado, com um propósito só. */
+  private criarConviteGoogle(identity: GoogleIdentity): Promise<string> {
+    return this.tokens.signGoogleSignup(identity);
+  }
+
+  /** Nome e e-mail do convite em aberto, para a tela de cadastro mostrar. */
+  async googlePendingSignup(convite: string | null): Promise<GooglePendingSignup> {
+    const identity = await this.tokens.verifyGoogleSignup(convite);
+    if (!identity) throw new UnauthorizedException(CONVITE_GOOGLE_EXPIRADO);
+    return { fullName: identity.fullName, email: identity.email };
+  }
+
+  /**
+   * Cria a conta a partir do convite. Sem senha: quem guarda a credencial é o
+   * Google. Nome e e-mail saem do convite assinado, nunca do corpo enviado.
+   */
+  async registerWithGoogle(
+    convite: string | null,
+    dto: RegisterWithGoogleDto,
+  ): Promise<SessionResult> {
+    const identity = await this.tokens.verifyGoogleSignup(convite);
+    if (!identity) throw new UnauthorizedException(CONVITE_GOOGLE_EXPIRADO);
+
+    // Entre o convite e o envio do formulário alguém pode ter criado a conta
+    // por outro caminho. Nesse caso não se cria nada: vincula e entra.
+    const existente = await this.prisma.broker.findFirst({
+      where: { OR: [{ googleId: identity.googleId }, { email: identity.email }] },
+    });
+    if (existente) {
+      assertNaoSuspensa(existente);
+      const atualizado = await this.prisma.broker.update({
+        where: { id: existente.id },
+        data: {
+          googleId: identity.googleId,
+          emailVerifiedAt: existente.emailVerifiedAt ?? new Date(),
+        },
+      });
+      return this.buildSession(atualizado);
+    }
+
+    const broker = await this.prisma.broker.create({
+      data: {
+        fullName: identity.fullName,
+        email: identity.email,
+        googleId: identity.googleId,
+        passwordHash: null,
+        phone: dto.phone ? dto.phone : null,
+        agencyName: dto.agencyName ? dto.agencyName : null,
+        // O Google já confirmou o endereço, então a conta nasce pronta e o
+        // corretor não passa pelo gate de confirmação por e-mail.
+        emailVerifiedAt: new Date(),
+        termsAcceptedAt: new Date(),
+        termsVersion: TERMS_VERSION,
+        marketingOptIn: dto.marketingOptIn ?? false,
+      },
+    });
+
+    await this.email.sendWelcome({ to: broker.email, fullName: broker.fullName });
+
+    return this.buildSession(broker);
+  }
+
   /** Autentica o corretor por e-mail e senha. */
   async login(dto: LoginDto): Promise<SessionResult> {
     // Conta em espera nem chega no banco.
@@ -98,7 +226,15 @@ export class AuthService {
       throw invalid;
     }
 
-    const ok = await argon2.verify(broker.passwordHash, dto.password).catch(() => false);
+    // Conta criada pelo Google não tem hash para comparar. Responde igual a
+    // senha errada, e não "esta conta é do Google": contar isso transformaria
+    // a tela num jeito de descobrir por onde cada pessoa entra. A tela oferece
+    // o Google logo acima, e quem quiser senha usa o "esqueci minha senha".
+    // O hash descartável entra no lugar do nulo para o tempo de resposta ficar
+    // igual: sem isso, uma resposta rápida denunciaria "esta conta é do Google".
+    const ok = await argon2
+      .verify(broker.passwordHash ?? DUMMY_HASH, dto.password)
+      .catch(() => false);
     if (!ok) {
       this.attempts.registerFailure(dto.email);
       throw invalid;

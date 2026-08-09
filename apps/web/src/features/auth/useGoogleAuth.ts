@@ -1,22 +1,20 @@
 import { useState } from "react";
 
 /**
- * Liga/desliga a entrada com Google. Fica false até o backend OAuth existir
- * e o Client ID do Google Cloud ser configurado. Quando true, o botão
- * redireciona para o fluxo OAuth da API.
+ * Manda o navegador para o Google.
+ *
+ * É uma navegação de página inteira, e não uma chamada de JavaScript, porque o
+ * fluxo depende de dois saltos de topo (ir ao Google e voltar) e de cookies que
+ * o JavaScript não enxerga. Por isso não existe estado de "carregando" que
+ * termine: a tela simplesmente sai do ar quando o navegador vai embora.
  */
-export const GOOGLE_AUTH_ENABLED = false;
-
 export function useGoogleAuth() {
-  const [pendingNotice, setPendingNotice] = useState(false);
+  const [saindo, setSaindo] = useState(false);
 
   function startGoogleAuth() {
-    if (GOOGLE_AUTH_ENABLED) {
-      window.location.href = "/api/auth/google";
-      return;
-    }
-    setPendingNotice(true);
+    setSaindo(true);
+    window.location.href = "/api/auth/google";
   }
 
-  return { startGoogleAuth, pendingNotice };
+  return { startGoogleAuth, saindo };
 }

@@ -1,17 +1,32 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Post,
+  Req,
+  Res,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import {
   forgotPasswordSchema,
   loginSchema,
   registerSchema,
+  registerWithGoogleSchema,
   resendVerificationSchema,
   resetPasswordSchema,
   verifyEmailSchema,
   type AuthResponse,
   type ForgotPasswordDto,
+  type GooglePendingSignup,
   type LoginDto,
   type RegisterDto,
+  type RegisterWithGoogleDto,
   type ResendVerificationDto,
   type ResetPasswordDto,
   type VerifyEmailDto,
@@ -21,6 +36,8 @@ import { RateLimit } from "../common/rate-limit/rate-limit.decorator";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 import { AuthService, type SessionResult } from "./auth.service";
 import { SessionCookie } from "./session-cookie";
+import { GoogleAuthError, GoogleOAuthService } from "./google-oauth.service";
+import { OAuthCookies } from "./oauth-cookies";
 
 const MINUTO = 60_000;
 
@@ -30,6 +47,9 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly cookie: SessionCookie,
+    private readonly google: GoogleOAuthService,
+    private readonly oauth: OAuthCookies,
+    private readonly config: ConfigService,
   ) {}
 
   /**
@@ -58,6 +78,116 @@ export class AuthController {
     @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<AuthResponse> {
     return this.responder(reply, await this.auth.register(dto));
+  }
+
+  // --- Entrar com o Google --------------------------------------------------
+
+  /**
+   * Começa o fluxo: abre um pedido (state e nonce no cookie) e manda o
+   * navegador para o Google. É GET porque quem chama é uma navegação de topo,
+   * não uma chamada de JavaScript.
+   */
+  @Public()
+  @RateLimit({ name: "google-start", limit: 20, windowMs: 15 * MINUTO })
+  @Get("google")
+  @ApiOperation({ summary: "Redireciona para o consentimento do Google" })
+  iniciarGoogle(@Res() reply: FastifyReply): void {
+    if (!this.google.enabled) throw new NotFoundException();
+    const pedido = this.oauth.abrirPedido(reply);
+    reply.redirect(302, this.google.authorizationUrl(pedido));
+  }
+
+  /**
+   * Volta do Google. Nunca responde com corpo: sempre redireciona para uma
+   * tela do app, com ou sem sessão. Erro vira um código curto na URL, porque
+   * detalhe de falha de autenticação é informação de quem ataca.
+   */
+  @Public()
+  @RateLimit({ name: "google-callback", limit: 20, windowMs: 15 * MINUTO })
+  @Get("google/callback")
+  @ApiOperation({ summary: "Recebe o retorno do Google e abre a sessão" })
+  async retornoGoogle(
+    @Req() request: FastifyRequest,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    if (!this.google.enabled) throw new NotFoundException();
+
+    const query = request.query as Record<string, unknown>;
+    const pedido = this.oauth.lerPedido(request);
+    // Uso único: o pedido morre aqui, dê certo ou errado. Sem isso um mesmo
+    // state serviria para mais de um retorno.
+    this.oauth.fecharPedido(reply);
+
+    // Quem clicou em "cancelar" na tela do Google não é erro: volta em paz.
+    if (typeof query.error === "string") {
+      return this.voltarParaOApp(reply, "/login?erro=cancelado");
+    }
+
+    const code = typeof query.code === "string" ? query.code : "";
+    const state = typeof query.state === "string" ? query.state : "";
+    if (!code || !pedido || state !== pedido.state) {
+      return this.voltarParaOApp(reply, "/login?erro=google");
+    }
+
+    try {
+      const identidade = await this.google.identify(code, pedido.nonce);
+      const resultado = await this.auth.googleSignIn(identidade);
+
+      if (resultado.tipo === "sessao") {
+        this.cookie.set(reply, resultado.sessao.tokens.refreshToken);
+        this.oauth.limparCadastro(reply);
+        return this.voltarParaOApp(reply, "/dashboard");
+      }
+
+      this.oauth.guardarCadastro(reply, resultado.convite);
+      return this.voltarParaOApp(reply, "/criar-conta");
+    } catch (erro) {
+      return this.voltarParaOApp(reply, `/login?erro=${this.codigoDeErro(erro)}`);
+    }
+  }
+
+  /** Identidade do cadastro em aberto, para a tela dizer quem está entrando. */
+  @Public()
+  @Get("google/pending")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Nome e e-mail do cadastro pelo Google em aberto" })
+  googlePending(@Req() request: FastifyRequest): Promise<GooglePendingSignup> {
+    return this.auth.googlePendingSignup(this.oauth.lerCadastro(request));
+  }
+
+  /**
+   * Conclui o cadastro pelo Google. O corpo traz só o que o Google não sabe:
+   * a identidade vem do convite assinado no cookie.
+   */
+  @Public()
+  @RateLimit({ name: "register-google", limit: 10, windowMs: 60 * MINUTO })
+  @Post("register/google")
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: "Cria a conta a partir do cadastro pelo Google" })
+  async registerWithGoogle(
+    @Body(new ZodValidationPipe(registerWithGoogleSchema)) dto: RegisterWithGoogleDto,
+    @Req() request: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ): Promise<AuthResponse> {
+    const sessao = await this.auth.registerWithGoogle(this.oauth.lerCadastro(request), dto);
+    // O convite cumpriu o papel e não pode ser reaproveitado.
+    this.oauth.limparCadastro(reply);
+    return this.responder(reply, sessao);
+  }
+
+  /** Só caminhos internos: destino nunca vem do que o cliente mandou. */
+  private voltarParaOApp(reply: FastifyReply, caminho: string): void {
+    const base = this.config.get<string>("WEB_APP_URL", "http://localhost:5173");
+    reply.redirect(302, `${base.replace(/\/$/, "")}${caminho}`);
+  }
+
+  /** Traduz a falha num código curto. O detalhe fica no servidor. */
+  private codigoDeErro(erro: unknown): string {
+    if (erro instanceof GoogleAuthError && erro.motivo === "email_nao_verificado") {
+      return "google_email";
+    }
+    if (erro instanceof ForbiddenException) return "suspensa";
+    return "google";
   }
 
   // Teto largo por IP: a trava de verdade do login é por conta, no

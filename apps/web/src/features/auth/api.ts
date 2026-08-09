@@ -1,8 +1,10 @@
 import type {
   AuthResponse,
   ForgotPasswordDto,
+  GooglePendingSignup,
   LoginDto,
   RegisterDto,
+  RegisterWithGoogleDto,
   ResendVerificationDto,
   ResetPasswordDto,
   VerifyEmailDto,
@@ -18,6 +20,20 @@ export function login(credentials: LoginDto): Promise<AuthResponse> {
 /** Cria a conta do corretor e já devolve a sessão. */
 export function register(data: RegisterDto): Promise<AuthResponse> {
   return http.post<AuthResponse>("/auth/register", data);
+}
+
+/**
+ * Quem é o dono do cadastro pelo Google em aberto. A identidade vive num
+ * cookie assinado no servidor, então esta chamada não leva nada: é o servidor
+ * que sabe quem voltou do Google.
+ */
+export function googlePendingSignup(): Promise<GooglePendingSignup> {
+  return http.get<GooglePendingSignup>("/auth/google/pending");
+}
+
+/** Conclui o cadastro pelo Google. Nome e e-mail vêm do cookie, não daqui. */
+export function registerWithGoogle(data: RegisterWithGoogleDto): Promise<AuthResponse> {
+  return http.post<AuthResponse>("/auth/register/google", data);
 }
 
 /**
@@ -74,6 +90,11 @@ export function authErrorMessage(error: unknown, context: AuthErrorContext): str
     // Conta suspensa: a API já manda o texto certo, e não há o que reformular.
     if (context === "login" && error.status === 403) return error.message;
     if (context === "register" && error.status === 409) return "Já existe uma conta com esse e-mail.";
+    // Cadastro pelo Google que demorou demais: a identidade precisa ser
+    // reconfirmada, e a tela oferece o botão para recomeçar.
+    if (context === "register" && error.status === 401) {
+      return "Seu cadastro pelo Google expirou. Entre com o Google de novo para continuar.";
+    }
     // Link vencido ou já usado: a mensagem da API é a certa.
     if ((context === "reset" || context === "verify") && error.status === 400) {
       return error.message;

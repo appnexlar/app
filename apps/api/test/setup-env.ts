@@ -14,6 +14,10 @@ process.env.DATABASE_URL =
 process.env.JWT_ACCESS_SECRET = "test-access-secret-0123456789";
 process.env.JWT_REFRESH_SECRET = "test-refresh-secret-0123456789";
 process.env.STORAGE_DIR = path.join(os.tmpdir(), "nexlar-test-storage");
+// Credenciais de mentira só para o recurso ficar ligado: nenhum teste fala com
+// o Google de verdade, quem responde é um dublê do GoogleOAuthService.
+process.env.GOOGLE_CLIENT_ID = "test-client-id.apps.googleusercontent.com";
+process.env.GOOGLE_CLIENT_SECRET = "test-client-secret";
 
 if (!/test/.test(process.env.DATABASE_URL)) {
   throw new Error(

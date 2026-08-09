@@ -29,6 +29,12 @@ function sha256(value: string): string {
  */
 const CORRIDA_TOLERADA_MS = 15_000;
 
+/** Marca do convite de cadastro pelo Google, para não confundir com sessão. */
+const TIPO_CONVITE_GOOGLE = "cadastro_google";
+
+/** Tempo para completar o cadastro depois de voltar do Google. */
+const CONVITE_GOOGLE_TTL_S = 30 * 60;
+
 /** Motivo pelo qual a renovação falhou. Só o servidor vê o detalhe. */
 export type RefreshFailure = "desconhecido" | "expirado" | "corrida" | "reuso";
 
@@ -147,6 +153,56 @@ export class TokenService {
       where: { tokenHash: hash, revokedAt: null },
       data: { revokedAt: new Date(), revokedReason: "logout" },
     });
+  }
+
+  // --- Convite de cadastro pelo Google --------------------------------------
+  /**
+   * Guarda "o Google confirmou que esta pessoa é dona deste e-mail" enquanto
+   * ela preenche o resto do cadastro.
+   *
+   * É JWT assinado, e não uma linha no banco, porque nada foi criado ainda: a
+   * conta só nasce no envio do formulário. O `typ` fixo impede que um access
+   * token, assinado com o mesmo segredo, seja apresentado aqui e vire cadastro.
+   */
+  async signGoogleSignup(identity: {
+    googleId: string;
+    email: string;
+    fullName: string;
+  }): Promise<string> {
+    return this.jwt.signAsync(
+      {
+        typ: TIPO_CONVITE_GOOGLE,
+        sub: identity.googleId,
+        email: identity.email,
+        name: identity.fullName,
+      },
+      {
+        secret: this.config.getOrThrow<string>("JWT_ACCESS_SECRET"),
+        expiresIn: CONVITE_GOOGLE_TTL_S,
+      },
+    );
+  }
+
+  /** Confere o convite. Null para qualquer motivo de recusa. */
+  async verifyGoogleSignup(token: string | null): Promise<{
+    googleId: string;
+    email: string;
+    fullName: string;
+  } | null> {
+    if (!token) return null;
+    try {
+      const payload = await this.jwt.verifyAsync<Record<string, unknown>>(token, {
+        secret: this.config.getOrThrow<string>("JWT_ACCESS_SECRET"),
+      });
+      if (payload.typ !== TIPO_CONVITE_GOOGLE) return null;
+      const googleId = typeof payload.sub === "string" ? payload.sub : "";
+      const email = typeof payload.email === "string" ? payload.email : "";
+      const fullName = typeof payload.name === "string" ? payload.name : "";
+      if (!googleId || !email || !fullName) return null;
+      return { googleId, email, fullName };
+    } catch {
+      return null;
+    }
   }
 
   // --- Confirmação de e-mail ------------------------------------------------

@@ -279,7 +279,14 @@ enum BrokerStatus {
 
 model Broker {
   id           String   @id @default(uuid()) @db.Uuid
-  passwordHash String   @map("password_hash")
+  /// Nulo em conta criada pelo Google: não existe senha para guardar. Quem
+  /// entra por senha precisa checar isso antes de comparar o hash, senão a
+  /// conta social viraria uma conta sem credencial nenhuma.
+  passwordHash String?  @map("password_hash")
+  /// Identificador da conta Google (claim `sub` do id_token). É estável e não
+  /// muda quando a pessoa troca o e-mail no Google, por isso o vínculo mora
+  /// aqui e não no endereço.
+  googleId     String?  @unique @map("google_id")
   fullName     String   @map("full_name")
   email        String   @unique
   phone        String?

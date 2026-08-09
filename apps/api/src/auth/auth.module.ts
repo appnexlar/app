@@ -4,10 +4,19 @@ import { AuthService } from "./auth.service";
 import { TokenService } from "./token.service";
 import { LoginAttemptService } from "./login-attempt.service";
 import { SessionCookie } from "./session-cookie";
+import { GoogleOAuthService } from "./google-oauth.service";
+import { OAuthCookies } from "./oauth-cookies";
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, TokenService, LoginAttemptService, SessionCookie],
+  providers: [
+    AuthService,
+    TokenService,
+    LoginAttemptService,
+    SessionCookie,
+    GoogleOAuthService,
+    OAuthCookies,
+  ],
   exports: [AuthService, TokenService],
 })
 export class AuthModule {}
