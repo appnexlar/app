@@ -13,6 +13,14 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16, "JWT_REFRESH_SECRET muito curto"),
   JWT_ACCESS_TTL: z.string().default("15m"),
   JWT_REFRESH_TTL: z.string().default("30d"),
+  // Nexlar Admin. Sem o segredo, o módulo administrativo inteiro fica fora
+  // do ar (as rotas /api/admin respondem 404), igual ao Google sem chave.
+  // O segredo é OBRIGATORIAMENTE diferente do JWT_ACCESS_SECRET: com o mesmo
+  // valor, um token de corretor viraria meio caminho de um token de admin.
+  JWT_ADMIN_SECRET: z.string().default(""),
+  JWT_ADMIN_ACCESS_TTL: z.string().default("10m"),
+  // Teto ABSOLUTO da sessão administrativa: a rotação não estende o prazo.
+  JWT_ADMIN_SESSION_TTL: z.string().default("8h"),
   // Quantos proxies existem na frente da API. O limite de tentativas por IP
   // depende disso: com 0 atrás da Railway todo mundo vira o mesmo IP (o do
   // proxy) e o limite prenderia o app inteiro; com um valor alto demais o IP
@@ -62,6 +70,26 @@ const envSchema = z.object({
         code: z.ZodIssueCode.custom,
         path: [temId ? "GOOGLE_CLIENT_SECRET" : "GOOGLE_CLIENT_ID"],
         message: "GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET andam juntos",
+      });
+    }
+  })
+  .superRefine((env, ctx) => {
+    if (env.JWT_ADMIN_SECRET === "") return;
+    if (env.JWT_ADMIN_SECRET.length < 16) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["JWT_ADMIN_SECRET"],
+        message: "JWT_ADMIN_SECRET muito curto",
+      });
+    }
+    if (
+      env.JWT_ADMIN_SECRET === env.JWT_ACCESS_SECRET ||
+      env.JWT_ADMIN_SECRET === env.JWT_REFRESH_SECRET
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["JWT_ADMIN_SECRET"],
+        message: "JWT_ADMIN_SECRET não pode repetir os segredos do corretor",
       });
     }
   })

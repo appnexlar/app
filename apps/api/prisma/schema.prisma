@@ -278,82 +278,82 @@ enum BrokerStatus {
 }
 
 model Broker {
-  id           String   @id @default(uuid()) @db.Uuid
+  id                   String            @id @default(uuid()) @db.Uuid
   /// Nulo em conta criada pelo Google: não existe senha para guardar. Quem
   /// entra por senha precisa checar isso antes de comparar o hash, senão a
   /// conta social viraria uma conta sem credencial nenhuma.
-  passwordHash String?  @map("password_hash")
+  passwordHash         String?           @map("password_hash")
   /// Identificador da conta Google (claim `sub` do id_token). É estável e não
   /// muda quando a pessoa troca o e-mail no Google, por isso o vínculo mora
   /// aqui e não no endereço.
-  googleId     String?  @unique @map("google_id")
-  fullName     String   @map("full_name")
-  email        String   @unique
-  phone        String?
-  creci        String?
-  creciUf      String?  @map("creci_uf")
-  creciStatus  BrokerCreciStatus @default(nao_enviado) @map("creci_status")
+  googleId             String?           @unique @map("google_id")
+  fullName             String            @map("full_name")
+  email                String            @unique
+  phone                String?
+  creci                String?
+  creciUf              String?           @map("creci_uf")
+  creciStatus          BrokerCreciStatus @default(nao_enviado) @map("creci_status")
   /// Chave do documento no bucket privado. Nunca vira URL pública: quem serve
   /// é a API, e só para o dono ou para a conferência manual.
-  creciDocumentKey String?  @map("creci_document_key")
-  creciSubmittedAt DateTime? @map("creci_submitted_at") @db.Timestamptz(6)
-  creciReviewedAt  DateTime? @map("creci_reviewed_at") @db.Timestamptz(6)
+  creciDocumentKey     String?           @map("creci_document_key")
+  creciSubmittedAt     DateTime?         @map("creci_submitted_at") @db.Timestamptz(6)
+  creciReviewedAt      DateTime?         @map("creci_reviewed_at") @db.Timestamptz(6)
   /// Motivo da recusa, mostrado ao corretor para ele saber o que corrigir.
-  creciRejectionReason String? @map("creci_rejection_reason")
-  agencyName   String?  @map("agency_name")
-  avatarUrl    String?  @map("avatar_url")
+  creciRejectionReason String?           @map("creci_rejection_reason")
+  agencyName           String?           @map("agency_name")
+  avatarUrl            String?           @map("avatar_url")
   /// Foto de perfil enviada pelo corretor, no bucket privado (mesmo molde do
   /// documento de CRECI). Quando existe, vence o avatar_url externo.
-  avatarKey    String?  @map("avatar_key")
+  avatarKey            String?           @map("avatar_key")
   /// Nulo enquanto o corretor não clicar no link do e-mail de confirmação.
   /// É a fonte da verdade do gate: antes disso o flag morava no navegador,
   /// onde qualquer um podia ligar sozinho.
-  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(6)
-  status          BrokerStatus @default(ativo)
+  emailVerifiedAt      DateTime?         @map("email_verified_at") @db.Timestamptz(6)
+  status               BrokerStatus      @default(ativo)
   /// Prova do aceite dos Termos e da Política de Privacidade no cadastro,
   /// exigida pela LGPD: quando aceitou e qual versão do texto estava no ar.
   /// Sem a versão, a prova não vale: um texto que mudou depois não diz a que
   /// o corretor concordou.
-  termsAcceptedAt DateTime? @map("terms_accepted_at") @db.Timestamptz(6)
-  termsVersion    String?   @map("terms_version")
+  termsAcceptedAt      DateTime?         @map("terms_accepted_at") @db.Timestamptz(6)
+  termsVersion         String?           @map("terms_version")
   /// Aceite separado, opcional, para comunicações de marketing. Consentimento
   /// de marketing e de uso do serviço são coisas distintas na LGPD.
-  marketingOptIn  Boolean   @default(false) @map("marketing_opt_in")
+  marketingOptIn       Boolean           @default(false) @map("marketing_opt_in")
   /// Só para o registro interno de por que a conta foi suspensa. Nunca vai
   /// para a resposta da API.
-  suspendedReason String?   @map("suspended_reason")
-  suspendedAt     DateTime? @map("suspended_at") @db.Timestamptz(6)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  suspendedReason      String?           @map("suspended_reason")
+  suspendedAt          DateTime?         @map("suspended_at") @db.Timestamptz(6)
+  createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  leads         Lead[]
-  activities    LeadActivity[]
-  agendaEvents  AgendaEvent[]
-  documents     Document[]
-  properties    Property[]
-  propertyImports PropertyImport[]
-  visits        Visit[]
-  simulations   Simulation[]
-  selections    PropertySelection[]
-  selectionItems SelectionItem[]
-  leadPreferences LeadPreference[]
-  visitAvailability VisitAvailability?
-  conversions   Conversion[]
-  consents      Consent[]
-  auditLogs     AuditLog[]
-  clientProfiles     ClientProfile[]
-  clientNegotiations ClientNegotiation[]
-  clientFinancials   ClientFinancial[]
-  clientParticipants ClientParticipant[]
-  deletionRequests   DataDeletionRequest[]
-  refreshTokens RefreshToken[]
-  resetTokens   PasswordResetToken[]
-  emailTokens   EmailVerificationToken[]
-  productEvents     ProductEvent[]
-  guidanceProgress  GuidanceProgress[]
-  onboardingProfile OnboardingProfile?
-  publicPage        BrokerPublicPage?
-  notifications     Notification[]
+  leads                Lead[]
+  activities           LeadActivity[]
+  agendaEvents         AgendaEvent[]
+  documents            Document[]
+  properties           Property[]
+  propertyImports      PropertyImport[]
+  visits               Visit[]
+  simulations          Simulation[]
+  selections           PropertySelection[]
+  selectionItems       SelectionItem[]
+  leadPreferences      LeadPreference[]
+  visitAvailability    VisitAvailability?
+  conversions          Conversion[]
+  consents             Consent[]
+  auditLogs            AuditLog[]
+  clientProfiles       ClientProfile[]
+  clientNegotiations   ClientNegotiation[]
+  clientFinancials     ClientFinancial[]
+  clientParticipants   ClientParticipant[]
+  deletionRequests     DataDeletionRequest[]
+  refreshTokens        RefreshToken[]
+  resetTokens          PasswordResetToken[]
+  emailTokens          EmailVerificationToken[]
+  productEvents        ProductEvent[]
+  guidanceProgress     GuidanceProgress[]
+  onboardingProfile    OnboardingProfile?
+  publicPage           BrokerPublicPage?
+  notifications        Notification[]
   financingRequests    FinancingDataRequest[]
   financingDrafts      FinancingDataDraft[]
   financingSubmissions FinancingDataSubmission[]
@@ -376,13 +376,13 @@ enum RefreshRevokeReason {
 }
 
 model RefreshToken {
-  id        String    @id @default(uuid()) @db.Uuid
-  brokerId  String    @map("broker_id") @db.Uuid
-  tokenHash String    @unique @map("token_hash")
-  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
-  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+  id            String               @id @default(uuid()) @db.Uuid
+  brokerId      String               @map("broker_id") @db.Uuid
+  tokenHash     String               @unique @map("token_hash")
+  expiresAt     DateTime             @map("expires_at") @db.Timestamptz(6)
+  revokedAt     DateTime?            @map("revoked_at") @db.Timestamptz(6)
   revokedReason RefreshRevokeReason? @map("revoked_reason")
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
 
   broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
 
@@ -451,16 +451,16 @@ model Lead {
   createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  broker      Broker         @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  activities  LeadActivity[]
-  agendaEvents AgendaEvent[]
-  documents   Document[]
-  visits      Visit[]
-  simulations Simulation[]
-  selections  PropertySelection[]
-  preference  LeadPreference?
-  conversion  Conversion?
-  consents    Consent[]
+  broker            Broker                 @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  activities        LeadActivity[]
+  agendaEvents      AgendaEvent[]
+  documents         Document[]
+  visits            Visit[]
+  simulations       Simulation[]
+  selections        PropertySelection[]
+  preference        LeadPreference?
+  conversion        Conversion?
+  consents          Consent[]
   clientProfile     ClientProfile?
   clientNegotiation ClientNegotiation?
   clientFinancial   ClientFinancial?
@@ -531,17 +531,17 @@ enum ClientPurpose {
 }
 
 model Conversion {
-  id          String             @id @default(uuid()) @db.Uuid
-  brokerId    String             @map("broker_id") @db.Uuid
-  leadId      String             @unique @map("lead_id") @db.Uuid
-  convertedAt DateTime           @default(now()) @map("converted_at") @db.Timestamptz(6)
-  reason      ConversionReason
-  reasonDetail String?           @map("reason_detail")
-  nextStep    ConversionNextStep @map("next_step")
-  purpose     ClientPurpose
-  propertyId  String?            @map("property_id") @db.Uuid
-  consentGiven Boolean           @default(false) @map("consent_given")
-  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  id           String             @id @default(uuid()) @db.Uuid
+  brokerId     String             @map("broker_id") @db.Uuid
+  leadId       String             @unique @map("lead_id") @db.Uuid
+  convertedAt  DateTime           @default(now()) @map("converted_at") @db.Timestamptz(6)
+  reason       ConversionReason
+  reasonDetail String?            @map("reason_detail")
+  nextStep     ConversionNextStep @map("next_step")
+  purpose      ClientPurpose
+  propertyId   String?            @map("property_id") @db.Uuid
+  consentGiven Boolean            @default(false) @map("consent_given")
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
 
   broker   Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
   lead     Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
@@ -829,33 +829,33 @@ enum AgendaEventStatus {
 }
 
 model AgendaEvent {
-  id          String            @id @default(uuid()) @db.Uuid
-  brokerId    String            @map("broker_id") @db.Uuid
-  type        AgendaEventType
-  leadId      String?           @map("lead_id") @db.Uuid
-  propertyId  String?           @map("property_id") @db.Uuid
+  id               String            @id @default(uuid()) @db.Uuid
+  brokerId         String            @map("broker_id") @db.Uuid
+  type             AgendaEventType
+  leadId           String?           @map("lead_id") @db.Uuid
+  propertyId       String?           @map("property_id") @db.Uuid
   /// Evento de visita nascido de um agendamento: aponta o registro de Visit
   /// para cancelamento e remarcação andarem juntos nos dois lugares.
-  visitId     String?           @map("visit_id") @db.Uuid
-  title       String
-  description String?
-  location    String?
-  startAt     DateTime          @map("start_at") @db.Timestamptz(6)
-  endAt       DateTime?         @map("end_at") @db.Timestamptz(6)
-  allDay      Boolean           @default(false) @map("all_day")
-  status      AgendaEventStatus @default(agendado)
-  taskKind    String?           @map("task_kind")
-  reminderMinutes Int?          @map("reminder_minutes")
-  recurrence  String?
-  completedAt DateTime?         @map("completed_at") @db.Timestamptz(6)
-  source      AgendaEventSource @default(nexlar)
-  syncStatus  AgendaSyncStatus  @default(nao_sincronizado) @map("sync_status")
-  googleCalendarId String?      @map("google_calendar_id")
-  googleEventId    String?      @map("google_event_id")
-  googleUpdatedAt  DateTime?    @map("google_updated_at") @db.Timestamptz(6)
-  lastSyncAt       DateTime?    @map("last_sync_at") @db.Timestamptz(6)
-  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  visitId          String?           @map("visit_id") @db.Uuid
+  title            String
+  description      String?
+  location         String?
+  startAt          DateTime          @map("start_at") @db.Timestamptz(6)
+  endAt            DateTime?         @map("end_at") @db.Timestamptz(6)
+  allDay           Boolean           @default(false) @map("all_day")
+  status           AgendaEventStatus @default(agendado)
+  taskKind         String?           @map("task_kind")
+  reminderMinutes  Int?              @map("reminder_minutes")
+  recurrence       String?
+  completedAt      DateTime?         @map("completed_at") @db.Timestamptz(6)
+  source           AgendaEventSource @default(nexlar)
+  syncStatus       AgendaSyncStatus  @default(nao_sincronizado) @map("sync_status")
+  googleCalendarId String?           @map("google_calendar_id")
+  googleEventId    String?           @map("google_event_id")
+  googleUpdatedAt  DateTime?         @map("google_updated_at") @db.Timestamptz(6)
+  lastSyncAt       DateTime?         @map("last_sync_at") @db.Timestamptz(6)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   broker   Broker    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
   lead     Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
@@ -910,7 +910,7 @@ model Property {
   purpose  PropertyPurpose
   category PropertyCategory
   type     String
-  status   PropertyStatus  @default(rascunho)
+  status   PropertyStatus   @default(rascunho)
 
   description   String?
   internalNotes String? @map("internal_notes")
@@ -966,7 +966,7 @@ model Property {
   publicVisibility PropertyPublicVisibility @default(publico) @map("public_visibility")
   publicSince      DateTime?                @map("public_since") @db.Timestamptz(6)
   /// Posição no bloco de destaques da página (1 a 6). Nulo = não é destaque.
-  highlightOrder Int? @map("highlight_order")
+  highlightOrder   Int?                     @map("highlight_order")
 
   // Disponibilidade operacional (separada do status do anúncio)
   availabilityConfirmed    Boolean   @default(false) @map("availability_confirmed")
@@ -978,15 +978,15 @@ model Property {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  broker          Broker            @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  visitProperties VisitProperty[]
-  agendaEvents    AgendaEvent[]
-  conversions     Conversion[]
-  contacts        PropertyContact[]
-  media           PropertyMedia[]
-  sharedItems     SelectionItem[]
+  broker            Broker                 @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  visitProperties   VisitProperty[]
+  agendaEvents      AgendaEvent[]
+  conversions       Conversion[]
+  contacts          PropertyContact[]
+  media             PropertyMedia[]
+  sharedItems       SelectionItem[]
   financingRequests FinancingDataRequest[]
-  imports         PropertyImport[]
+  imports           PropertyImport[]
 
   @@index([brokerId])
   @@index([brokerId, publicVisibility])
@@ -1059,10 +1059,10 @@ model PropertyImport {
   brokerId String @map("broker_id") @db.Uuid
 
   url        String
-  finalUrl   String? @map("final_url")
+  finalUrl   String?              @map("final_url")
   domain     String
   status     PropertyImportStatus
-  httpStatus Int?    @map("http_status")
+  httpStatus Int?                 @map("http_status")
 
   /// Extração canônica: campo a campo com valor, fonte e evidência.
   payload Json?
@@ -1105,12 +1105,12 @@ model VisitAvailability {
   id       String @id @default(uuid()) @db.Uuid
   brokerId String @unique @map("broker_id") @db.Uuid
 
-  windows          Json @default("[]")
-  slotDurationMin  Int  @default(60) @map("slot_duration_min")
+  windows         Json @default("[]")
+  slotDurationMin Int  @default(60) @map("slot_duration_min")
   /// Antecedência mínima em horas: a lead não agenda para daqui a 20 minutos.
-  minNoticeHours   Int  @default(12) @map("min_notice_hours")
+  minNoticeHours  Int  @default(12) @map("min_notice_hours")
   /// Até quantos dias no futuro a lead consegue agendar.
-  maxAdvanceDays   Int  @default(14) @map("max_advance_days")
+  maxAdvanceDays  Int  @default(14) @map("max_advance_days")
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -1206,44 +1206,44 @@ enum FinancingRequestStatus {
 }
 
 model FinancingDataRequest {
-  id       String @id @default(uuid()) @db.Uuid
-  brokerId String @map("broker_id") @db.Uuid
-  leadId   String @map("lead_id") @db.Uuid
+  id                String                 @id @default(uuid()) @db.Uuid
+  brokerId          String                 @map("broker_id") @db.Uuid
+  leadId            String                 @map("lead_id") @db.Uuid
   /// Imóvel de interesse. Opcional: a coleta pode nascer da ficha, antes de
   /// existir imóvel definido.
-  propertyId String? @map("property_id") @db.Uuid
+  propertyId        String?                @map("property_id") @db.Uuid
   /// Número curto para a URL interna (/leads/1042/financiamento/3), padrão da
   /// lead e da seleção. Sem relação com o token público.
-  code   Int                    @unique @default(autoincrement())
-  status FinancingRequestStatus @default(rascunho)
+  code              Int                    @unique @default(autoincrement())
+  status            FinancingRequestStatus @default(rascunho)
   /// SHA-256 do token do link público. O token em si só existe na URL enviada
   /// ao cliente: vazar o banco não vaza o link (padrão dos tokens de auth,
   /// corrigindo o que a seleção fez em texto puro).
-  tokenHash String? @unique @map("token_hash")
+  tokenHash         String?                @unique @map("token_hash")
   /// Blocos do formulário que o corretor pediu (vocabulário no shared).
-  requestedSections String[] @default([]) @map("requested_sections")
+  requestedSections String[]               @default([]) @map("requested_sections")
   message           String?
   /// Prazo escolhido pelo corretor; o backend calcula expiresAt no envio.
   /// Editar nunca renova o prazo, igual à seleção.
-  expiresInDays Int?      @map("expires_in_days")
-  expiresAt     DateTime? @map("expires_at") @db.Timestamptz(6)
-  firstOpenedAt DateTime? @map("first_opened_at") @db.Timestamptz(6)
-  startedAt     DateTime? @map("started_at") @db.Timestamptz(6)
-  submittedAt   DateTime? @map("submitted_at") @db.Timestamptz(6)
-  reviewedAt    DateTime? @map("reviewed_at") @db.Timestamptz(6)
-  approvedAt    DateTime? @map("approved_at") @db.Timestamptz(6)
-  revokedAt     DateTime? @map("revoked_at") @db.Timestamptz(6)
-  archivedAt    DateTime? @map("archived_at") @db.Timestamptz(6)
+  expiresInDays     Int?                   @map("expires_in_days")
+  expiresAt         DateTime?              @map("expires_at") @db.Timestamptz(6)
+  firstOpenedAt     DateTime?              @map("first_opened_at") @db.Timestamptz(6)
+  startedAt         DateTime?              @map("started_at") @db.Timestamptz(6)
+  submittedAt       DateTime?              @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt        DateTime?              @map("reviewed_at") @db.Timestamptz(6)
+  approvedAt        DateTime?              @map("approved_at") @db.Timestamptz(6)
+  revokedAt         DateTime?              @map("revoked_at") @db.Timestamptz(6)
+  archivedAt        DateTime?              @map("archived_at") @db.Timestamptz(6)
   /// Quantas versões o cliente já enviou. 0 = nenhuma. Reenvio após correção
   /// incrementa; a submissão de cada versão é imutável.
-  currentVersion Int     @default(0) @map("current_version")
-  consentVersion String? @map("consent_version")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  currentVersion    Int                    @default(0) @map("current_version")
+  consentVersion    String?                @map("consent_version")
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  broker      Broker                     @relation(fields: [brokerId], references: [id], onDelete: Cascade)
-  lead        Lead                       @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  property    Property?                  @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  broker      Broker                    @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  lead        Lead                      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  property    Property?                 @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   draft       FinancingDataDraft?
   submissions FinancingDataSubmission[]
   accessCodes FinancingAccessCode[]
@@ -1256,15 +1256,15 @@ model FinancingDataRequest {
 /// Rascunho mutável do preenchimento (autosave). Uma por solicitação. O
 /// payload é Json validado por seção no shared, padrão property.details.
 model FinancingDataDraft {
-  id        String @id @default(uuid()) @db.Uuid
-  brokerId  String @map("broker_id") @db.Uuid
-  requestId String @unique @map("request_id") @db.Uuid
-  payload   Json   @default("{}")
+  id                String   @id @default(uuid()) @db.Uuid
+  brokerId          String   @map("broker_id") @db.Uuid
+  requestId         String   @unique @map("request_id") @db.Uuid
+  payload           Json     @default("{}")
   /// Seções que o cliente marcou como concluídas (progresso do formulário).
   completedSections String[] @default([]) @map("completed_sections")
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   /// Base da detecção de conflito do autosave entre dispositivos.
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   broker  Broker               @relation(fields: [brokerId], references: [id], onDelete: Cascade)
   request FinancingDataRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
@@ -1276,13 +1276,13 @@ model FinancingDataDraft {
 /// Versão imutável do que o cliente enviou. Nunca recebe UPDATE: correção
 /// gera versão nova. É a prova do que foi declarado e quando.
 model FinancingDataSubmission {
-  id        String @id @default(uuid()) @db.Uuid
-  brokerId  String @map("broker_id") @db.Uuid
-  requestId String @map("request_id") @db.Uuid
-  version   Int
-  payload   Json
+  id               String   @id @default(uuid()) @db.Uuid
+  brokerId         String   @map("broker_id") @db.Uuid
+  requestId        String   @map("request_id") @db.Uuid
+  version          Int
+  payload          Json
   /// Consentimento registrado no envio desta versão.
-  consentId String? @map("consent_id") @db.Uuid
+  consentId        String?  @map("consent_id") @db.Uuid
   /// Quando a versão nasce de um pedido de correção: o que o corretor pediu.
   correctionNote   String?  @map("correction_note")
   correctionFields String[] @default([]) @map("correction_fields")
@@ -1366,29 +1366,29 @@ enum SelectionResponse {
 }
 
 model PropertySelection {
-  id          String          @id @default(uuid()) @db.Uuid
-  brokerId    String          @map("broker_id") @db.Uuid
-  leadId      String          @map("lead_id") @db.Uuid
+  id            String          @id @default(uuid()) @db.Uuid
+  brokerId      String          @map("broker_id") @db.Uuid
+  leadId        String          @map("lead_id") @db.Uuid
   /// Número curto para a URL do montador (/leads/1042/selecoes/7). Não tem
   /// relação com o publicToken, que é o segredo do link da lead.
-  code        Int             @unique @default(autoincrement())
-  publicToken String          @unique @map("public_token")
-  status      SelectionStatus @default(rascunho)
-  message     String?
+  code          Int             @unique @default(autoincrement())
+  publicToken   String          @unique @map("public_token")
+  status        SelectionStatus @default(rascunho)
+  message       String?
   /// Prazo escolhido pelo corretor (7, 15 ou 30 dias). O backend calcula
   /// expiresAt na ativação; editar a seleção nunca renova o prazo.
-  expiresInDays Int?          @map("expires_in_days")
-  activatedAt DateTime?       @map("activated_at") @db.Timestamptz(6)
-  archivedAt  DateTime?       @map("archived_at") @db.Timestamptz(6)
-  sentAt      DateTime?       @map("sent_at") @db.Timestamptz(6)
-  viewedAt    DateTime?       @map("viewed_at") @db.Timestamptz(6)
-  lastAccessAt DateTime?      @map("last_access_at") @db.Timestamptz(6)
-  viewCount   Int             @default(0) @map("view_count")
-  resendCount Int             @default(0) @map("resend_count")
-  expiresAt   DateTime?       @map("expires_at") @db.Timestamptz(6)
-  revokedAt   DateTime?       @map("revoked_at") @db.Timestamptz(6)
-  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  expiresInDays Int?            @map("expires_in_days")
+  activatedAt   DateTime?       @map("activated_at") @db.Timestamptz(6)
+  archivedAt    DateTime?       @map("archived_at") @db.Timestamptz(6)
+  sentAt        DateTime?       @map("sent_at") @db.Timestamptz(6)
+  viewedAt      DateTime?       @map("viewed_at") @db.Timestamptz(6)
+  lastAccessAt  DateTime?       @map("last_access_at") @db.Timestamptz(6)
+  viewCount     Int             @default(0) @map("view_count")
+  resendCount   Int             @default(0) @map("resend_count")
+  expiresAt     DateTime?       @map("expires_at") @db.Timestamptz(6)
+  revokedAt     DateTime?       @map("revoked_at") @db.Timestamptz(6)
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   broker Broker          @relation(fields: [brokerId], references: [id], onDelete: Cascade)
   lead   Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
@@ -1400,27 +1400,27 @@ model PropertySelection {
 }
 
 model SelectionItem {
-  id               String            @id @default(uuid()) @db.Uuid
-  brokerId         String            @map("broker_id") @db.Uuid
-  selectionId      String            @map("selection_id") @db.Uuid
-  propertyId       String            @map("property_id") @db.Uuid
-  position         Int               @default(0)
+  id               String                  @id @default(uuid()) @db.Uuid
+  brokerId         String                  @map("broker_id") @db.Uuid
+  selectionId      String                  @map("selection_id") @db.Uuid
+  propertyId       String                  @map("property_id") @db.Uuid
+  position         Int                     @default(0)
   /// Destaque na página da lead (máximo de 3 por seleção, regra no serviço).
-  highlight        Boolean           @default(false)
+  highlight        Boolean                 @default(false)
   /// Observação do corretor sobre este imóvel para esta lead ("tem a varanda
   /// que você pediu"). Aparece na página pública.
-  brokerNote       String?           @map("broker_note")
-  origin           SelectionItemOrigin    @default(manual)
+  brokerNote       String?                 @map("broker_note")
+  origin           SelectionItemOrigin     @default(manual)
   compatibility    SelectionCompatibility?
-  response         SelectionResponse @default(nao_visualizado)
-  respondedAt      DateTime?         @map("responded_at") @db.Timestamptz(6)
+  response         SelectionResponse       @default(nao_visualizado)
+  respondedAt      DateTime?               @map("responded_at") @db.Timestamptz(6)
   /// Motivo do "não combina comigo" escolhido pela lead (preço, localização...).
-  responseReason   String?           @map("response_reason")
+  responseReason   String?                 @map("response_reason")
   comment          String?
-  visitRequestedAt DateTime?         @map("visit_requested_at") @db.Timestamptz(6)
-  isPriority       Boolean           @default(false) @map("is_priority")
-  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  visitRequestedAt DateTime?               @map("visit_requested_at") @db.Timestamptz(6)
+  isPriority       Boolean                 @default(false) @map("is_priority")
+  createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   broker    Broker            @relation(fields: [brokerId], references: [id], onDelete: Cascade)
   selection PropertySelection @relation(fields: [selectionId], references: [id], onDelete: Cascade)
@@ -1484,14 +1484,14 @@ model LeadPreference {
 /// Estado de uma orientação para um corretor. Fechar (dismissed) não é
 /// concluir: só o evento real da ação marca completed (regra GUI-04).
 enum GuidanceStatus {
-  available   // elegível, ainda não exibida
-  shown       // já apresentada
-  dismissed   // o corretor fechou
-  skipped     // o corretor deixou para depois
+  available // elegível, ainda não exibida
+  shown // já apresentada
+  dismissed // o corretor fechou
+  skipped // o corretor deixou para depois
   in_progress // iniciou a ação relacionada
-  completed   // concluiu a ação real
-  reopened    // reabriu uma orientação dispensada
-  expired     // perdeu relevância pela mudança de contexto
+  completed // concluiu a ação real
+  reopened // reabriu uma orientação dispensada
+  expired // perdeu relevância pela mudança de contexto
 
   @@map("guidance_status")
 }
@@ -1548,20 +1548,20 @@ model ProductEvent {
 /// Estado por corretor de cada orientação. A chave da orientação
 /// (guidance_key) casa com o registry de definições que vive em código.
 model GuidanceProgress {
-  id          String         @id @default(uuid()) @db.Uuid
-  brokerId    String         @map("broker_id") @db.Uuid
-  guidanceKey String         @map("guidance_key")
-  status      GuidanceStatus @default(available)
-  showCount   Int            @default(0) @map("show_count")
-  firstShownAt DateTime?     @map("first_shown_at") @db.Timestamptz(6)
-  lastShownAt  DateTime?     @map("last_shown_at") @db.Timestamptz(6)
-  dismissedAt  DateTime?     @map("dismissed_at") @db.Timestamptz(6)
-  completedAt  DateTime?     @map("completed_at") @db.Timestamptz(6)
-  reopenedAt   DateTime?     @map("reopened_at") @db.Timestamptz(6)
-  expiresAt    DateTime?     @map("expires_at") @db.Timestamptz(6)
-  metadata    Json?
-  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id           String         @id @default(uuid()) @db.Uuid
+  brokerId     String         @map("broker_id") @db.Uuid
+  guidanceKey  String         @map("guidance_key")
+  status       GuidanceStatus @default(available)
+  showCount    Int            @default(0) @map("show_count")
+  firstShownAt DateTime?      @map("first_shown_at") @db.Timestamptz(6)
+  lastShownAt  DateTime?      @map("last_shown_at") @db.Timestamptz(6)
+  dismissedAt  DateTime?      @map("dismissed_at") @db.Timestamptz(6)
+  completedAt  DateTime?      @map("completed_at") @db.Timestamptz(6)
+  reopenedAt   DateTime?      @map("reopened_at") @db.Timestamptz(6)
+  expiresAt    DateTime?      @map("expires_at") @db.Timestamptz(6)
+  metadata     Json?
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   broker Broker @relation(fields: [brokerId], references: [id], onDelete: Cascade)
 
@@ -1631,11 +1631,11 @@ model BrokerPublicPage {
   /// próprio: o corretor pode assinar diferente do nome civil.
   professionalName String? @map("professional_name")
   /// Título ou especialidade curta ("Especialista em lançamentos na Zona Sul").
-  headline String?
-  bio      String?
+  headline         String?
+  bio              String?
 
-  mainCity String?  @map("main_city")
-  regions  String[] @default([])
+  mainCity      String?        @map("main_city")
+  regions       String[]       @default([])
   /// Foco do negócio; reusa o enum do diagnóstico da Jornada 2.
   focus         BusinessFocus?
   propertyTypes String[]       @default([]) @map("property_types")
@@ -1648,17 +1648,17 @@ model BrokerPublicPage {
   website        String?
   instagram      String?
   /// Texto livre curto ("Seg a Sáb, 9h às 19h"). Estruturar é dívida futura.
-  serviceHours String? @map("service_hours")
+  serviceHours   String? @map("service_hours")
   /// Logotipo da imobiliária, quando o corretor quiser exibir.
-  agencyLogoUrl String? @map("agency_logo_url")
+  agencyLogoUrl  String? @map("agency_logo_url")
 
   /// Aceite dos termos de publicação (responsabilidade pelo conteúdo).
   /// Requisito mínimo para publicar; versão junto, como manda a LGPD.
   publicationTermsAcceptedAt DateTime? @map("publication_terms_accepted_at") @db.Timestamptz(6)
   publicationTermsVersion    String?   @map("publication_terms_version")
 
-  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
-  pausedAt    DateTime? @map("paused_at") @db.Timestamptz(6)
+  publishedAt      DateTime? @map("published_at") @db.Timestamptz(6)
+  pausedAt         DateTime? @map("paused_at") @db.Timestamptz(6)
   /// Motivo interno da restrição. Nunca vai para resposta pública.
   restrictedReason String?   @map("restricted_reason")
   restrictedAt     DateTime? @map("restricted_at") @db.Timestamptz(6)
@@ -1687,4 +1687,104 @@ model Notification {
 
   @@index([brokerId, createdAt(sort: Desc)])
   @@map("notification")
+}
+
+// ===========================================================================
+// Nexlar Admin — universo administrativo, separado do corretor
+// ===========================================================================
+// Admin é gente separada, não flag: tabela própria, segredo JWT próprio,
+// guard próprio. Se uma pessoa da equipe também for corretora, são duas
+// contas, e os universos não se tocam (docs/10, §5.3). Nenhum modelo daqui
+// se relaciona com Broker.
+
+/// Papéis internos da equipe Nexlar. Papel concede permissões (o catálogo
+/// vive em @nexlar/shared, ROLE_PERMISSIONS); os guards verificam permissão,
+/// nunca o nome do papel.
+enum AdminRole {
+  super_admin
+  admin
+  suporte
+  financeiro
+
+  @@map("admin_role")
+}
+
+enum AdminStatus {
+  ativo
+  suspenso
+
+  @@map("admin_status")
+}
+
+model AdminUser {
+  id           String      @id @default(uuid()) @db.Uuid
+  email        String      @unique
+  passwordHash String      @map("password_hash")
+  /// Vínculo com a conta Google (claim `sub`), gravado no PRIMEIRO login
+  /// pelo Google de um admin já existente. No Admin o Google autentica,
+  /// nunca cadastra: e-mail desconhecido é recusado sem criar nada.
+  googleId     String?     @unique @map("google_id")
+  fullName     String      @map("full_name")
+  role         AdminRole
+  status       AdminStatus @default(ativo)
+  /// Reservado para MFA (Task 38 da épica). Nulo até existir a interface;
+  /// a coluna nasce agora para o dia do MFA não precisar de migration.
+  mfaSecret    String?     @map("mfa_secret")
+  lastLoginAt  DateTime?   @map("last_login_at") @db.Timestamptz(6)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  refreshTokens AdminRefreshToken[]
+  auditEntries  AdminAuditLog[]
+
+  @@map("admin_user")
+}
+
+/// Espelho do RefreshToken do corretor, com uma diferença de política: a
+/// sessão administrativa tem teto absoluto (a rotação NÃO estende o prazo,
+/// ver AdminTokenService). Sessão privilegiada não deve durar um expediente
+/// inteiro só porque ficou ativa.
+model AdminRefreshToken {
+  id            String               @id @default(uuid()) @db.Uuid
+  adminUserId   String               @map("admin_user_id") @db.Uuid
+  tokenHash     String               @unique @map("token_hash")
+  expiresAt     DateTime             @map("expires_at") @db.Timestamptz(6)
+  revokedAt     DateTime?            @map("revoked_at") @db.Timestamptz(6)
+  revokedReason RefreshRevokeReason? @map("revoked_reason")
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  adminUser AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@map("admin_refresh_token")
+}
+
+/// Trilha de auditoria administrativa: QUEM fez O QUÊ, EM QUAL recurso,
+/// QUANDO, DE qual estado PARA qual estado.
+///
+/// Duas decisões deliberadas de integridade (docs/10, R2):
+/// - O ator é Restrict, não Cascade: administrador com histórico não pode
+///   ser apagado, só suspenso. Apagar o ator apagaria a autoria da trilha.
+/// - O alvo (resource_id) é String sem FK: a trilha sobrevive à exclusão do
+///   recurso. Auditoria que some junto com o alvo não prova nada.
+model AdminAuditLog {
+  id            String    @id @default(uuid()) @db.Uuid
+  actorAdminId  String    @map("actor_admin_id") @db.Uuid
+  /// Papel do ator NO MOMENTO da ação. O papel no admin_user pode mudar
+  /// depois, e a trilha precisa contar a história como ela foi.
+  actorRole     AdminRole @map("actor_role")
+  action        String
+  resourceType  String    @map("resource_type")
+  resourceId    String?   @map("resource_id")
+  previousState Json?     @map("previous_state")
+  newState      Json?     @map("new_state")
+  reason        String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actor AdminUser @relation(fields: [actorAdminId], references: [id], onDelete: Restrict)
+
+  @@index([actorAdminId])
+  @@index([resourceType, resourceId])
+  @@index([createdAt(sort: Desc)])
+  @@map("admin_audit_log")
 }

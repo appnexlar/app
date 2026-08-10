@@ -72,15 +72,25 @@ export class GoogleOAuthService {
    * pessoa está vendo, e o endereço cadastrado no Google Cloud é um só.
    */
   get redirectUri(): string {
+    return this.redirectUriPara("/api/auth/google/callback");
+  }
+
+  /**
+   * O mesmo endereço-base para outro caminho de retorno. Existe porque o
+   * Nexlar Admin tem o próprio callback: o Google exige que autorização e
+   * troca de código usem o MESMO redirect_uri, então quem começa o fluxo
+   * escolhe o caminho e o carrega até o fim.
+   */
+  redirectUriPara(caminho: string): string {
     const base = this.config.get<string>("WEB_APP_URL", "http://localhost:5173");
-    return `${base.replace(/\/$/, "")}/api/auth/google/callback`;
+    return `${base.replace(/\/$/, "")}${caminho}`;
   }
 
   /** URL para onde o navegador é mandado no começo do fluxo. */
-  authorizationUrl(params: { state: string; nonce: string }): string {
+  authorizationUrl(params: { state: string; nonce: string; redirectUri?: string }): string {
     const url = new URL(AUTHORIZE_URL);
     url.searchParams.set("client_id", this.clientId);
-    url.searchParams.set("redirect_uri", this.redirectUri);
+    url.searchParams.set("redirect_uri", params.redirectUri ?? this.redirectUri);
     url.searchParams.set("response_type", "code");
     // O mínimo: quem é e como se chama. Nada de agenda, contatos ou arquivos.
     url.searchParams.set("scope", "openid email profile");
@@ -99,14 +109,18 @@ export class GoogleOAuthService {
    * Troca o código pela identidade. Junta as duas etapas de propósito: o
    * id_token não deve circular pelo resto do sistema, só o resultado conferido.
    */
-  async identify(code: string, nonceEsperado: string): Promise<GoogleIdentity> {
+  async identify(
+    code: string,
+    nonceEsperado: string,
+    redirectUri?: string,
+  ): Promise<GoogleIdentity> {
     if (!this.enabled) throw new GoogleAuthError("desligado");
 
     const corpo = new URLSearchParams({
       code,
       client_id: this.clientId,
       client_secret: this.clientSecret,
-      redirect_uri: this.redirectUri,
+      redirect_uri: redirectUri ?? this.redirectUri,
       grant_type: "authorization_code",
     });
 

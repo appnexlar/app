@@ -17,6 +17,6 @@ import { OAuthCookies } from "./oauth-cookies";
     GoogleOAuthService,
     OAuthCookies,
   ],
-  exports: [AuthService, TokenService],
+  exports: [AuthService, TokenService, GoogleOAuthService, LoginAttemptService],
 })
 export class AuthModule {}
