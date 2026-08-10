@@ -18,7 +18,7 @@ export function FirstAccessWelcome({
   busy?: boolean;
 }) {
   return (
-    <Modal open={open} onClose={onExplore} title="Bem-vindo à Nexlar">
+    <Modal open={open} onClose={onExplore} title="Vamos começar">
       <div className="flex flex-col items-center text-center">
         <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent">
           <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">

@@ -177,23 +177,32 @@ export function financingAccessCodeTemplate(
 
 export function welcomeTemplate(fullName: string, appUrl: string): Mensagem {
   const primeiroNome = fullName.split(" ")[0];
+  // Direto para a lista de leads, e não para o painel: o e-mail pede uma ação
+  // específica, e cair no painel vazio obrigaria a pessoa a procurar sozinha
+  // onde se faz o que acabou de ser pedido.
+  const urlLeads = `${appUrl.replace(/\/$/, "")}/leads`;
+  const corpo = [
+    "A partir de agora, suas leads deixam de ficar espalhadas entre WhatsApp, Instagram, anotações e a sua memória.",
+    "No Nexlar, você organiza cada oportunidade, acompanha o histórico dos atendimentos e sabe quem precisa de retorno e qual é o próximo passo.",
+    "Assim, fica mais fácil manter seus contatos em movimento e não deixar boas oportunidades para trás.",
+    "Comece adicionando sua primeira lead.",
+  ];
   return {
-    subject: "Bem-vindo ao Nexlar",
+    subject: "Sua conta do Nexlar está pronta",
+    // Saudação sem gênero: "bem-vindo" obrigaria a marcar, e "bem-vindo(a)"
+    // resolve por remendo. O caminho no produto é reescrever a frase.
     html: layout({
-      titulo: `Bem-vindo, ${primeiroNome}`,
-      paragrafos: [
-        "Sua conta está criada. O Nexlar organiza seus leads, seus imóveis e sua agenda num lugar só, e mostra qual é a próxima ação de cada atendimento.",
-        "Comece cadastrando sua primeira lead. Só o nome e o WhatsApp são obrigatórios.",
-      ],
-      botao: { texto: "Abrir o Nexlar", url: appUrl },
+      titulo: `Tudo pronto, ${primeiroNome}`,
+      paragrafos: corpo,
+      botao: { texto: "Adicionar minha primeira lead", url: urlLeads },
     }),
     text: [
-      `Bem-vindo, ${primeiroNome}.`,
+      `Tudo pronto, ${primeiroNome}.`,
       "",
-      "Sua conta do Nexlar está criada. Comece cadastrando sua primeira lead:",
-      appUrl,
+      ...corpo.slice(0, 3),
       "",
-      "Só o nome e o WhatsApp são obrigatórios.",
+      "Comece adicionando sua primeira lead:",
+      urlLeads,
     ].join("\n"),
   };
 }
