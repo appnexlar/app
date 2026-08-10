@@ -114,13 +114,13 @@ export class AuthService {
       where: { googleId: identity.googleId },
     });
     if (porGoogleId) {
-      assertNaoSuspensa(porGoogleId);
+      assertContaAtiva(porGoogleId);
       return { tipo: "sessao", sessao: await this.buildSession(porGoogleId) };
     }
 
     const porEmail = await this.prisma.broker.findUnique({ where: { email: identity.email } });
     if (porEmail) {
-      assertNaoSuspensa(porEmail);
+      assertContaAtiva(porEmail);
       const vinculado = await this.prisma.broker.update({
         where: { id: porEmail.id },
         data: {
@@ -175,7 +175,7 @@ export class AuthService {
       where: { OR: [{ googleId: identity.googleId }, { email: identity.email }] },
     });
     if (existente) {
-      assertNaoSuspensa(existente);
+      assertContaAtiva(existente);
       const atualizado = await this.prisma.broker.update({
         where: { id: existente.id },
         data: {
@@ -244,7 +244,7 @@ export class AuthService {
 
     // A senha estava certa: o contador zera antes de qualquer outra recusa,
     // senão uma conta suspensa acumularia "falhas" que não são de senha.
-    assertNaoSuspensa(broker);
+    assertContaAtiva(broker);
 
     return this.buildSession(broker);
   }
@@ -274,9 +274,14 @@ export class AuthService {
     const broker = await this.prisma.broker.findUnique({ where: { id: rotated.brokerId } });
     if (!broker) throw new UnauthorizedException(SESSAO_ENCERRADA);
 
-    // Suspender uma conta tem que valer também para quem já estava dentro:
+    // Fechar uma conta tem que valer também para quem já estava dentro:
     // a renovação é o ponto por onde toda sessão passa.
-    assertNaoSuspensa(broker);
+    assertContaAtiva(broker);
+
+    await this.prisma.broker.update({
+      where: { id: broker.id },
+      data: { lastLoginAt: new Date() },
+    });
 
     const { brokerId: _brokerId, ...tokens } = rotated;
     return { broker: toProfile(broker), tokens };
@@ -363,7 +368,7 @@ export class AuthService {
    */
   async resendVerification(dto: ResendVerificationDto): Promise<void> {
     const broker = await this.prisma.broker.findUnique({ where: { email: dto.email } });
-    if (!broker || broker.emailVerifiedAt || broker.status === "suspenso") return;
+    if (!broker || broker.emailVerifiedAt || broker.status !== "ativo") return;
 
     await this.enviarConfirmacao(broker);
   }
@@ -392,7 +397,15 @@ export class AuthService {
   }
 
   private async buildSession(broker: Broker): Promise<SessionResult> {
-    const tokens = await this.tokens.issueSession(broker.id);
+    // O último acesso é gravado aqui porque este é o funil único de toda
+    // entrada (senha, Google, cadastro). O Admin lê essa coluna.
+    const [tokens] = await Promise.all([
+      this.tokens.issueSession(broker.id),
+      this.prisma.broker.update({
+        where: { id: broker.id },
+        data: { lastLoginAt: new Date() },
+      }),
+    ]);
     return { broker: toProfile(broker), tokens };
   }
 }
@@ -409,16 +422,17 @@ export const SESSAO_ENCERRADA = "Sessão expirada. Entre novamente.";
 /** Duas abas renovando ao mesmo tempo. Não é sessão perdida: dá para repetir. */
 export const RENOVACAO_EM_CURSO = "Renovação em andamento. Tente novamente.";
 
-/** Mensagem única de conta suspensa, usada no login e na renovação. */
+/** Mensagem única de conta fechada, usada no login e na renovação. */
 export const CONTA_SUSPENSA =
   "Esta conta está suspensa. Fale com o suporte do Nexlar para reativar.";
 
 /**
- * Barra a conta suspensa. Não conta o motivo guardado no banco: ele é registro
- * interno, e devolver isso ao cliente entregaria informação que não é dele.
+ * Barra qualquer conta que não esteja ativa. Suspensa, bloqueada e
+ * desativada recebem a MESMA mensagem: a distinção é registro administrativo,
+ * e devolver o motivo ao cliente entregaria informação que não é dele.
  */
-function assertNaoSuspensa(broker: Broker): void {
-  if (broker.status !== "suspenso") return;
+function assertContaAtiva(broker: Broker): void {
+  if (broker.status === "ativo") return;
   throw new ForbiddenException({
     message: CONTA_SUSPENSA,
     details: { code: CODIGO_CONTA_SUSPENSA },

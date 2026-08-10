@@ -83,7 +83,8 @@ export class JwtAuthGuard implements CanActivate {
     // Conta apagada com token ainda válido na mão.
     if (!broker) throw new UnauthorizedException("Sessão expirada ou inválida");
 
-    if (broker.status === "suspenso") {
+    // Suspensa, bloqueada ou desativada: barra igual, sem contar qual.
+    if (broker.status !== "ativo") {
       throw new ForbiddenException({
         message: CONTA_SUSPENSA_GUARD,
         details: { code: CODIGO_CONTA_SUSPENSA },
