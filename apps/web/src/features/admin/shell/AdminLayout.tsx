@@ -23,7 +23,7 @@ const SECTIONS: NavSection[] = [
   {
     title: "Gestão",
     items: [
-      { to: "/admin/usuarios", label: "Usuários", permission: "admin.users.view", soon: true },
+      { to: "/admin/usuarios", label: "Usuários", permission: "admin.users.view" },
       {
         to: "/admin/organizacoes",
         label: "Organizações",

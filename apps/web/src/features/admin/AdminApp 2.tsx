@@ -5,8 +5,6 @@ import { AdminLoginPage } from "./AdminLoginPage";
 import { AdminLayout } from "./shell/AdminLayout";
 import { AdminDashboardPage } from "./dashboard/AdminDashboardPage";
 import { AdminAdminsPage } from "./admins/AdminAdminsPage";
-import { AdminUsersPage } from "./users/AdminUsersPage";
-import { AdminUserProfilePage } from "./users/AdminUserProfilePage";
 
 /**
  * Universo /admin, carregado por lazy loading: o corretor não baixa um byte
@@ -34,8 +32,6 @@ export default function AdminApp() {
         <Route element={<AdminGuard />}>
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboardPage />} />
-            <Route path="usuarios" element={<AdminUsersPage />} />
-            <Route path="usuarios/:id" element={<AdminUserProfilePage />} />
             <Route path="administradores" element={<AdminAdminsPage />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Route>

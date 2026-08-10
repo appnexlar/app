@@ -272,9 +272,16 @@ enum BrokerCreciStatus {
 
 /// Conta ativa entra normalmente. Conta suspensa continua existindo, com os
 /// dados intactos, mas não entra: é o oposto de excluir.
+/// Qualquer status diferente de ativo barra a entrada, com a MESMA mensagem
+/// externa: o motivo da porta fechada é registro interno. A diferença vive no
+/// Admin: suspenso é ação administrativa reversível, bloqueado é segurança ou
+/// política, desativado é conta encerrada. "Pendente de verificação" não é
+/// status: deriva de email_verified_at nulo (docs/10, D3).
 enum BrokerStatus {
   ativo
   suspenso
+  bloqueado
+  desativado
 }
 
 model Broker {
@@ -309,6 +316,9 @@ model Broker {
   /// É a fonte da verdade do gate: antes disso o flag morava no navegador,
   /// onde qualquer um podia ligar sozinho.
   emailVerifiedAt      DateTime?         @map("email_verified_at") @db.Timestamptz(6)
+  /// Atualizado no login (senha ou Google) e na renovação de sessão. É o
+  /// "último acesso" que o Admin mostra; nulo em conta que nunca entrou.
+  lastLoginAt          DateTime?         @map("last_login_at") @db.Timestamptz(6)
   status               BrokerStatus      @default(ativo)
   /// Prova do aceite dos Termos e da Política de Privacidade no cadastro,
   /// exigida pela LGPD: quando aceitou e qual versão do texto estava no ar.
