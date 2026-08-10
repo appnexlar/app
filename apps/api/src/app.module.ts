@@ -23,6 +23,7 @@ import { HealthController } from "./health/health.controller";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import { RateLimitGuard } from "./common/rate-limit/rate-limit.guard";
 import { RateLimitModule } from "./common/rate-limit/rate-limit.module";
+import { AdminModule } from "./admin/admin.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 
 @Module({
@@ -49,6 +50,7 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
     FinancingModule,
     PublicPageModule,
     DashboardModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -17,3 +17,4 @@ export * from "./public-page/properties";
 export * from "./public-page/public-view";
 export * from "./public-page/interest";
 export * from "./notification";
+export * from "./admin";

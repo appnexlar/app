@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { LoginPage } from "./features/auth/LoginPage";
 import { RegisterPage } from "./features/auth/RegisterPage";
@@ -42,6 +43,10 @@ import { FinancingPublicPage } from "./features/financing/FinancingPublicPage";
 import { FinancingReviewPage } from "./features/financing/FinancingReviewPage";
 import { SessionBoot } from "./features/auth/SessionBoot";
 
+// Nexlar Admin: universo próprio, carregado só quando alguém abre /admin.
+// O corretor não baixa nada disto no bundle principal.
+const AdminApp = lazy(() => import("./features/admin/AdminApp"));
+
 export function App() {
   return (
     // Nada é renderizado antes de o servidor confirmar (ou negar) a sessão pelo
@@ -51,6 +56,14 @@ export function App() {
       <SessionExpiryHandler />
       <Routes>
         {/* Páginas legais: públicas. */}
+        <Route
+          path="/admin/*"
+          element={
+            <Suspense fallback={null}>
+              <AdminApp />
+            </Suspense>
+          }
+        />
         <Route path="/termos" element={<TermsPage />} />
         <Route path="/privacidade" element={<PrivacyPage />} />
 

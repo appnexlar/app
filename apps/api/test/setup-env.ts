@@ -13,6 +13,7 @@ process.env.DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? `postgresql://${user}@localhost:5432/nexlar_test`;
 process.env.JWT_ACCESS_SECRET = "test-access-secret-0123456789";
 process.env.JWT_REFRESH_SECRET = "test-refresh-secret-0123456789";
+process.env.JWT_ADMIN_SECRET = "test-admin-secret-0123456789";
 process.env.STORAGE_DIR = path.join(os.tmpdir(), "nexlar-test-storage");
 // Credenciais de mentira só para o recurso ficar ligado: nenhum teste fala com
 // o Google de verdade, quem responde é um dublê do GoogleOAuthService.
