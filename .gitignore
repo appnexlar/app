@@ -31,3 +31,6 @@ apps/api/storage/
 
 # vite
 apps/web/dist/
+
+# vercel cli (guarda ids de projeto e org da conta ligada nesta maquina)
+.vercel

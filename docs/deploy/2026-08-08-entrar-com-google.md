@@ -36,12 +36,17 @@ Menu **APIs e serviços → Tela de permissão OAuth**.
 |---|---|
 | Tipo de usuário | **Externo** |
 | Nome do app | Nexlar |
-| E-mail de suporte | solutionsinnersoft@gmail.com |
+| E-mail de suporte | nexlarsystem@gmail.com |
 | Domínio do app | `https://nexlar.app` |
 | Link da política de privacidade | `https://nexlar.app/privacidade` |
 | Link dos termos | `https://nexlar.app/termos` |
 | Domínio autorizado | `nexlar.app` |
-| E-mail do desenvolvedor | solutionsinnersoft@gmail.com |
+| E-mail do desenvolvedor | nexlarsystem@gmail.com |
+
+Entre no Google Cloud com **nexlarsystem@gmail.com**, a mesma conta que hoje é
+dona do GitHub, da Vercel, da Railway, do Supabase e do Resend. Foi por isso que
+a credencial ficou para o fim da migração: criá-la na conta antiga seria repetir
+o problema que acabamos de resolver.
 
 Nos **escopos**, adicione só três: `openid`, `.../auth/userinfo.email` e
 `.../auth/userinfo.profile`. São exatamente os que a API pede, e nenhum deles é
@@ -82,6 +87,33 @@ no fim já derruba o fluxo com `redirect_uri_mismatch`.
 
 Ao salvar, o Google mostra o **Client ID** e o **Client Secret**. Copie os dois.
 
+### As duas armadilhas desta tela
+
+Aconteceram as duas em 9 ago 2026, e as duas custaram uma volta inteira de deploy.
+
+**Os campos são parecidos e fáceis de trocar.** "Authorized JavaScript origins"
+aceita só domínio e porta. Os endereços com `/api/auth/google/callback` vão em
+"Authorized redirect URIs", que fica logo abaixo. Trocar dá
+`Error 400: redirect_uri_mismatch` na tela do Google.
+
+**O Client Secret aparece mascarado como `****9Vpr`.** Selecionar esse texto com
+o mouse copia a máscara. Use o **ícone de copiar** ao lado do valor, ou o de
+download. Um secret errado passa despercebido até o fim do fluxo, porque a API
+esconde o motivo e devolve só `?erro=google`.
+
+Quando o login falhar e não houver log, pergunte ao próprio Google com um código
+falso. As variáveis vêm do serviço e não aparecem na tela:
+
+```bash
+railway run --service "@nexlar/api" -- node -e '
+const b=new URLSearchParams({code:"codigo-falso",client_id:process.env.GOOGLE_CLIENT_ID,client_secret:process.env.GOOGLE_CLIENT_SECRET,redirect_uri:process.env.WEB_APP_URL+"/api/auth/google/callback",grant_type:"authorization_code"});
+fetch("https://oauth2.googleapis.com/token",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:b.toString()})
+.then(r=>r.json().then(j=>console.log(r.status,j.error,j.error_description)))'
+```
+
+`invalid_client` é secret errado. `invalid_grant: Malformed auth code` significa
+que a credencial está boa e o Google só reclamou do código falso.
+
 ### 4. Ligar no ambiente local
 
 No arquivo `apps/api/.env` (que não vai para o git), acrescente:
@@ -114,11 +146,34 @@ Desligado responde `HTTP/1.1 404`. Ligado responde `HTTP/1.1 302` com um
 4. **Cancelar**: na tela do Google, clique em cancelar. Você volta ao login com
    um aviso calmo, não com cara de erro.
 
-## Parte 2: migration de produção
+## Parte 2: ligar em produção
 
-Só depois de você testar tudo acima e liberar a subida.
+**A migration já está aplicada.** O banco novo (`ajkinpzabeikdlsfnlnq`, criado na
+migração de 9 ago) nasceu com as 26 migrations, esta inclusive, e o
+`prisma migrate status` responde `Database schema is up to date!`. Não há nada a
+rodar no banco. O resto desta parte fica como registro do que a migration fez.
 
-### O que muda
+Falta só levar as duas variáveis para a Railway, e para isso existe um script que
+lê os valores às escuras, como o da senha do banco:
+
+```bash
+cd /Users/rafaelle/Documents/Projects2026/NEXLAR/apps/api && python3 scripts/preencher-credencial-do-google.py
+```
+
+Clique dentro do terminal antes de colar: o campo não mostra nada enquanto você
+digita, e é aí que se cola na janela errada. Para o ambiente local, o mesmo
+script com `--local` escreve no `apps/api/.env`.
+
+Conferir depois que a Railway republicar (leva cerca de um minuto):
+
+```bash
+curl -s https://nexlar.app/api/auth/providers
+```
+
+Desligado responde `{"google":false}`. Ligado responde `{"google":true}`, e o
+botão acende sozinho na próxima carga da página.
+
+### O que a migration fez
 
 | Migration | O que faz |
 |---|---|
@@ -128,55 +183,19 @@ As duas mudanças são aditivas. Nenhuma linha existente é alterada, nenhuma co
 perde a senha e o login por e-mail continua igual. `NULL` não colide com `NULL`
 no índice único do Postgres, então as contas de senha convivem sem problema.
 
-### Ordem
+### O serviço na Railway
 
-O banco vem **antes** do deploy da API, como sempre.
+O serviço se chama **`@nexlar/api`** (com a arroba, herdado do nome do workspace
+no monorepo). As variáveis do Google não bloqueiam nada: sem elas o site sobe com
+o botão desabilitado e o e-mail funcionando. Quando entram, a Railway reinicia o
+serviço sozinha e o botão liga.
 
-As variáveis do Google na Railway (serviço `nexlar-api`, aba **Variables**) são
-`GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`, com os mesmos valores do local.
-Elas **não bloqueiam a subida**: sem elas o site sobe com o botão do Google
-desabilitado e o e-mail funcionando. Acrescente quando tiver a credencial; a
-Railway reinicia o serviço e o botão liga sozinho.
-
-### Passo 1: ver o que está pendente, sem aplicar nada
-
-```bash
-cd /Users/rafaelle/Documents/Projects2026/NEXLAR/apps/api && ( set -a; . ./.env.production; set +a; pnpm exec prisma migrate status )
-```
-
-Esperado: só `20260808150000_entrar_com_google`. Se aparecer outra coisa, pare e
-me chame antes de aplicar.
-
-### Passo 2: backup
-
-No painel do Supabase, projeto do Nexlar: **Database → Backups**. Garanta que
-existe um backup recente.
-
-### Passo 3: aplicar
-
-```bash
-cd /Users/rafaelle/Documents/Projects2026/NEXLAR/apps/api && ( set -a; . ./.env.production; set +a; pnpm exec prisma migrate deploy )
-```
-
-### Passo 4: conferir
-
-```bash
-cd /Users/rafaelle/Documents/Projects2026/NEXLAR/apps/api && ( set -a; . ./.env.production; set +a; pnpm exec prisma migrate status )
-```
-
-Esperado: `Database schema is up to date!`
-
-### Passo 5: aprovar o deploy da API na Railway
-
-Com o banco pronto e as variáveis no lugar, aprove o deploy pendente do serviço
-`nexlar-api`. O front na Vercel sobe sozinho.
-
-**Se falhar com `Healthcheck failure`**, é o incidente de 5 ago: o Supabase
+**Se o redeploy falhar com `Healthcheck failure`**, é o incidente de 5 ago: o Supabase
 pausa projetos parados e o Prisma morre ao conectar. Abrir o painel do Supabase
 e usar o projeto o traz de volta. O log real aparece assim:
 
 ```bash
-railway deployment list --service nexlar-api
+railway deployment list --service "@nexlar/api"
 ```
 
 ## As duas portas de entrada
