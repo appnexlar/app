@@ -88,7 +88,9 @@ export function LoginPage() {
           centralizado sobre campos de formulário desalinha a leitura. */}
       <header className={comEmail ? "mb-8" : "mb-8 text-center"}>
         <h1 className="text-h1 text-text">
-          {comEmail ? "Entrar com e-mail" : "Bem-vindo(a) ao Nexlar"}
+          {/* Sem gênero na saudação. "Bem-vindo(a)" resolvia por remendo, e
+              parêntese no meio de uma boas-vindas soa a formulário. */}
+          {comEmail ? "Entrar com e-mail" : "Que bom ver você por aqui"}
         </h1>
         <p className="mt-2 text-body text-text-muted">
           {comEmail
