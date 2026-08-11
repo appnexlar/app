@@ -8,10 +8,13 @@ import { AdminSessionCookie } from "./auth/admin-session-cookie";
 import { AdminOAuthCookies } from "./auth/admin-oauth-cookies";
 import { AdminTokenService } from "./auth/admin-token.service";
 import { AdminAuditService } from "./audit/admin-audit.service";
+import { AdminAuditController } from "./audit/admin-audit.controller";
 import { AdminsController } from "./admins/admins.controller";
 import { AdminsService } from "./admins/admins.service";
 import { AdminUsersController } from "./users/admin-users.controller";
 import { AdminUsersService } from "./users/admin-users.service";
+import { AdminDashboardController } from "./dashboard/admin-dashboard.controller";
+import { AdminDashboardService } from "./dashboard/admin-dashboard.service";
 import { AdminAuthGuard } from "./rbac/admin-auth.guard";
 import { AdminPermissionGuard } from "./rbac/admin-permission.guard";
 
@@ -26,7 +29,13 @@ import { AdminPermissionGuard } from "./rbac/admin-permission.guard";
   // OAuth e trava de tentativas): instância única, para o dublê dos testes
   // valer nos dois universos. Nenhum serviço de domínio do corretor é usado.
   imports: [PrismaModule, RateLimitModule, AuthModule],
-  controllers: [AdminAuthController, AdminsController, AdminUsersController],
+  controllers: [
+    AdminAuthController,
+    AdminsController,
+    AdminUsersController,
+    AdminDashboardController,
+    AdminAuditController,
+  ],
   providers: [
     AdminAuthService,
     AdminTokenService,
@@ -35,6 +44,7 @@ import { AdminPermissionGuard } from "./rbac/admin-permission.guard";
     AdminAuditService,
     AdminsService,
     AdminUsersService,
+    AdminDashboardService,
     AdminAuthGuard,
     AdminPermissionGuard,
   ],

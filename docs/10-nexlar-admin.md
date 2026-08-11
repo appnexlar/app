@@ -399,13 +399,79 @@ existente, nenhum comportamento do app do corretor.
 
 ## 9. Fases seguintes (mapa da épica para o repositório)
 
-| Fase da épica | Entrega técnica |
-|---|---|
-| 1 Fundação (Tasks 2 a 4) | Migrations 1 a 4, AdminModule, guards, RBAC, seed, login |
-| 2 Dashboard (5 a 10) | `/dashboard/summary`, tela com indicadores e alertas |
-| 3 Usuários (11 a 18) | Lista, busca, filtros, perfil, suspender/reativar, CRECI |
-| 4 Organizações (19 a 25) | Lista, perfil, suspensão em cadeia |
-| 5 Auditoria (26 a 29) | Eventos de login, tela de auditoria |
-| 6 Billing (30 a 33) | Migration 5, seção placeholder |
-| 7 Notas (34 a 35) | Notas internas, timeline |
-| 8 a 10 | Segurança, UX e testes permeiam cada fase, não ficam para o fim |
+| Fase da épica | Entrega técnica | Situação |
+|---|---|---|
+| 1 Fundação (Tasks 2 a 4) | Migrations, AdminModule, guards, RBAC, seed, login (mais o entrar com o Google) | Entregue |
+| 2 Dashboard (5 a 10) | `/dashboard/summary`, tela com indicadores e alertas | Entregue |
+| 3 Usuários (11 a 18) | Lista, busca, filtros, perfil, suspender/reativar | Entregue (CRECI adiado) |
+| 4 Organizações (19 a 25) | Lista, perfil, suspensão em cadeia | A fazer |
+| 5 Auditoria (26 a 29) | Eventos de login, tela de auditoria | Entregue |
+| 6 Billing (30 a 33) | Migration 5, seção placeholder | A fazer |
+| 7 Notas (34 a 35) | Notas internas, timeline | A fazer |
+| 8 a 10 | Segurança, UX e testes permeiam cada fase, não ficam para o fim | Contínuo |
+
+## 10. Fase 2 entregue: o Dashboard
+
+`GET /api/admin/dashboard/summary?periodo=hoje|7d|30d|90d`, atrás dos dois
+guards administrativos.
+
+Três decisões desta fase, com o porquê:
+
+**D5. Sem `@RequirePermission` na rota, com recorte dentro do serviço.** O
+dashboard é a porta de entrada do painel: negar com 403 deixaria o perfil
+financeiro sem lugar nenhum ao entrar. Em vez disso, quem não tem
+`admin.users.view` recebe os blocos como `null`, e as consultas nem chegam ao
+banco. O recorte é do servidor, não do front: nem o total de contas vaza.
+
+**D6. Alerta só existe se tiver tela para resolver.** Entraram apenas
+`contas_suspensas` e `verificacao_parada`, ambos com destino real
+(`/admin/usuarios` já filtrado). Indicador sem ação vira ruído no topo, e ruído
+no topo treina a pessoa a ignorar o topo. Contagem zero não aparece: a seção
+mostra o estado tranquilo em vez de uma fila vazia.
+
+**D7. O período compara com a janela anterior de mesma duração**, nunca com o
+"dia anterior inteiro": comparar um período em curso com um período completo
+faria toda manhã parecer uma queda.
+
+A tela abre pelo que pede ação, depois o retrato das contas (que não depende do
+período), o movimento com variação, o uso agregado e os cadastros recentes. O
+bloco de uso traz contagem e nada mais: nenhum nome de lead ou cliente
+atravessa esta fase, e um teste e2e garante isso procurando o dado no corpo da
+resposta.
+
+O status do corretor na lista passou a viver na URL (`?status=`), que foi o que
+permitiu o alerta abrir a lista já filtrada.
+
+## 11. Fase 5 entregue: a Auditoria
+
+`GET /api/admin/audit` (filtros de ator, ação, recurso e período, paginado) e
+`GET /api/admin/audit/actors`, ambos atrás de `admin.audit.view`. A tabela era
+escrita desde a Fase 1; esta fase abriu a leitura e completou o que faltava
+gravar.
+
+**Somente leitura, por ausência.** Não existe rota para editar nem para apagar
+uma linha, e um teste e2e tenta DELETE, PATCH e PUT para garantir que continue
+assim. Auditoria que se apaga não audita ninguém.
+
+**A entrada no painel virou trilha.** `admin_entrou` grava quem entrou e por
+onde (senha ou Google), na mesma transação do último acesso.
+`admin_login_recusado` grava a tentativa negada com o motivo (senha incorreta
+ou conta suspensa). Duas escolhas aqui merecem registro:
+
+- O ator de uma recusa é a **conta visada**, que nem sempre é a pessoa que
+  tentou. É justamente por isso que a linha existe: para a dona da conta
+  enxergar tentativas que não foram dela.
+- Tentativa contra e-mail que não existe **não** vira linha. Sem conta não há
+  ator, e registrar isso transformaria a trilha num diário de varredura. Essa
+  contagem já é trabalho do limite de tentativas.
+
+**O nome do alvo é resolvido em lote, depois da consulta.** A tabela não tem
+chave estrangeira para o alvo (é o que a faz sobreviver à exclusão), e um join
+por linha traria N+1 numa tela feita para paginar. Quando o alvo não existe
+mais, a linha continua de pé e a tela diz "em conta já excluída", com o motivo
+e o estado anterior intactos. Existe teste e2e que apaga a conta e confere que
+a prova permanece.
+
+**A trilha aparece duas vezes**: inteira em `/admin/auditoria`, e recortada por
+conta dentro da ficha do corretor, atrás da mesma permissão. Quem não pode ler
+a trilha inteira também não lê o pedaço dela.

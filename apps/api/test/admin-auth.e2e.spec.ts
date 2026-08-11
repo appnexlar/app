@@ -191,10 +191,11 @@ describe("Nexlar Admin: fundação", () => {
     });
     expect(res.statusCode).toBe(201);
 
-    const trilha = await prisma.adminAuditLog.findMany();
+    // Filtrado pela ação: a entrada de quem criou também está na trilha, e é
+    // assunto de outro teste.
+    const trilha = await prisma.adminAuditLog.findMany({ where: { action: "admin_criado" } });
     expect(trilha).toHaveLength(1);
     expect(trilha[0].actorAdminId).toBe(chefeId);
-    expect(trilha[0].action).toBe("admin_criado");
     expect(trilha[0].resourceType).toBe("admin_user");
     // A auditoria nunca guarda credencial.
     expect(JSON.stringify(trilha[0].newState)).not.toContain("senha");

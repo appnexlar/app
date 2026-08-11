@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { AdminUsersPage as UsersPage } from "@nexlar/shared";
+import { USER_LIST_STATUS_FILTERS } from "@nexlar/shared";
 import { Button } from "../../../components/ui/Button";
 import { Pagination } from "../../../components/ui/Pagination";
 import { SearchField } from "../../../components/ui/SearchField";
@@ -27,9 +28,17 @@ const FILTROS_DE_STATUS = [
  */
 export function AdminUsersPage() {
   const [busca, setBusca] = useState("");
-  const [status, setStatus] = useState("todos");
   const [pagina, setPagina] = useState(1);
   const buscaEstavel = useDebounced(busca.trim());
+
+  // O status mora na URL porque outras telas apontam para um recorte pronto
+  // (os alertas do dashboard fazem isso). Valor estranho na barra de endereço
+  // cai em "todos" em vez de virar uma requisição inválida.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusDaUrl = searchParams.get("status") ?? "todos";
+  const status = (USER_LIST_STATUS_FILTERS as readonly string[]).includes(statusDaUrl)
+    ? statusDaUrl
+    : "todos";
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["admin", "users", { busca: buscaEstavel, status, pagina }],
@@ -43,7 +52,11 @@ export function AdminUsersPage() {
 
   function aoFiltrar(novo: { busca?: string; status?: string }) {
     if (novo.busca !== undefined) setBusca(novo.busca);
-    if (novo.status !== undefined) setStatus(novo.status);
+    if (novo.status !== undefined) {
+      // replace: trocar de filtro não empilha histórico, senão o botão voltar
+      // percorre cada clique em vez de sair da tela.
+      setSearchParams(novo.status === "todos" ? {} : { status: novo.status }, { replace: true });
+    }
     // Filtro novo recomeça da primeira página, senão a pessoa cai numa
     // página que não existe mais no recorte novo.
     setPagina(1);

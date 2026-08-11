@@ -117,9 +117,12 @@ describe("Nexlar Admin: entrar com o Google", () => {
     expect(depois.googleId).toBe("google-sub-admin-1");
     expect(depois.lastLoginAt).not.toBeNull();
 
-    const trilha = await prisma.adminAuditLog.findMany();
-    expect(trilha).toHaveLength(1);
-    expect(trilha[0].action).toBe("admin_google_vinculado");
+    // O vínculo é gravado uma vez. A entrada em si vira outra linha
+    // (admin_entrou), que é assunto da trilha de acesso, não deste teste.
+    const vinculos = await prisma.adminAuditLog.findMany({
+      where: { action: "admin_google_vinculado" },
+    });
+    expect(vinculos).toHaveLength(1);
   });
 
   it("e-mail desconhecido é recusado SEM criar conta nenhuma", async () => {
@@ -178,6 +181,10 @@ describe("Nexlar Admin: entrar com o Google", () => {
     expect(segunda.statusCode).toBe(302);
     expect(segunda.headers.location).toContain("/admin");
     // O vínculo aconteceu uma vez; a segunda entrada não é mudança de estado.
-    expect(await prisma.adminAuditLog.count()).toBe(1);
+    expect(await prisma.adminAuditLog.count({ where: { action: "admin_google_vinculado" } })).toBe(
+      1,
+    );
+    // As duas entradas, sim, ficam registradas: quem entrou e quando.
+    expect(await prisma.adminAuditLog.count({ where: { action: "admin_entrou" } })).toBe(2);
   });
 });

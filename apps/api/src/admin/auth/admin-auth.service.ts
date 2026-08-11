@@ -1,6 +1,11 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import * as argon2 from "argon2";
-import { permissionsForRole, type AdminLoginDto, type AdminProfile } from "@nexlar/shared";
+import {
+  permissionsForRole,
+  type AdminLoginDto,
+  type AdminProfile,
+  type AdminRole,
+} from "@nexlar/shared";
 import { PrismaService } from "../../prisma/prisma.service";
 import { LoginAttemptService } from "../../auth/login-attempt.service";
 import type { GoogleIdentity } from "../../auth/google-oauth.service";
@@ -49,6 +54,7 @@ export class AdminAuthService {
     const ok = await argon2.verify(admin.passwordHash, dto.password).catch(() => false);
     if (!ok) {
       this.attempts.registerFailure(this.chaveDeTentativa(dto.email));
+      await this.registrarRecusa(admin, "senha_incorreta");
       throw invalid;
     }
 
@@ -56,20 +62,70 @@ export class AdminAuthService {
     // não precisa de confirmação de que a conta ainda existe.
     if (admin.status === "suspenso") {
       this.attempts.registerFailure(this.chaveDeTentativa(dto.email));
+      await this.registrarRecusa(admin, "conta_suspensa");
       throw invalid;
     }
 
     this.attempts.clear(this.chaveDeTentativa(dto.email));
-
-    const [tokens] = await Promise.all([
-      this.tokens.issueSession(admin.id),
-      this.prisma.adminUser.update({
-        where: { id: admin.id },
-        data: { lastLoginAt: new Date() },
-      }),
-    ]);
+    await this.registrarEntrada(admin, "senha");
+    const tokens = await this.tokens.issueSession(admin.id);
 
     return { profile: this.toProfile(admin), tokens };
+  }
+
+  /**
+   * Entrada no painel, gravada na mesma transação do último acesso.
+   *
+   * Quem entrou no painel administrativo e quando é informação de segurança,
+   * não estatística: fica na trilha, ao lado das ações, e não só na coluna
+   * last_login_at, que guarda apenas a última e sobrescreve a história.
+   */
+  private async registrarEntrada(
+    admin: { id: string; role: AdminRole; email: string },
+    via: "senha" | "google",
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.adminUser.update({ where: { id: admin.id }, data: { lastLoginAt: new Date() } });
+      await this.audit.record(
+        this.atorDe(admin),
+        {
+          action: "admin_entrou",
+          resourceType: "admin_user",
+          resourceId: admin.id,
+          newState: { via },
+        },
+        tx,
+      );
+    });
+  }
+
+  /**
+   * Tentativa recusada. O ator é a CONTA visada, que nem sempre é a pessoa
+   * que tentou: é justamente por isso que a linha existe, para a dona da
+   * conta enxergar tentativas que não foram dela.
+   *
+   * Recusa contra e-mail que não existe não vira linha: sem conta não há
+   * ator, e registrar isso transformaria a trilha num diário de varredura.
+   * Essa contagem é trabalho do limite de tentativas, não da auditoria.
+   */
+  private async registrarRecusa(
+    admin: { id: string; role: AdminRole; email: string },
+    motivo: "senha_incorreta" | "conta_suspensa",
+  ): Promise<void> {
+    await this.audit.record(this.atorDe(admin), {
+      action: "admin_login_recusado",
+      resourceType: "admin_user",
+      resourceId: admin.id,
+      newState: { motivo },
+    });
+  }
+
+  private atorDe(admin: { id: string; role: AdminRole }) {
+    return {
+      adminId: admin.id,
+      role: admin.role,
+      permissions: permissionsForRole(admin.role),
+    };
   }
 
   /**
@@ -86,11 +142,11 @@ export class AdminAuthService {
       where: { googleId: identity.googleId },
     });
     if (porVinculo) {
-      if (porVinculo.status === "suspenso") throw semAcesso;
-      await this.prisma.adminUser.update({
-        where: { id: porVinculo.id },
-        data: { lastLoginAt: new Date() },
-      });
+      if (porVinculo.status === "suspenso") {
+        await this.registrarRecusa(porVinculo, "conta_suspensa");
+        throw semAcesso;
+      }
+      await this.registrarEntrada(porVinculo, "google");
       return { adminId: porVinculo.id };
     }
 
@@ -104,24 +160,31 @@ export class AdminAuthService {
     // (troca de conta Google) se resolve por um super_admin, não sozinho.
     if (porEmail.googleId) throw semAcesso;
 
-    // Primeiro login pelo Google: grava o vínculo e audita na mesma
-    // transação. Vincular credencial é mudança de segurança, não detalhe.
+    // Primeiro login pelo Google: grava o vínculo, a entrada e audita as
+    // duas coisas na mesma transação. Vincular credencial é mudança de
+    // segurança, não detalhe.
     await this.prisma.$transaction(async (tx) => {
       await tx.adminUser.update({
         where: { id: porEmail.id },
         data: { googleId: identity.googleId, lastLoginAt: new Date() },
       });
       await this.audit.record(
-        {
-          adminId: porEmail.id,
-          role: porEmail.role,
-          permissions: permissionsForRole(porEmail.role),
-        },
+        this.atorDe(porEmail),
         {
           action: "admin_google_vinculado",
           resourceType: "admin_user",
           resourceId: porEmail.id,
           newState: { email: porEmail.email, googleEmail: identity.email },
+        },
+        tx,
+      );
+      await this.audit.record(
+        this.atorDe(porEmail),
+        {
+          action: "admin_entrou",
+          resourceType: "admin_user",
+          resourceId: porEmail.id,
+          newState: { via: "google" },
         },
         tx,
       );
