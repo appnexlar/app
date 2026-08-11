@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AdminBrokerProfile } from "@nexlar/shared";
+import type { AdminAuditPage, AdminBrokerProfile } from "@nexlar/shared";
 import { Button } from "../../../components/ui/Button";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
 import { Modal } from "../../../components/ui/Modal";
@@ -10,6 +10,7 @@ import { TextField } from "../../../components/ui/TextField";
 import { ApiError } from "../../../lib/http";
 import { adminHttp } from "../api/http";
 import { useAdminAuth } from "../AdminAuthContext";
+import { AuditTimeline } from "../audit/AuditTimeline";
 import { StatusDaConta, dataCurta } from "./status";
 
 /**
@@ -137,6 +138,11 @@ export function AdminUserProfilePage() {
         </Cartao>
       </div>
 
+      {/* O histórico administrativo desta conta. Fica atrás da mesma
+          permissão da tela de auditoria: quem não pode ler a trilha inteira
+          também não lê o pedaço dela. */}
+      {can("admin.audit.view") && id && <HistoricoDaConta brokerId={id} />}
+
       {acao && (
         <AcaoDeStatusModal
           perfil={data}
@@ -146,10 +152,46 @@ export function AdminUserProfilePage() {
             setAcao(null);
             void queryClient.invalidateQueries({ queryKey: ["admin", "user", id] });
             void queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+            // A ação acabou de virar linha na trilha: o histórico logo abaixo
+            // precisa mostrá-la sem exigir recarregar a página.
+            void queryClient.invalidateQueries({ queryKey: ["admin", "audit"] });
           }}
         />
       )}
     </div>
+  );
+}
+
+/**
+ * O que a equipe já fez nesta conta. Some quando não há nada, em vez de
+ * ocupar a tela com um cartão vazio: conta sem histórico é a maioria delas.
+ */
+function HistoricoDaConta({ brokerId }: { brokerId: string }) {
+  const { data } = useQuery({
+    queryKey: ["admin", "audit", "broker", brokerId],
+    queryFn: () =>
+      adminHttp.get<AdminAuditPage>(
+        `/audit?recurso=broker&recursoId=${brokerId}&porPagina=10`,
+      ),
+  });
+
+  if (!data || data.items.length === 0) return null;
+
+  return (
+    <section className="mt-6">
+      <h2 className="mb-3 text-caption font-semibold uppercase tracking-wide text-text-subtle">
+        Histórico administrativo
+      </h2>
+      <AuditTimeline items={data.items} ocultarAlvo />
+      {data.total > data.items.length && (
+        <p className="mt-2 text-caption text-text-subtle">
+          Mostrando as {data.items.length} ações mais recentes de {data.total}.{" "}
+          <Link to={`/admin/auditoria`} className="font-semibold text-text-muted hover:text-text">
+            Ver a auditoria completa
+          </Link>
+        </p>
+      )}
+    </section>
   );
 }
 
