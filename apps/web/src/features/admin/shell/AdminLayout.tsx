@@ -92,9 +92,17 @@ export function AdminLayout() {
   return (
     <div className="flex min-h-dvh bg-bg">
       <aside className="flex w-60 shrink-0 flex-col bg-[var(--brand-navy-950)] px-4 py-6 max-md:w-16 max-md:px-2">
-        <div className="mb-8 px-2 max-md:text-center">
-          <span className="text-lg font-bold tracking-tight text-white">
-            nex<span className="text-accent">lar</span>
+        {/* Na faixa estreita não cabe a palavra inteira: entra só o símbolo,
+            o mesmo "x" do wordmark. Escrever a marca por extenso aqui e
+            deixar o navegador cortar seria pior do que não escrever. */}
+        <div className="mb-8 px-2 max-md:px-0 max-md:text-center">
+          <img
+            src="/logo-mark.svg"
+            alt="Nextlar"
+            className="mx-auto hidden h-5 w-auto max-md:block"
+          />
+          <span className="text-lg font-bold tracking-tight text-white max-md:hidden">
+            ne<span className="text-accent">x</span>tlar
           </span>
           <span className="ml-2 rounded bg-[var(--brand-navy-800)] px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-navy-200)] max-md:hidden">
             Admin

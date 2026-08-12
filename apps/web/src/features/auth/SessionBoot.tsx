@@ -61,7 +61,7 @@ function Centralizado({ children }: { children: ReactNode }) {
 function Marca() {
   return (
     <span className="text-h2 font-bold tracking-tight text-primary">
-      nex<span className="text-accent">lar</span>
+      ne<span className="text-accent">x</span>tlar
     </span>
   );
 }
