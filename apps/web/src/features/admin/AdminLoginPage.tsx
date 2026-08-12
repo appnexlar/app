@@ -7,7 +7,7 @@ import { ApiError } from "../../lib/http";
 import { useAdminAuth } from "./AdminAuthContext";
 
 /**
- * Entrada do Nexlar Admin. Sóbria de propósito: isto é uma porta de serviço,
+ * Entrada do Nextlar Admin. Sóbria de propósito: isto é uma porta de serviço,
  * não uma página de produto. O Google vem primeiro porque é a porta
  * preferida (a conta Google da equipe carrega 2FA e anti-phishing que senha
  * nossa não tem); e-mail e senha ficam como contingência. Sem criar conta:
@@ -17,7 +17,7 @@ import { useAdminAuth } from "./AdminAuthContext";
 /** Mensagens dos códigos que o callback do Google devolve na URL. */
 const ERROS_DO_RETORNO: Record<string, string> = {
   cancelado: "Você cancelou a entrada com o Google.",
-  sem_acesso: "Esta conta Google não tem acesso ao Nexlar Admin.",
+  sem_acesso: "Esta conta Google não tem acesso ao Nextlar Admin.",
   google: "Não foi possível entrar com o Google. Tente novamente.",
 };
 
@@ -72,7 +72,7 @@ export function AdminLoginPage() {
             nex<span className="text-accent">lar</span>
           </span>
           <h1 className="mt-4 text-h2 text-text">Administração da plataforma</h1>
-          <p className="mt-2 text-body text-text-muted">Acesso restrito à equipe Nexlar.</p>
+          <p className="mt-2 text-body text-text-muted">Acesso restrito à equipe Nextlar.</p>
         </header>
 
         {error && (

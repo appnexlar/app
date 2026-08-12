@@ -26,7 +26,7 @@ import { CurrentAdmin, type AuthenticatedAdmin } from "../rbac/current-admin.dec
 import { AdminUsersService } from "./admin-users.service";
 
 /**
- * Contas de corretor no Nexlar Admin. Leitura com admin.users.view (admin e
+ * Contas de corretor no Nextlar Admin. Leitura com admin.users.view (admin e
  * suporte enxergam); suspender e reativar exigem admin.users.manage. O
  * @Public() dispensa só o guard global do corretor; quem manda aqui é o par
  * de guards administrativos.

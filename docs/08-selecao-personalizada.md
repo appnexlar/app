@@ -3,9 +3,9 @@
 Jornada em que o corretor monta uma curadoria de imóveis para UMA lead e envia
 um link exclusivo. A lead visualiza, reage (gostei / não combina / quero
 visitar), pede informações e agenda visita em horário real da agenda. Tudo
-volta para a Nexlar: timeline, funil, notificações, dashboard e eventos.
+volta para a Nextlar: timeline, funil, notificações, dashboard e eventos.
 
-Princípio da épica: **a Nexlar recomenda, o corretor decide.** Nenhum imóvel é
+Princípio da épica: **a Nextlar recomenda, o corretor decide.** Nenhum imóvel é
 enviado automaticamente.
 
 A jornada tem duas portas de entrada:
@@ -189,7 +189,7 @@ Riscos residuais aceitos e conhecidos:
 ## Limitações conhecidas / próximos passos
 
 - Google Calendar ainda não sincroniza (colunas prontas; fatia futura da
-  agenda). O slot considera só a agenda Nexlar.
+  agenda). O slot considera só a agenda Nextlar.
 - Remarcar = cancelar + agendar de novo (dois registros; histórico íntegro).
 - Miniaturas usam a foto original (sem pipeline de thumbnails).
 - Sem SEO/Open Graph no link (decisão: páginas por token não indexam mesmo).

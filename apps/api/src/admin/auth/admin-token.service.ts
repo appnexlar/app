@@ -20,7 +20,7 @@ export interface AdminIssuedTokens {
 }
 
 /**
- * Sessão do Nexlar Admin. Mesma mecânica do TokenService do corretor
+ * Sessão do Nextlar Admin. Mesma mecânica do TokenService do corretor
  * (refresh opaco só como hash, rotação, reuso derruba tudo), com duas
  * diferenças de política, as duas por ser sessão privilegiada:
  *

@@ -1,5 +1,5 @@
 /**
- * Nexlar Design System — tokens (fonte única)
+ * Nextlar Design System — tokens (fonte única)
  * Derivado do Brand Book v1.0. Cores da marca fixas; escalas e semânticos
  * construídos a partir delas. Mobile-first, referência HIG (Apple).
  *
@@ -25,13 +25,13 @@
   --brand-navy-900: #1c2c39;
   --brand-navy-950: #16222c;
 
-  /* Laranja Nexlar — cor de acento (#D2502E) */
+  /* Laranja Nextlar — cor de acento (#D2502E) */
   --brand-orange-50:  #fcefea;
   --brand-orange-100: #f8dcd2;
   --brand-orange-200: #f1b8a5;
   --brand-orange-300: #e89376;
   --brand-orange-400: #de6e51;
-  --brand-orange-500: #d2502e; /* base — Laranja Nexlar */
+  --brand-orange-500: #d2502e; /* base — Laranja Nextlar */
   --brand-orange-600: #c04327;
   --brand-orange-700: #a83920;
   --brand-orange-800: #872f1e;

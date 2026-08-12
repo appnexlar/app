@@ -1,5 +1,5 @@
 /**
- * Planos do Nexlar exibidos no cadastro.
+ * Planos do Nextlar exibidos no cadastro.
  *
  * VALORES PROVISÓRIOS: o Rafaelle vai definir os dois valores finais.
  * Troque apenas `priceMonthly`/`priceTotal` aqui; a interface formata sozinha.

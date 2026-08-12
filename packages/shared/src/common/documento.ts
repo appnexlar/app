@@ -2,7 +2,7 @@
  * Validação de CPF e CNPJ pelos dígitos verificadores.
  *
  * Conferir só o tamanho não serve para nada: `11111111111` tem onze dígitos e
- * é obviamente inventado. Como o Nexlar guarda CPF de cliente para
+ * é obviamente inventado. Como o Nextlar guarda CPF de cliente para
  * financiamento e documentação, um número errado aqui vira retrabalho no
  * cartório ou no banco, e o corretor só descobre lá na frente.
  *

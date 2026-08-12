@@ -15,7 +15,7 @@ interface InterestModalProps {
 /**
  * A porta de entrada de lead da vitrine. Existe porque o caminho anterior era
  * um link direto para o WhatsApp: o visitante saía, o corretor ganhava uma
- * conversa solta e o Nexlar não ficava com nada. Aqui a pessoa vira lead
+ * conversa solta e o Nextlar não ficava com nada. Aqui a pessoa vira lead
  * (com origem "Página pública" e consentimento registrado) e SÓ ENTÃO segue
  * para a conversa que ela queria ter.
  */

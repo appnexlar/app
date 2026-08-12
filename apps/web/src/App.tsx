@@ -43,7 +43,7 @@ import { FinancingPublicPage } from "./features/financing/FinancingPublicPage";
 import { FinancingReviewPage } from "./features/financing/FinancingReviewPage";
 import { SessionBoot } from "./features/auth/SessionBoot";
 
-// Nexlar Admin: universo próprio, carregado só quando alguém abre /admin.
+// Nextlar Admin: universo próprio, carregado só quando alguém abre /admin.
 // O corretor não baixa nada disto no bundle principal.
 const AdminApp = lazy(() => import("./features/admin/AdminApp"));
 

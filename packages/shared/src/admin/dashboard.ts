@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { AdminBrokerSummary } from "./users";
 
 /**
- * Dashboard do Nexlar Admin (docs/10, Fase 2).
+ * Dashboard do Nextlar Admin (docs/10, Fase 2).
  *
  * Regra que atravessa este arquivo inteiro: aqui só trafega NÚMERO da
  * plataforma e dado da conta do corretor. Nenhum campo carrega lead, cliente

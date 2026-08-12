@@ -6,7 +6,7 @@ import { RateLimitStore } from "../src/common/rate-limit/rate-limit.store";
 import { createTestApp, registerBroker, resetDatabase } from "./e2e-utils";
 
 /**
- * Fundação do Nexlar Admin (docs/10, Fase 1): os universos corretor e admin
+ * Fundação do Nextlar Admin (docs/10, Fase 1): os universos corretor e admin
  * não se tocam, permissão é verificada no backend, ação crítica é auditada e
  * as autoproteções impedem o time de se trancar para fora.
  */
@@ -24,7 +24,7 @@ function adminCookieDe(response: { headers: Record<string, unknown> }): string |
   return null;
 }
 
-describe("Nexlar Admin: fundação", () => {
+describe("Nextlar Admin: fundação", () => {
   let app: NestFastifyApplication;
   let prisma: PrismaService;
 
@@ -69,8 +69,8 @@ describe("Nexlar Admin: fundação", () => {
   });
 
   it("faz login, devolve permissões e registra o último acesso", async () => {
-    await criarAdmin("chefe@nexlar.app", "super_admin");
-    const res = await loginAdmin("chefe@nexlar.app");
+    await criarAdmin("chefe@nextlar.app", "super_admin");
+    const res = await loginAdmin("chefe@nextlar.app");
 
     expect(res.statusCode).toBe(200);
     const body = res.json();
@@ -80,26 +80,26 @@ describe("Nexlar Admin: fundação", () => {
     expect(adminCookieDe(res)).toBeTruthy();
 
     const noBanco = await prisma.adminUser.findUniqueOrThrow({
-      where: { email: "chefe@nexlar.app" },
+      where: { email: "chefe@nextlar.app" },
     });
     expect(noBanco.lastLoginAt).not.toBeNull();
   });
 
   it("responde igual para senha errada, e-mail inexistente e conta suspensa", async () => {
-    await criarAdmin("chefe@nexlar.app", "super_admin");
-    await criarAdmin("desligada@nexlar.app", "admin", "suspenso");
+    await criarAdmin("chefe@nextlar.app", "super_admin");
+    await criarAdmin("desligada@nextlar.app", "admin", "suspenso");
 
     const senhaErrada = await app.inject({
       method: "POST",
       url: "/api/admin/auth/login",
-      payload: { email: "chefe@nexlar.app", password: "senha-errada-123" },
+      payload: { email: "chefe@nextlar.app", password: "senha-errada-123" },
     });
     const naoExiste = await app.inject({
       method: "POST",
       url: "/api/admin/auth/login",
-      payload: { email: "ninguem@nexlar.app", password: SENHA },
+      payload: { email: "ninguem@nextlar.app", password: SENHA },
     });
-    const suspensa = await loginAdmin("desligada@nexlar.app");
+    const suspensa = await loginAdmin("desligada@nextlar.app");
 
     for (const res of [senhaErrada, naoExiste, suspensa]) {
       expect(res.statusCode).toBe(401);
@@ -108,24 +108,24 @@ describe("Nexlar Admin: fundação", () => {
   });
 
   it("trava a conta depois de cinco falhas seguidas", async () => {
-    await criarAdmin("chefe@nexlar.app", "super_admin");
+    await criarAdmin("chefe@nextlar.app", "super_admin");
     for (let i = 0; i < 5; i += 1) {
       await app.inject({
         method: "POST",
         url: "/api/admin/auth/login",
-        payload: { email: "chefe@nexlar.app", password: `errada-${i}-0123456` },
+        payload: { email: "chefe@nextlar.app", password: `errada-${i}-0123456` },
       });
     }
     // A sexta é barrada antes de conferir a senha, mesmo estando certa.
-    const res = await loginAdmin("chefe@nexlar.app");
+    const res = await loginAdmin("chefe@nextlar.app");
     expect(res.statusCode).toBe(429);
   });
 
   it("token de corretor não entra no admin, e token de admin não entra no app do corretor", async () => {
     const corretor = await registerBroker(app, "Corretora Teste", "corretora@example.com");
-    const admin = await criarAdmin("chefe@nexlar.app", "super_admin");
+    const admin = await criarAdmin("chefe@nextlar.app", "super_admin");
     void admin;
-    const login = await loginAdmin("chefe@nexlar.app");
+    const login = await loginAdmin("chefe@nextlar.app");
     const adminToken = login.json().accessToken as string;
 
     // Corretor batendo em rota administrativa: 401, sem detalhe.
@@ -146,8 +146,8 @@ describe("Nexlar Admin: fundação", () => {
   });
 
   it("permissão é verificada no backend: suporte lista, mas não cria nem altera", async () => {
-    await criarAdmin("suporte@nexlar.app", "suporte");
-    const login = await loginAdmin("suporte@nexlar.app");
+    await criarAdmin("suporte@nextlar.app", "suporte");
+    const login = await loginAdmin("suporte@nextlar.app");
     const token = login.json().accessToken as string;
 
     // suporte não tem admin.admins.view: nem a lista abre.
@@ -163,7 +163,7 @@ describe("Nexlar Admin: fundação", () => {
       url: "/api/admin/admins",
       headers: { authorization: `Bearer ${token}` },
       payload: {
-        email: "intruso@nexlar.app",
+        email: "intruso@nextlar.app",
         fullName: "Tentativa Indevida",
         role: "super_admin",
         password: "senha-instalada-123",
@@ -174,8 +174,8 @@ describe("Nexlar Admin: fundação", () => {
   });
 
   it("super_admin cria administrador e a criação sai na auditoria", async () => {
-    const chefeId = await criarAdmin("chefe@nexlar.app", "super_admin");
-    const login = await loginAdmin("chefe@nexlar.app");
+    const chefeId = await criarAdmin("chefe@nextlar.app", "super_admin");
+    const login = await loginAdmin("chefe@nextlar.app");
     const token = login.json().accessToken as string;
 
     const res = await app.inject({
@@ -183,7 +183,7 @@ describe("Nexlar Admin: fundação", () => {
       url: "/api/admin/admins",
       headers: { authorization: `Bearer ${token}` },
       payload: {
-        email: "nova@nexlar.app",
+        email: "nova@nextlar.app",
         fullName: "Pessoa Nova",
         role: "suporte",
         password: "senha-inicial-123",
@@ -203,14 +203,14 @@ describe("Nexlar Admin: fundação", () => {
   });
 
   it("suspender um administrador derruba as sessões abertas dele", async () => {
-    await criarAdmin("chefe@nexlar.app", "super_admin");
-    const alvoId = await criarAdmin("colega@nexlar.app", "admin");
+    await criarAdmin("chefe@nextlar.app", "super_admin");
+    const alvoId = await criarAdmin("colega@nextlar.app", "admin");
 
-    const sessaoDoAlvo = await loginAdmin("colega@nexlar.app");
+    const sessaoDoAlvo = await loginAdmin("colega@nextlar.app");
     const tokenDoAlvo = sessaoDoAlvo.json().accessToken as string;
     const cookieDoAlvo = adminCookieDe(sessaoDoAlvo);
 
-    const chefe = await loginAdmin("chefe@nexlar.app");
+    const chefe = await loginAdmin("chefe@nextlar.app");
     const suspensao = await app.inject({
       method: "PATCH",
       url: `/api/admin/admins/${alvoId}`,
@@ -237,8 +237,8 @@ describe("Nexlar Admin: fundação", () => {
   });
 
   it("não deixa o time se trancar para fora: nem a si mesmo, nem o último super_admin", async () => {
-    const chefeId = await criarAdmin("chefe@nexlar.app", "super_admin");
-    const login = await loginAdmin("chefe@nexlar.app");
+    const chefeId = await criarAdmin("chefe@nextlar.app", "super_admin");
+    const login = await loginAdmin("chefe@nextlar.app");
     const token = login.json().accessToken as string;
 
     // Suspender a si: recusado.
@@ -252,7 +252,7 @@ describe("Nexlar Admin: fundação", () => {
 
     // Rebaixar o último super_admin por outra conta manage: cria um segundo
     // super, suspende o primeiro... e aí o segundo vira o último, intocável.
-    const segundoId = await criarAdmin("segunda@nexlar.app", "super_admin");
+    const segundoId = await criarAdmin("segunda@nextlar.app", "super_admin");
     const suspendePrimeiro = await app.inject({
       method: "PATCH",
       url: `/api/admin/admins/${segundoId}`,
@@ -261,9 +261,9 @@ describe("Nexlar Admin: fundação", () => {
     });
     expect(suspendePrimeiro.statusCode).toBe(200);
 
-    const login2 = await loginAdmin("chefe@nexlar.app");
+    const login2 = await loginAdmin("chefe@nextlar.app");
     const token2 = login2.json().accessToken as string;
-    const segundaConta = await criarAdmin("terceira@nexlar.app", "admin");
+    const segundaConta = await criarAdmin("terceira@nextlar.app", "admin");
     void segundaConta;
     // chefe agora é o único super_admin ativo: ninguém o rebaixa.
     const rebaixandoUltimo = await app.inject({
@@ -277,8 +277,8 @@ describe("Nexlar Admin: fundação", () => {
   });
 
   it("rotação do refresh funciona e reuso derruba a família de sessões", async () => {
-    await criarAdmin("chefe@nexlar.app", "super_admin");
-    const login = await loginAdmin("chefe@nexlar.app");
+    await criarAdmin("chefe@nextlar.app", "super_admin");
+    const login = await loginAdmin("chefe@nextlar.app");
     const cookie1 = adminCookieDe(login);
 
     const primeira = await app.inject({
@@ -314,8 +314,8 @@ describe("Nexlar Admin: fundação", () => {
   });
 
   it("logout revoga a sessão no servidor, não só no navegador", async () => {
-    await criarAdmin("chefe@nexlar.app", "super_admin");
-    const login = await loginAdmin("chefe@nexlar.app");
+    await criarAdmin("chefe@nextlar.app", "super_admin");
+    const login = await loginAdmin("chefe@nextlar.app");
     const cookie = adminCookieDe(login);
 
     const logout = await app.inject({

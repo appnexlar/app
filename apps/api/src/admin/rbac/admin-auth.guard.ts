@@ -22,7 +22,7 @@ interface AdminAccessPayload {
 }
 
 /**
- * Autenticação do Nexlar Admin. Não é o JwtAuthGuard com outro nome, e a
+ * Autenticação do Nextlar Admin. Não é o JwtAuthGuard com outro nome, e a
  * diferença é o ponto: segredo próprio (JWT_ADMIN_SECRET) e claim de tipo
  * própria, então um token de corretor não passa aqui nem por bug, e um token
  * administrativo não passa no guard do corretor (docs/10, R1).

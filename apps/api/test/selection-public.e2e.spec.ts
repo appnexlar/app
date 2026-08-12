@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import type { PublicSelectionItemDetailResponse, PublicSelectionPageResponse, SelectionView } from "@nexlar/shared";
-import { createTestApp, registerBroker, requestAs, resetDatabase, type TestBroker } from "./e2e-utils";
+import { createTestApp, registerBroker, requestAs, resetDatabase } from "./e2e-utils";
 import { PrismaService } from "../src/prisma/prisma.service";
 import { RateLimitStore } from "../src/common/rate-limit/rate-limit.store";
 

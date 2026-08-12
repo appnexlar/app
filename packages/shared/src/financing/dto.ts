@@ -6,7 +6,7 @@ import { PARTICIPANT_RELATIONS } from "../clients/dto";
  * Coleta de dados para simulação de financiamento (docs/09).
  *
  * A solicitação é do corretor; as respostas são do cliente, por link seguro.
- * A Nexlar organiza e valida completude. Quem analisa crédito é o banco:
+ * A Nextlar organiza e valida completude. Quem analisa crédito é o banco:
  * nada aqui aprova, reprova, consulta score ou promete financiamento.
  *
  * As respostas vivem num payload Json por seção (padrão property.details):

@@ -55,7 +55,7 @@ type Phase = "escolher" | "organizar";
  * escolher os imóveis (pesquisa com as preferências da lead já aplicadas) e
  * organizar o envio (ordem, destaques, observações, mensagem e prazo).
  *
- * A Nexlar recomenda pela compatibilidade explicada; quem decide o que entra
+ * A Nextlar recomenda pela compatibilidade explicada; quem decide o que entra
  * é sempre o corretor. Rascunho salva a cada gesto: fechar a tela não perde.
  */
 export function SelectionBuilderPage() {

@@ -26,7 +26,7 @@ export function InitialDiagnosis({
   const [hasProperties, setHasProperties] = useState<boolean | undefined>();
 
   return (
-    <Modal open={open} onClose={onSkip} title="Vamos personalizar sua Nexlar">
+    <Modal open={open} onClose={onSkip} title="Vamos personalizar sua Nextlar">
       <p className="text-body-sm text-text-muted">
         Três perguntas rápidas para as sugestões nascerem do seu jeito de
         trabalhar. Pode pular qualquer uma.

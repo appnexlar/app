@@ -1,10 +1,10 @@
 # 06: Arquitetura técnica do produto
 
-Este documento define a arquitetura do Nexlar como produto comercial: o que roda no front, o que roda no back, como o banco é organizado e como tudo é publicado e operado. Ele substitui a abordagem simplificada descrita originalmente em `docs/01` (front falando direto com Supabase). A partir daqui, a arquitetura oficial é a deste documento.
+Este documento define a arquitetura do Nextlar como produto comercial: o que roda no front, o que roda no back, como o banco é organizado e como tudo é publicado e operado. Ele substitui a abordagem simplificada descrita originalmente em `docs/01` (front falando direto com Supabase). A partir daqui, a arquitetura oficial é a deste documento.
 
 ## 6.1 Por que mudou
 
-A primeira versão da spec propunha o front conversando direto com o Supabase, sem servidor próprio. Isso é ótimo pra validar rápido, mas o Nexlar vai ser vendido como produto. Produto vendido precisa de coisas que a abordagem sem backend dificulta: regras de negócio centralizadas (e não espalhadas no cliente), controle fino de acesso e auditoria, cobrança e planos no futuro, integrações (WhatsApp, bancos, parceiros) e liberdade pra trocar qualquer fornecedor sem reescrever o app. Com backend próprio, o front vira um consumidor de API e toda a inteligência fica num lugar só, versionada e testável.
+A primeira versão da spec propunha o front conversando direto com o Supabase, sem servidor próprio. Isso é ótimo pra validar rápido, mas o Nextlar vai ser vendido como produto. Produto vendido precisa de coisas que a abordagem sem backend dificulta: regras de negócio centralizadas (e não espalhadas no cliente), controle fino de acesso e auditoria, cobrança e planos no futuro, integrações (WhatsApp, bancos, parceiros) e liberdade pra trocar qualquer fornecedor sem reescrever o app. Com backend próprio, o front vira um consumidor de API e toda a inteligência fica num lugar só, versionada e testável.
 
 ## 6.2 Decisão resumida
 

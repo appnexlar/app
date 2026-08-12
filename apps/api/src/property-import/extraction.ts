@@ -7,7 +7,6 @@ import {
   parseAreaBR,
   parseCount,
   parseMoneyBR,
-  setNumber,
   snippet,
   type CanonicalExtraction,
   type Extracted,

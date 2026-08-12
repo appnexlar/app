@@ -36,7 +36,7 @@ export function PublicPropertyPage() {
 
   return (
     <div className="min-h-dvh bg-bg pb-28 font-sans text-text sm:pb-12">
-      {/* Barra de volta: o corretor é o contexto, não a Nexlar. */}
+      {/* Barra de volta: o corretor é o contexto, não a Nextlar. */}
       <header className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4 sm:px-8">
         <Link
           to={`/corretor/${slug}`}

@@ -27,7 +27,7 @@ export const PUBLIC_PAGE_STATUSES = [
 export type PublicPageStatus = (typeof PUBLIC_PAGE_STATUSES)[number];
 
 // ---------------------------------------------------------------------------
-// Slug — o endereço público nexlar.app/corretor/{slug}
+// Slug: o endereço público nextlar.app/corretor/{slug}
 // ---------------------------------------------------------------------------
 
 export const SLUG_MIN = 3;
@@ -36,7 +36,7 @@ export const SLUG_MAX = 40;
 /**
  * Palavras que nunca podem virar slug. Como o endereço vive sob o prefixo
  * /corretor/, o risco de colidir com rota do app é pequeno; a lista protege
- * contra slugs que enganam ("admin", "suporte") ou que a Nexlar pode querer
+ * contra slugs que enganam ("admin", "suporte") ou que a Nextlar pode querer
  * usar um dia. Minúsculas, já normalizadas.
  */
 export const RESERVED_SLUGS: readonly string[] = [
@@ -104,7 +104,7 @@ export const slugSchema = z
     /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
     "Use só letras minúsculas, números e hífens, sem hífen nas pontas.",
   )
-  .refine((s) => !isReservedSlug(s), "Este endereço é reservado pela Nexlar.");
+  .refine((s) => !isReservedSlug(s), "Este endereço é reservado pela Nextlar.");
 
 /** Resposta da checagem de disponibilidade, sempre decidida pelo backend. */
 export interface SlugAvailability {

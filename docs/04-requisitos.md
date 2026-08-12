@@ -140,12 +140,12 @@ Tarefa é um `agenda_event` de `type = tarefa` (ver 2.5). Toda a agenda vive em 
 | AGENDA-03 | Criar tarefa e compromisso pelo seletor "O que criar?" | Tarefa (título, data, dia inteiro/horário, lead, tipo, lembrete) e compromisso (título, início e fim, local) |
 | AGENDA-04 | Conflito de horário na criação/reagendamento | Avisa os eventos ocupados e permite confirmar mesmo assim (`force`) |
 | AGENDA-05 | Ações do evento | Tarefa: concluir, editar, reagendar, abrir lead, excluir. Compromisso: editar, duplicar, excluir. Excluir sempre com confirmação |
-| AGENDA-06 | Filtros e limpar | Tipo, origem (Nexlar/Google), situação, só atrasadas, mostrar concluídas |
+| AGENDA-06 | Filtros e limpar | Tipo, origem (Nextlar/Google), situação, só atrasadas, mostrar concluídas |
 | AGENDA-07 | Tarefa de dia inteiro só fica atrasada após o dia virar | Tarefa "de hoje" sem horário não conta como atrasada |
 | AGENDA-08 | Quatro estados + estado vazio orientado | Carregando, vazio (com ações), erro e sucesso; conflito tratado |
 | AGENDA-09 | Datas em UTC no banco, exibidas no fuso do corretor | Sem assumir fuso único |
 
-Fora desta fase (próximas fatias): visita e bloqueio pela tela, drag-and-drop; integração individual com Google Calendar (OAuth no back, tokens criptografados, push Nexlar→Google, free/busy, sync_status); horários de atendimento para o agendamento público futuro.
+Fora desta fase (próximas fatias): visita e bloqueio pela tela, drag-and-drop; integração individual com Google Calendar (OAuth no back, tokens criptografados, push Nextlar→Google, free/busy, sync_status); horários de atendimento para o agendamento público futuro.
 
 ## 4.4 Documentos (DOC)
 

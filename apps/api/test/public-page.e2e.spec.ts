@@ -496,7 +496,7 @@ describe("Página Pública — fundação (modelo, estados, slug, requisitos)", 
       contentType: "image/png",
     },
   ) {
-    const boundary = "----NexlarAvatar123";
+    const boundary = "----NextlarAvatar123";
     const corpo = Buffer.concat([
       Buffer.from(
         `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${arquivo.filename}"\r\n` +

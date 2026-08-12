@@ -68,7 +68,8 @@ describe("Seleção personalizada: jornada integrada", () => {
         details: { bedrooms: 2 },
       },
     });
-    const foraDoPerfil = await prisma.property.create({
+    // Existe só para a pesquisa ter o que descartar: não bate com o perfil.
+    await prisma.property.create({
       data: {
         brokerId: ana.brokerId,
         title: "Sala comercial Centro",

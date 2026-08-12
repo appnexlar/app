@@ -36,7 +36,7 @@ export class ResendEmailService extends EmailService {
   constructor(private readonly config: ConfigService) {
     super();
     this.apiKey = this.config.getOrThrow<string>("RESEND_API_KEY");
-    this.from = this.config.get<string>("EMAIL_FROM", "Nexlar <onboarding@resend.dev>");
+    this.from = this.config.get<string>("EMAIL_FROM", "Nextlar <onboarding@resend.dev>");
   }
 
   async sendEmailVerification({ to, fullName, verifyUrl }: EmailVerificationEmail): Promise<void> {

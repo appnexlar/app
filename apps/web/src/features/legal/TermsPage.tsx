@@ -5,13 +5,13 @@ export function TermsPage() {
   return (
     <LegalLayout title="Termos de Uso" updatedAt="rascunho">
       <p>
-        Estes Termos regem o uso do Nexlar, sistema de gestão para corretores de
+        Estes Termos regem o uso do Nextlar, sistema de gestão para corretores de
         imóveis. Ao criar uma conta, você concorda com as condições abaixo.
       </p>
 
       <LegalSection title="1. A conta e o cadastro">
         <p>
-          Para usar o Nexlar você cria uma conta com dados verdadeiros e mantém
+          Para usar o Nextlar você cria uma conta com dados verdadeiros e mantém
           suas credenciais em sigilo. Criar a conta não significa que seu
           registro profissional (CRECI) está validado: a validação é uma etapa
           separada, feita após conferência.

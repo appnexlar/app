@@ -29,9 +29,9 @@ export const CODIGO_CONTA_SUSPENSA = "conta_suspensa";
 
 /** Mensagens fixas, para o front reconhecer o caso sem depender de texto solto. */
 export const EMAIL_NAO_CONFIRMADO =
-  "Confirme seu e-mail para usar o Nexlar. Reenviamos o link se precisar.";
+  "Confirme seu e-mail para usar o Nextlar. Reenviamos o link se precisar.";
 export const CONTA_SUSPENSA_GUARD =
-  "Esta conta está suspensa. Fale com o suporte do Nexlar para reativar.";
+  "Esta conta está suspensa. Fale com o suporte do Nextlar para reativar.";
 
 /**
  * Guard global de autenticação. Verifica o access token JWT em toda rota,

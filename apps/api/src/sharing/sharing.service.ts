@@ -1,6 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { resolve } from "node:path";
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type {
   CreateShareDto,

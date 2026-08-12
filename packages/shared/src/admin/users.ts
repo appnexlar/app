@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Gestão de usuários no Nexlar Admin (docs/10, Fase 3).
+ * Gestão de usuários no Nextlar Admin (docs/10, Fase 3).
  *
  * Estes DTOs carregam dados DO CORRETOR e da conta dele, nunca das leads e
  * dos clientes que ele atende: o Admin acompanha contas, não carteiras. O

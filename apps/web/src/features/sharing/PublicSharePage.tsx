@@ -209,7 +209,7 @@ export function PublicSharePage() {
           )}
         </section>
 
-        <p className="mt-6 text-center text-xs text-black/35">Imóvel compartilhado via Nexlar</p>
+        <p className="mt-6 text-center text-xs text-black/35">Imóvel compartilhado via Nextlar</p>
       </article>
     </Shell>
   );
@@ -245,7 +245,7 @@ function SeloVerificado() {
   return (
     <span
       className="inline-flex items-center gap-1 rounded-full bg-[#e8f5ec] px-2 py-0.5 text-xs font-bold text-[#1c7c3f]"
-      title="CRECI conferido pela equipe do Nexlar"
+      title="CRECI conferido pela equipe do Nextlar"
     >
       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path

@@ -11,7 +11,6 @@ import type { Broker } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { TERMS_VERSION } from "@nexlar/shared";
 import type {
-  AuthResponse,
   BrokerProfile,
   ForgotPasswordDto,
   GooglePendingSignup,
@@ -424,7 +423,7 @@ export const RENOVACAO_EM_CURSO = "Renovação em andamento. Tente novamente.";
 
 /** Mensagem única de conta fechada, usada no login e na renovação. */
 export const CONTA_SUSPENSA =
-  "Esta conta está suspensa. Fale com o suporte do Nexlar para reativar.";
+  "Esta conta está suspensa. Fale com o suporte do Nextlar para reativar.";
 
 /**
  * Barra qualquer conta que não esteja ativa. Suspensa, bloqueada e

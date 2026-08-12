@@ -690,7 +690,7 @@ function FiltersModal({
           onValueChange={setSource}
           options={[
             { value: "", label: "Todas" },
-            { value: "nexlar", label: "Nexlar" },
+            { value: "nexlar", label: "Nextlar" },
             { value: "google", label: "Google" },
           ]}
         />
@@ -756,7 +756,7 @@ function GoogleModal({ onClose }: { onClose: () => void }) {
         </p>
         <div className="rounded-xl bg-surface-sunken p-3 text-body-sm text-text-muted">
           A conexão com o Google chega na próxima etapa da agenda. Por enquanto seus eventos vivem
-          no Nexlar.
+          no Nextlar.
         </div>
         <Button type="button" variant="ghost" onClick={onClose}>
           Entendi

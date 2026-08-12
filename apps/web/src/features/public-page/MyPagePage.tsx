@@ -17,6 +17,7 @@ import { AvatarPhoto } from "../../components/ui/AvatarPhoto";
 import { ApiError } from "../../lib/http";
 import { useAuth } from "../auth/AuthContext";
 import { maskPhone } from "../../lib/masks";
+import { enderecoDaVitrine } from "../../lib/site";
 import { ServiceHoursField } from "./ServiceHoursField";
 import { TagListInput } from "./TagListInput";
 import {
@@ -63,7 +64,7 @@ const STATUS_META: Record<
   restrita: {
     label: "Restrita",
     chip: "bg-danger-soft text-danger-fg",
-    explain: "Esta página foi restringida pela Nexlar. Fale com o suporte para entender o motivo.",
+    explain: "Esta página foi restringida pela Nextlar. Fale com o suporte para entender o motivo.",
   },
 };
 
@@ -321,7 +322,7 @@ function StatusCard({
   const { page, requirements } = state;
   const meta = STATUS_META[page.status];
   const [copiado, setCopiado] = useState(false);
-  const url = page.slug ? `nexlar.app/corretor/${page.slug}` : null;
+  const url = page.slug ? enderecoDaVitrine(page.slug) : null;
   const pct = Math.round((requirements.completed / requirements.total) * 100);
 
   const copiar = async () => {
@@ -715,7 +716,7 @@ function AddressSection({
           />
         </div>
         <p className="text-caption text-text-subtle">
-          {canonico ? `Sua página: nexlar.app/corretor/${canonico}` : "Ex.: ana-imoveis"}
+          {canonico ? `Sua página: ${enderecoDaVitrine(canonico)}` : "Ex.: ana-imoveis"}
         </p>
       </div>
       {feedback && (

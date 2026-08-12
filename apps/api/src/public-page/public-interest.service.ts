@@ -93,10 +93,17 @@ export class PublicInterestService {
           textVersion: "1.0",
         },
       });
-    } catch (err: any) {
-      // Lead duplicado: pega o ID existente do erro
-      if (err.status === 409 && err.response?.details?.existingLead?.id) {
-        leadId = err.response.details.existingLead.id;
+    } catch (err) {
+      // Lead duplicado: pega o ID existente do erro. O formato é o do
+      // ConflictException que o serviço de leads levanta, então descrevemos
+      // só o que se lê aqui, em vez de abrir mão da checagem com `any`.
+      const conflito = err as {
+        status?: number;
+        response?: { details?: { existingLead?: { id?: string } } };
+      };
+      const existente = conflito.response?.details?.existingLead?.id;
+      if (conflito.status === 409 && existente) {
+        leadId = existente;
         isNew = false;
       } else {
         throw err;

@@ -112,7 +112,7 @@ export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
 export function pageTitleFor(pathname: string): string {
   const match = NAV_ITEMS.find((i) => pathname.startsWith(i.path));
-  return match?.label ?? "Nexlar";
+  return match?.label ?? "Nextlar";
 }
 
 export interface Crumb {
@@ -142,7 +142,7 @@ const SEM_TELA_PROPRIA = new Set(["selecoes", "financiamento"]);
  */
 export function breadcrumbsFor(pathname: string): Crumb[] {
   const section = NAV_ITEMS.find((i) => pathname.startsWith(i.path));
-  if (!section) return [{ label: "Nexlar" }];
+  if (!section) return [{ label: "Nextlar" }];
 
   const crumbs: Crumb[] = [{ label: section.label, to: section.path }];
   const rest = pathname.slice(section.path.length).split("/").filter(Boolean);

@@ -2,7 +2,7 @@ import { ApiError, type ApiFieldError } from "../../../lib/http";
 import type { AdminAuthResponse } from "@nexlar/shared";
 
 /**
- * Cliente HTTP do Nexlar Admin, separado do cliente do corretor de
+ * Cliente HTTP do Nextlar Admin, separado do cliente do corretor de
  * propósito: token próprio em memória, renovação própria (o cookie do admin
  * mora em /api/admin/auth) e nenhum handler compartilhado. Uma sessão não
  * deve conseguir vazar para dentro da outra nem por engano de import.

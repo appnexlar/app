@@ -77,7 +77,7 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     priority: 80,
     title: "Adicione as preferências de um lead",
     description:
-      "Com região, intenção e faixa de preço, a Nexlar ajuda a encontrar imóveis mais compatíveis.",
+      "Com região, intenção e faixa de preço, a Nextlar ajuda a encontrar imóveis mais compatíveis.",
     actionLabel: "Ver leads",
     actionUrl: "/leads",
     dismissible: true,

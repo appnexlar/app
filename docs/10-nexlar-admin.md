@@ -1,4 +1,4 @@
-# Nexlar Admin: análise técnica (Task 1 da épica)
+# Nextlar Admin: análise técnica (Task 1 da épica)
 
 Data: 10 ago 2026. Nenhuma linha de código foi alterada para esta análise.
 Este documento responde às doze perguntas da Task 1 e propõe a arquitetura
@@ -180,7 +180,7 @@ precisam nascer.
 
 ---
 
-## 5. Arquitetura proposta para o Nexlar Admin
+## 5. Arquitetura proposta para o Nextlar Admin
 
 ### 5.1 Princípio: dois universos, uma API, um deploy
 

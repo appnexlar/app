@@ -348,7 +348,8 @@ export class PublicPageService {
         key: "endereco_publico",
         completed: Boolean(page.slug),
         title: "Endereço da página",
-        description: "Escolha o seu nexlar.app/corretor/…",
+        // Sem o domínio: a tela mostra o endereço real, lido do navegador.
+        description: "Escolha o endereço da sua vitrine, algo como /corretor/ana-imoveis",
         actionUrl: "/minha-pagina",
       },
       {

@@ -19,7 +19,7 @@ import { ApiError } from "../../lib/http";
 import { deleteProperty, importProperty } from "./api";
 
 /**
- * Importação de imóvel por URL: cola o link, a Nexlar lê o anúncio e o
+ * Importação de imóvel por URL: cola o link, a Nextlar lê o anúncio e o
  * rascunho nasce preenchido. A revisão de verdade acontece no wizard (modo
  * edição); esta tela só conta o que foi encontrado e leva até lá.
  *
@@ -88,7 +88,7 @@ export function ImportPropertyPage() {
       ) : (
         <>
           <p className="text-body text-text-muted">
-            Cole o link público de um anúncio. A Nexlar lê a página e monta o rascunho do imóvel
+            Cole o link público de um anúncio. A Nextlar lê a página e monta o rascunho do imóvel
             para você revisar, completar e salvar.
           </p>
 

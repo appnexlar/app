@@ -74,7 +74,7 @@ function layout({ titulo, paragrafos, botao, rodape }: Corpo): string {
           ${aviso}
         </td></tr>
       </table>
-      <p style="margin:20px 0 0;font-family:${FONTE};font-size:12px;color:${TEXTO_SUAVE};">Nexlar, gestão para corretores</p>
+      <p style="margin:20px 0 0;font-family:${FONTE};font-size:12px;color:${TEXTO_SUAVE};">Nextlar, gestão para corretores</p>
     </td></tr>
   </table>
 </body></html>`;
@@ -89,7 +89,7 @@ export interface Mensagem {
 export function passwordResetTemplate(fullName: string, resetUrl: string): Mensagem {
   const primeiroNome = fullName.split(" ")[0];
   return {
-    subject: "Redefinir sua senha do Nexlar",
+    subject: "Redefinir sua senha do Nextlar",
     html: layout({
       titulo: "Redefinir sua senha",
       paragrafos: [
@@ -104,7 +104,7 @@ export function passwordResetTemplate(fullName: string, resetUrl: string): Mensa
     text: [
       `Olá, ${primeiroNome}.`,
       "",
-      "Recebemos um pedido para criar uma nova senha da sua conta do Nexlar.",
+      "Recebemos um pedido para criar uma nova senha da sua conta do Nextlar.",
       "Abra o endereço abaixo para continuar:",
       resetUrl,
       "",
@@ -117,7 +117,7 @@ export function passwordResetTemplate(fullName: string, resetUrl: string): Mensa
 export function emailVerificationTemplate(fullName: string, verifyUrl: string): Mensagem {
   const primeiroNome = fullName.split(" ")[0];
   return {
-    subject: "Confirme seu e-mail para começar no Nexlar",
+    subject: "Confirme seu e-mail para começar no Nextlar",
     html: layout({
       titulo: "Confirme seu e-mail",
       paragrafos: [
@@ -132,7 +132,7 @@ export function emailVerificationTemplate(fullName: string, verifyUrl: string): 
     text: [
       `Olá, ${primeiroNome}.`,
       "",
-      "Falta um passo para sua conta do Nexlar ficar pronta.",
+      "Falta um passo para sua conta do Nextlar ficar pronta.",
       "Abra o endereço abaixo para confirmar seu e-mail:",
       verifyUrl,
       "",
@@ -183,12 +183,12 @@ export function welcomeTemplate(fullName: string, appUrl: string): Mensagem {
   const urlLeads = `${appUrl.replace(/\/$/, "")}/leads`;
   const corpo = [
     "A partir de agora, suas leads deixam de ficar espalhadas entre WhatsApp, Instagram, anotações e a sua memória.",
-    "No Nexlar, você organiza cada oportunidade, acompanha o histórico dos atendimentos e sabe quem precisa de retorno e qual é o próximo passo.",
+    "No Nextlar, você organiza cada oportunidade, acompanha o histórico dos atendimentos e sabe quem precisa de retorno e qual é o próximo passo.",
     "Assim, fica mais fácil manter seus contatos em movimento e não deixar boas oportunidades para trás.",
     "Comece adicionando sua primeira lead.",
   ];
   return {
-    subject: "Sua conta do Nexlar está pronta",
+    subject: "Sua conta do Nextlar está pronta",
     // Saudação sem gênero: "bem-vindo" obrigaria a marcar, e "bem-vindo(a)"
     // resolve por remendo. O caminho no produto é reescrever a frase.
     html: layout({

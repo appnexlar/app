@@ -19,7 +19,7 @@ import { AdminAuthGuard } from "./rbac/admin-auth.guard";
 import { AdminPermissionGuard } from "./rbac/admin-permission.guard";
 
 /**
- * Nexlar Admin (docs/10). Universo separado do corretor: autenticação
+ * Nextlar Admin (docs/10). Universo separado do corretor: autenticação
  * própria, sessão própria, RBAC próprio e trilha de auditoria própria.
  * Nada aqui importa serviço de domínio do corretor; o LoginAttemptService
  * entra porque é infraestrutura genérica de contagem, não regra de negócio.
