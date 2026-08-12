@@ -13,7 +13,15 @@ module.exports = {
   ],
   rules: {
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
+      },
+    ],
+    "no-irregular-whitespace": ["error", { skipTemplates: true }],
   },
   ignorePatterns: ["dist", "node_modules", "*.config.ts", "*.config.js"],
 };

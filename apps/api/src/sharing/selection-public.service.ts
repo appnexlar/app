@@ -3,7 +3,6 @@ import type { Readable } from "node:stream";
 import { extname } from "node:path";
 import type {
   PublicBookVisitDto,
-  PublicSelectionBroker,
   PublicSelectionInfoDto,
   PublicSelectionItemCard,
   PublicSelectionItemDetailResponse,

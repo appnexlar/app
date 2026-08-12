@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import type {
   AdminAuditActorOption,
-  AdminAuditEntry,
   AdminAuditPage,
   AdminAuditQuery,
 } from "@nexlar/shared";
