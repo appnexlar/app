@@ -475,3 +475,40 @@ a prova permanece.
 **A trilha aparece duas vezes**: inteira em `/admin/auditoria`, e recortada por
 conta dentro da ficha do corretor, atrás da mesma permissão. Quem não pode ler
 a trilha inteira também não lê o pedaço dela.
+
+## 12. Falha de e-mail vira alerta
+
+Motivada por um incidente real de 12 ago 2026: o domínio saiu da verificação no
+Resend e a API passou a ter todo envio recusado. O sistema seguiu respondendo
+"pronto, enviamos" para quem pedia recuperação de senha, e o defeito só foi
+descoberto porque alguém testou por acaso. Sem isso, ficaria dias assim.
+
+**A falha passou a ter registro, não só log.** `email_delivery_failure` guarda
+o tipo do e-mail, o motivo devolvido pelo provedor e o destinatário
+**mascarado**, no mesmo formato do log. Guardar o endereço inteiro criaria um
+depósito novo de dado pessoal para responder a uma pergunta que ninguém faz: o
+que se precisa saber aqui é que falhou, o que falhou e por quê.
+
+**Gravar não pode derrubar nada.** Se o banco também estiver fora, o envio já
+falhou e insistir no registro trocaria um problema por outro pior. O `catch`
+em volta da gravação é deliberado.
+
+**O alerta é a única exceção à regra "todo alerta leva a uma tela".** Não
+existe tela nossa que conserte e-mail: a ação é investigar o provedor, fora do
+sistema. Ele entra assim mesmo porque é a diferença entre descobrir o defeito
+hoje ou pela reclamação de um corretor daqui a uma semana, e o `detalhe` que
+vem junto (o motivo da falha mais recente, cru) costuma dizer sozinho o que
+fazer: "domain is not verified" é uma coisa, "timeout" é outra bem diferente.
+Como não leva a lugar nenhum, o cartão não é um link: cartão clicável que não
+leva a nada é pior do que cartão que nunca prometeu levar.
+
+**A janela é de 24 horas e não segue o período da tela.** Falha de e-mail é
+incidente, não indicador: uma de três meses atrás não pede ação nenhuma hoje.
+
+**O que ainda não fazemos**, e é consciente: não há nova tentativa de envio.
+Se o provedor ficar instável por dois minutos, aquele e-mail se perde. Vale
+resolver quando houver corretores de verdade em volume; hoje o alerta cobre o
+que importa, que é a equipe saber. Também não distinguimos na tela do corretor
+"falhou" de "não existe conta com esse e-mail", e isso é de propósito: o envio
+só é tentado quando a conta existe, então uma mensagem diferente para a falha
+revelaria quem tem cadastro.

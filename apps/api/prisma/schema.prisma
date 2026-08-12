@@ -1798,3 +1798,30 @@ model AdminAuditLog {
   @@index([createdAt(sort: Desc)])
   @@map("admin_audit_log")
 }
+
+/// Envio de e-mail que o provedor recusou ou que nem chegou a sair.
+///
+/// Existe porque falha de e-mail é silenciosa por natureza: o sistema
+/// responde 204 do mesmo jeito (senão a resposta viraria um jeito de
+/// descobrir quem tem cadastro) e a pessoa fica esperando um link que nunca
+/// chega. Antes disto o defeito só aparecia no log, e o log ninguém lê.
+///
+/// O destinatário é gravado MASCARADO, no mesmo formato do log. O que se
+/// precisa saber aqui é que falhou, o que falhou e por quê. Guardar o
+/// endereço inteiro criaria um depósito novo de dado pessoal para responder
+/// a uma pergunta que ninguém faz.
+model EmailDeliveryFailure {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// Qual e-mail seria enviado: confirmacao, recuperacao_senha, boas_vindas,
+  /// codigo_financiamento.
+  kind      String
+  /// Destinatário mascarado, ex.: "ra****@gmail.com".
+  recipient String
+  /// O que o provedor respondeu, cortado. É este texto que diz à equipe se o
+  /// caso é domínio fora do ar, chave inválida ou instabilidade passageira.
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt(sort: Desc)])
+  @@map("email_delivery_failure")
+}

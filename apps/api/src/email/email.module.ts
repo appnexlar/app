@@ -1,5 +1,6 @@
 import { Global, Logger, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "../prisma/prisma.service";
 import { ConsoleEmailService, EmailService } from "./email.service";
 import { ResendEmailService } from "./resend-email.service";
 
@@ -14,8 +15,8 @@ import { ResendEmailService } from "./resend-email.service";
   providers: [
     {
       provide: EmailService,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService): EmailService => {
+      inject: [ConfigService, PrismaService],
+      useFactory: (config: ConfigService, prisma: PrismaService): EmailService => {
         const logger = new Logger("EmailService");
         const temChave = Boolean(config.get<string>("RESEND_API_KEY"));
 
@@ -29,7 +30,7 @@ import { ResendEmailService } from "./resend-email.service";
           return new ConsoleEmailService();
         }
 
-        return new ResendEmailService(config);
+        return new ResendEmailService(config, prisma);
       },
     },
   ],

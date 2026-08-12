@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, MailWarning, ShieldAlert } from "lucide-react";
+import { CheckCircle2, MailWarning, MailX, ShieldAlert } from "lucide-react";
 import type {
   AdminAlert,
   AdminDashboardPeriod,
@@ -32,8 +32,9 @@ const ALERTAS: Record<
     tom: "danger" | "warning";
     titulo: (n: number) => string;
     descricao: string;
-    acao: string;
-    para: string;
+    /** Sem destino: o alerta informa, mas quem resolve age fora do sistema. */
+    acao?: string;
+    para?: string;
   }
 > = {
   contas_suspensas: {
@@ -51,6 +52,15 @@ const ALERTAS: Record<
     descricao: "Cadastraram há mais de três dias e ainda não entraram.",
     acao: "Ver quem não confirmou",
     para: "/admin/usuarios?status=pendente_verificacao",
+  },
+  emails_falhando: {
+    icone: MailX,
+    // Vermelho, e não amarelo: é defeito acontecendo agora, não fila para
+    // organizar. Quem pediu recuperação de senha está sem conseguir entrar.
+    tom: "danger",
+    titulo: (n) =>
+      `${n} ${n === 1 ? "e-mail não saiu" : "e-mails não saíram"} nas últimas 24 horas`,
+    descricao: "Quem pediu não recebeu nada, e a tela não avisou que falhou.",
   },
 };
 
@@ -136,7 +146,8 @@ export function AdminDashboardPage() {
                       aria-hidden
                     />
                     <p className="text-body-sm text-text-muted">
-                      Nada pendente. Nenhuma conta suspensa nem parada na confirmação.
+                      Nada pendente. Nenhuma conta suspensa ou parada na confirmação, e os
+                      e-mails estão saindo.
                     </p>
                   </div>
                 ) : (
@@ -269,20 +280,44 @@ function CartaoDeAlerta({ alerta }: { alerta: AdminAlert }) {
   const fundo = config.tom === "danger" ? "var(--danger-soft)" : "var(--warning-soft)";
   const frente = config.tom === "danger" ? "var(--danger-fg)" : "var(--warning-fg)";
 
-  return (
-    <Link
-      to={config.para}
-      className="flex items-start gap-3 rounded-xl border p-4 transition-shadow hover:shadow-sm"
-      style={{ backgroundColor: fundo, borderColor: fundo }}
-    >
+  const conteudo = (
+    <>
       <Icone size={20} className="mt-0.5 shrink-0" style={{ color: frente }} aria-hidden />
       <div className="min-w-0">
         <p className="font-semibold text-text">{config.titulo(alerta.count)}</p>
         <p className="mt-0.5 text-caption text-text-muted">{config.descricao}</p>
-        <p className="mt-2 text-caption font-semibold" style={{ color: frente }}>
-          {config.acao} →
-        </p>
+        {/* O motivo cru do provedor. Feio de propósito: é para ser lido e
+            pesquisado, não decorado. Poupa uma ida ao log do servidor. */}
+        {alerta.detalhe && (
+          <p className="mt-2 break-words font-mono text-caption text-text-subtle">
+            {alerta.detalhe}
+          </p>
+        )}
+        {config.acao && (
+          <p className="mt-2 text-caption font-semibold" style={{ color: frente }}>
+            {config.acao} →
+          </p>
+        )}
       </div>
+    </>
+  );
+
+  const classes = "flex items-start gap-3 rounded-xl border p-4";
+  const cor = { backgroundColor: fundo, borderColor: fundo };
+
+  // Alerta sem destino não vira link: um cartão clicável que não leva a lugar
+  // nenhum é pior do que um cartão que nunca prometeu levar.
+  if (!config.para) {
+    return (
+      <div className={classes} style={cor}>
+        {conteudo}
+      </div>
+    );
+  }
+
+  return (
+    <Link to={config.para} className={`${classes} transition-shadow hover:shadow-sm`} style={cor}>
+      {conteudo}
     </Link>
   );
 }
