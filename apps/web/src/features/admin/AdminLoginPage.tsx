@@ -69,7 +69,7 @@ export function AdminLoginPage() {
       <div className="w-full max-w-sm rounded-2xl bg-surface p-8 shadow-lg">
         <header className="mb-6">
           <span className="text-[22px] font-bold tracking-tight text-[var(--brand-navy-900)]">
-            nex<span className="text-accent">lar</span>
+            ne<span className="text-accent">x</span>tlar
           </span>
           <h1 className="mt-4 text-h2 text-text">Administração da plataforma</h1>
           <p className="mt-2 text-body text-text-muted">Acesso restrito à equipe Nextlar.</p>

@@ -130,7 +130,7 @@ function Indisponivel({ slug }: { slug: string }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-bg px-6 text-center font-sans">
       <span className="text-h3 font-extrabold tracking-tight text-text-muted">
-        nex<span className="text-accent">lar</span>
+        ne<span className="text-accent">x</span>tlar
       </span>
       <h1 className="mt-6 text-h1 text-text">Este imóvel não está mais disponível</h1>
       <p className="mt-2 max-w-sm text-body text-text-muted">

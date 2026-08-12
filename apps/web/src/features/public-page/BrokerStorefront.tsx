@@ -272,7 +272,7 @@ export function BrokerStorefront({
           <p className="mt-1.5">
             Criada com{" "}
             <span className="font-extrabold tracking-tight text-text">
-              nex<span className="text-accent">lar</span>
+              ne<span className="text-accent">x</span>tlar
             </span>
           </p>
         </footer>
