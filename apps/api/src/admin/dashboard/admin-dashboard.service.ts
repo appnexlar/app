@@ -5,7 +5,7 @@ import type {
   AdminDashboardQuery,
   AdminDashboardSummary,
 } from "@nexlar/shared";
-import { DIAS_PARA_VERIFICACAO_PARADA } from "@nexlar/shared";
+import { DIAS_PARA_VERIFICACAO_PARADA, HORAS_DE_FALHA_DE_EMAIL } from "@nexlar/shared";
 import { PrismaService } from "../../prisma/prisma.service";
 import type { AuthenticatedAdmin } from "../rbac/current-admin.decorator";
 
@@ -50,6 +50,9 @@ export class AdminDashboardService {
     const limiteVerificacao = new Date(
       janela.fim.getTime() - DIAS_PARA_VERIFICACAO_PARADA * 86_400_000,
     );
+    // Falha de e-mail não segue o período escolhido na tela: é incidente, não
+    // indicador. Uma falha de três meses atrás não pede ação nenhuma hoje.
+    const limiteFalhaEmail = new Date(janela.fim.getTime() - HORAS_DE_FALHA_DE_EMAIL * 3_600_000);
 
     // Consultas curtas e independentes, todas de uma vez: somadas custam
     // menos que uma agregação única, e o painel abre em uma ida ao banco.
@@ -71,6 +74,8 @@ export class AdminDashboardService {
       selecoes,
       visitas,
       verificacaoParada,
+      falhasDeEmail,
+      ultimaFalhaDeEmail,
       recentes,
     ] = await Promise.all([
       this.prisma.broker.count(),
@@ -98,6 +103,12 @@ export class AdminDashboardService {
           createdAt: { lt: limiteVerificacao },
         },
       }),
+      this.prisma.emailDeliveryFailure.count({ where: { createdAt: { gte: limiteFalhaEmail } } }),
+      this.prisma.emailDeliveryFailure.findFirst({
+        where: { createdAt: { gte: limiteFalhaEmail } },
+        orderBy: { createdAt: "desc" },
+        select: { reason: true },
+      }),
       this.prisma.broker.findMany({
         orderBy: { createdAt: "desc" },
         take: RECENTES,
@@ -120,6 +131,14 @@ export class AdminDashboardService {
     const alertas: AdminAlert[] = [
       { kind: "contas_suspensas" as const, count: suspensas },
       { kind: "verificacao_parada" as const, count: verificacaoParada },
+      {
+        kind: "emails_falhando" as const,
+        count: falhasDeEmail,
+        // O motivo da última falha poupa uma ida ao log e costuma dizer
+        // sozinho o que fazer: "domain is not verified" é uma coisa,
+        // "timeout" é outra bem diferente.
+        detalhe: ultimaFalhaDeEmail?.reason,
+      },
     ].filter((a) => a.count > 0);
 
     return {

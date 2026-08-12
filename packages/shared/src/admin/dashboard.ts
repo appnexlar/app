@@ -66,20 +66,34 @@ export interface AdminPlatformUsage {
 }
 
 /**
- * Alertas: só entra aqui o que tem ação possível HOJE, com tela para resolver.
- * Indicador sem destino é ruído, e ruído no topo do painel treina a pessoa a
- * ignorar o topo do painel.
+ * Alertas: só entra aqui o que tem ação possível HOJE. Indicador sem ação é
+ * ruído, e ruído no topo do painel treina a pessoa a ignorar o topo do painel.
  *
- * O servidor manda o tipo e a contagem; rótulo e destino são decisão de
- * apresentação e ficam no front.
+ * Os dois primeiros levam a uma tela que resolve. "emails_falhando" não leva:
+ * a ação dele é investigar o provedor, fora do sistema. Entra assim mesmo
+ * porque é a diferença entre descobrir o defeito hoje ou pela reclamação de um
+ * corretor daqui a uma semana, e o `detalhe` já entrega o caminho da
+ * investigação (domínio fora do ar, chave inválida, instabilidade).
+ *
+ * O servidor manda o tipo, a contagem e, quando ajuda, um detalhe curto;
+ * rótulo e destino são decisão de apresentação e ficam no front.
  */
-export const ADMIN_ALERT_KINDS = ["contas_suspensas", "verificacao_parada"] as const;
+export const ADMIN_ALERT_KINDS = [
+  "contas_suspensas",
+  "verificacao_parada",
+  "emails_falhando",
+] as const;
 export type AdminAlertKind = (typeof ADMIN_ALERT_KINDS)[number];
 
 export interface AdminAlert {
   kind: AdminAlertKind;
   count: number;
+  /** Contexto que dispensa ir ao log, ex.: o motivo da falha mais recente. */
+  detalhe?: string;
 }
+
+/** Janela do alerta de e-mail: falha de ontem já não é incidente de agora. */
+export const HORAS_DE_FALHA_DE_EMAIL = 24;
 
 /** Dias que uma conta pode ficar sem confirmar o e-mail antes de virar alerta. */
 export const DIAS_PARA_VERIFICACAO_PARADA = 3;

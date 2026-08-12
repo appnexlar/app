@@ -126,6 +126,47 @@ describe("Nextlar Admin: dashboard", () => {
     expect(alertas.find((a) => a.kind === "verificacao_parada")?.count).toBe(1);
   });
 
+  it("e-mail que não saiu vira alerta, com o motivo à mão e sem o endereço de ninguém", async () => {
+    const token = await adminToken("admin");
+    await registerBroker(app, "Ana Corretora", "ana@example.com");
+
+    // Duas falhas recentes e uma velha: o alerta é sobre agora, então a de
+    // dois dias atrás não pode entrar na conta.
+    await prisma.emailDeliveryFailure.createMany({
+      data: [
+        {
+          kind: "recuperacao_senha",
+          recipient: "an*@example.com",
+          reason: "403 The nexlar.app domain is not verified",
+          createdAt: new Date(Date.now() - 3_600_000),
+        },
+        { kind: "confirmacao", recipient: "ca***@example.com", reason: "timeout" },
+        {
+          kind: "boas_vindas",
+          recipient: "jo**@example.com",
+          reason: "500 antigo",
+          createdAt: new Date(Date.now() - 2 * 86_400_000),
+        },
+      ],
+    });
+
+    const body = (await resumo(token)).json();
+    const alerta = (body.alertas as { kind: string; count: number; detalhe?: string }[]).find(
+      (a) => a.kind === "emails_falhando",
+    );
+
+    expect(alerta?.count).toBe(2);
+    // O motivo da falha mais recente vem junto: é o que diz à equipe se o caso
+    // é domínio fora do ar ou instabilidade passageira.
+    expect(alerta?.detalhe).toContain("timeout");
+
+    // O destinatário não sai da tabela de falhas: o alerta responde "quantos"
+    // e "por quê", nunca "para quem". Nem o mascarado precisa trafegar.
+    const json = JSON.stringify(body);
+    expect(json).not.toContain("an*@");
+    expect(json).not.toContain("ca***@");
+  });
+
   it("o período recorta o movimento e compara com a janela anterior", async () => {
     const antiga = await registerBroker(app, "Ana Antiga", "ana@example.com");
     await registerBroker(app, "Bruna Nova", "bruna@example.com");
