@@ -13,8 +13,8 @@ export interface FetchedPage {
 const MAX_BYTES = 3 * 1024 * 1024;
 const MAX_REDIRECTS = 3;
 const HOP_TIMEOUT_MS = 10_000;
-/** Identificado de propósito: quem quiser bloquear a Nexlar consegue. */
-const USER_AGENT = "NexlarImport/1.0 (+https://nexlar.app)";
+/** Identificado de propósito: quem quiser bloquear a Nextlar consegue. */
+const USER_AGENT = "NextlarImport/1.0 (+https://nextlar.app)";
 
 const INACESSIVEL =
   "Não conseguimos acessar este anúncio. Ele pode ter saído do ar ou o site pode estar bloqueando a leitura. Você pode tentar de novo ou cadastrar manualmente.";

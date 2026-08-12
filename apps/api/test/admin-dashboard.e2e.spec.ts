@@ -6,20 +6,20 @@ import { RateLimitStore } from "../src/common/rate-limit/rate-limit.store";
 import { createTestApp, registerBroker, resetDatabase } from "./e2e-utils";
 
 /**
- * Dashboard do Nexlar Admin (docs/10, Fase 2): agregados corretos, recorte
+ * Dashboard do Nextlar Admin (docs/10, Fase 2): agregados corretos, recorte
  * por permissão feito no SERVIDOR e nenhum dado pessoal de lead no caminho.
  */
 
 const SENHA = "senha-forte-de-teste-123";
 
-describe("Nexlar Admin: dashboard", () => {
+describe("Nextlar Admin: dashboard", () => {
   let app: NestFastifyApplication;
   let prisma: PrismaService;
 
   async function adminToken(
     role: "super_admin" | "admin" | "suporte" | "financeiro" = "admin",
   ): Promise<string> {
-    const email = `${role}@nexlar.app`;
+    const email = `${role}@nextlar.app`;
     await prisma.adminUser.create({
       data: {
         email,

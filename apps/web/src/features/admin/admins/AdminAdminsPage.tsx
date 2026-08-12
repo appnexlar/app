@@ -45,7 +45,7 @@ export function AdminAdminsPage() {
         <div>
           <h1 className="text-h1 text-text">Administradores</h1>
           <p className="mt-2 text-body text-text-muted">
-            Quem opera o Nexlar Admin e com qual papel.
+            Quem opera o Nextlar Admin e com qual papel.
           </p>
         </div>
         {podeGerenciar && (
@@ -282,7 +282,7 @@ function SuspenderModal({
       <ConfirmDialog
         open={confirmando}
         title="Suspender este acesso?"
-        description={`${linha.fullName} (${linha.email}) não conseguirá mais entrar no Nexlar Admin até ser reativado.`}
+        description={`${linha.fullName} (${linha.email}) não conseguirá mais entrar no Nextlar Admin até ser reativado.`}
         confirmLabel="Suspender"
         danger
         loading={mutation.isPending}
@@ -321,7 +321,7 @@ function ReativarBotao({
       <ConfirmDialog
         open={aberto}
         title="Reativar este acesso?"
-        description={`${linha.fullName} volta a entrar no Nexlar Admin com o mesmo papel de antes.`}
+        description={`${linha.fullName} volta a entrar no Nextlar Admin com o mesmo papel de antes.`}
         confirmLabel="Reativar"
         loading={mutation.isPending}
         onConfirm={() => mutation.mutate()}

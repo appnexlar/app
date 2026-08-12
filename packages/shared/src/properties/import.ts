@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { DuplicateCandidate } from "./dto";
 
 /**
- * Importação de imóvel por URL (docs/10). Princípio: cole o link, a Nexlar
+ * Importação de imóvel por URL (docs/10). Princípio: cole o link, a Nextlar
  * lê o anúncio e o imóvel nasce como RASCUNHO pré-preenchido; quem confirma,
  * corrige e publica é sempre o corretor, no wizard. Nada fica disponível sem
  * revisão humana.

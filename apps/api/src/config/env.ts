@@ -13,7 +13,7 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16, "JWT_REFRESH_SECRET muito curto"),
   JWT_ACCESS_TTL: z.string().default("15m"),
   JWT_REFRESH_TTL: z.string().default("30d"),
-  // Nexlar Admin. Sem o segredo, o módulo administrativo inteiro fica fora
+  // Nextlar Admin. Sem o segredo, o módulo administrativo inteiro fica fora
   // do ar (as rotas /api/admin respondem 404), igual ao Google sem chave.
   // O segredo é OBRIGATORIAMENTE diferente do JWT_ACCESS_SECRET: com o mesmo
   // valor, um token de corretor viraria meio caminho de um token de admin.
@@ -32,7 +32,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().default(""),
   // Remetente. O domínio precisa estar verificado no Resend, senão o e-mail
   // cai no spam ou nem sai.
-  EMAIL_FROM: z.string().default("Nexlar <onboarding@resend.dev>"),
+  EMAIL_FROM: z.string().default("Nextlar <onboarding@resend.dev>"),
   WEB_ORIGIN: z.string().default("http://localhost:5173"),
   WEB_APP_URL: z.string().default("http://localhost:5173"),
   // Entrar com o Google. Sem as duas chaves o recurso fica desligado e as

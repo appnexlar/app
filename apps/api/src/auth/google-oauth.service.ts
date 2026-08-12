@@ -77,7 +77,7 @@ export class GoogleOAuthService {
 
   /**
    * O mesmo endereço-base para outro caminho de retorno. Existe porque o
-   * Nexlar Admin tem o próprio callback: o Google exige que autorização e
+   * Nextlar Admin tem o próprio callback: o Google exige que autorização e
    * troca de código usem o MESMO redirect_uri, então quem começa o fluxo
    * escolhe o caminho e o carrega até o fim.
    */
@@ -99,7 +99,7 @@ export class GoogleOAuthService {
     // Sempre perguntar qual conta usar. Quem tem a conta pessoal e a da
     // imobiliária no mesmo navegador escolheria errado em silêncio.
     url.searchParams.set("prompt", "select_account");
-    // Não pedimos refresh token: a sessão do Nexlar é nossa, e o acesso ao
+    // Não pedimos refresh token: a sessão do Nextlar é nossa, e o acesso ao
     // Google acaba assim que a identidade é confirmada.
     url.searchParams.set("access_type", "online");
     return url.toString();
@@ -173,7 +173,7 @@ export class GoogleOAuthService {
 
     // Sem esta checagem, alguém com um domínio próprio ligado ao Google poderia
     // criar uma conta com o e-mail de outra pessoa e, no primeiro login, o
-    // vínculo por e-mail entregaria a conta do Nexlar de bandeja.
+    // vínculo por e-mail entregaria a conta do Nextlar de bandeja.
     if (claims.email_verified !== true) {
       throw new GoogleAuthError("email_nao_verificado");
     }

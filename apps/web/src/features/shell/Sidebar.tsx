@@ -23,7 +23,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div className={"flex h-16 items-center " + (collapsed ? "justify-center px-2" : "px-5")}>
         <img
           src={collapsed ? "/logo-mark.svg" : "/logo-wordmark.svg"}
-          alt="Nexlar"
+          alt="Nextlar"
           className={collapsed ? "h-7 w-auto" : "h-6 w-auto"}
         />
       </div>

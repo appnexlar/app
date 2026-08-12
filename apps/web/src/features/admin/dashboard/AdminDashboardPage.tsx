@@ -16,7 +16,7 @@ import { StatusDaConta, dataCurta } from "../users/status";
 import { StatCard } from "./StatCard";
 
 /**
- * Dashboard do Nexlar Admin (docs/10, Fase 2).
+ * Dashboard do Nextlar Admin (docs/10, Fase 2).
  *
  * A ordem da página é a ordem da decisão: primeiro o que pede ação, depois o
  * retrato das contas, o movimento do período e só então o volume de uso. Um

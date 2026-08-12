@@ -135,7 +135,7 @@ export class PropertiesService {
   /**
    * Parceiros que ESTE corretor já cadastrou antes (reuso). Busca só na
    * carteira do próprio broker: nunca expõe dados de outros corretores do
-   * Nexlar. A rede entre contas (verificar se o parceiro tem conta) é feature
+   * Nextlar. A rede entre contas (verificar se o parceiro tem conta) é feature
    * separada, com consentimento, fora do MVP.
    */
   async searchPartners(brokerId: string, q: string): Promise<KnownPartner[]> {

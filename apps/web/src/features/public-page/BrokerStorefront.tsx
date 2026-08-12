@@ -11,9 +11,9 @@ import { waLink } from "./publicApi";
  * dados são as rotas (pública e prévia). O único estado próprio é a folha de
  * contato, que é interface, não dado.
  *
- * Usa o design system da Nexlar (tokens semânticos), não uma paleta própria:
+ * Usa o design system da Nextlar (tokens semânticos), não uma paleta própria:
  * a página é a marca aparecendo para quem ainda não é cliente, então tem que
- * ser o Azul Noite e o Laranja Nexlar, não uma variação inventada.
+ * ser o Azul Noite e o Laranja Nextlar, não uma variação inventada.
  *
  * Única cor de fora: o verde do WhatsApp, que é marca de terceiro e precisa
  * ser reconhecível. Fica isolado nesta constante.
@@ -41,7 +41,7 @@ export function BrokerStorefront({
   /** Falso na prévia: a listagem vira estática e os cards não navegam. */
   interactive?: boolean;
 }) {
-  const mensagemGeral = `Olá, ${page.name}! Vi sua página na Nexlar e gostaria de conversar sobre imóveis.`;
+  const mensagemGeral = `Olá, ${page.name}! Vi sua página na Nextlar e gostaria de conversar sobre imóveis.`;
   // A folha de contato: aberta pelos CTAs de conversa. Na prévia o corretor
   // está olhando a própria página, então não faz sentido virar lead de si.
   const [contatoAberto, setContatoAberto] = useState(false);
@@ -58,7 +58,7 @@ export function BrokerStorefront({
         // então lá o hero mantém a escala original.
         className="relative overflow-hidden bg-primary pb-8 sm:pb-14"
         style={{
-          // Profundidade no Azul Noite + um brilho do Laranja Nexlar contido no
+          // Profundidade no Azul Noite + um brilho do Laranja Nextlar contido no
           // canto superior, longe do texto (atrás do texto ele lava a leitura).
           backgroundImage:
             "radial-gradient(38rem 22rem at 92% -12%, color-mix(in srgb, var(--brand-orange-500) 42%, transparent), transparent 70%)," +
@@ -66,7 +66,7 @@ export function BrokerStorefront({
         }}
       >
         {/* O canto mais nobre da página é de quem a página é. A assinatura da
-            Nexlar continua existindo, no rodapé, onde assinatura de plataforma
+            Nextlar continua existindo, no rodapé, onde assinatura de plataforma
             pertence. Aqui em cima fica a imobiliária, quando há, e o nome do
             corretor quando ele trabalha por conta. */}
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-5 pt-5 sm:px-8">
@@ -658,7 +658,7 @@ export function CartaoPublico({
             conversa que o corretor conhece. */}
         {!clickable && whatsapp && (
           <a
-            href={waLink(whatsapp, `Olá, ${brokerName}! Vi o imóvel #${p.code} (${p.title}) na sua página da Nexlar e gostaria de mais informações.`)}
+            href={waLink(whatsapp, `Olá, ${brokerName}! Vi o imóvel #${p.code} (${p.title}) na sua página da Nextlar e gostaria de mais informações.`)}
             target="_blank"
             rel="noreferrer"
             className="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary text-body-sm font-bold text-primary-on transition-colors duration-fast hover:bg-primary-hover"

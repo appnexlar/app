@@ -204,7 +204,7 @@ export function LoginPage() {
   );
 }
 
-const SUSPENSA = "Esta conta está suspensa. Fale com o suporte do Nexlar para reativar.";
+const SUSPENSA = "Esta conta está suspensa. Fale com o suporte do Nextlar para reativar.";
 
 /**
  * Traduz o código que a API põe na URL ao voltar do Google. O servidor manda um

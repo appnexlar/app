@@ -1,5 +1,5 @@
 /**
- * RBAC do Nexlar Admin: papéis concedem permissões, e quem é verificado nas
+ * RBAC do Nextlar Admin: papéis concedem permissões, e quem é verificado nas
  * rotas é SEMPRE a permissão, nunca o nome do papel (docs/10, §5.4).
  *
  * Este arquivo é a fonte única dos dois lados: a API monta os guards a partir

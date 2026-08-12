@@ -11,7 +11,7 @@ import {
 import type { CanonicalExtraction, Extracted } from "./extraction";
 
 /**
- * Do canônico extraído para o modelo real da Nexlar: os DTOs que o serviço de
+ * Do canônico extraído para o modelo real da Nextlar: os DTOs que o serviço de
  * imóveis já valida (nada entra no banco por fora), mais a lista campo a campo
  * que o corretor vê no resumo. Valores que o sistema precisou chutar para o
  * rascunho nascer (origem, finalidade ausente, categoria deduzida fraca) saem

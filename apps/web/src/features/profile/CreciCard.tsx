@@ -12,7 +12,7 @@ import { submitCreci } from "./api";
 
 /**
  * Verificação de CRECI: opcional, e por isso a tela vende o benefício em vez
- * de cobrar o documento. Quem não envia usa o Nexlar inteiro do mesmo jeito.
+ * de cobrar o documento. Quem não envia usa o Nextlar inteiro do mesmo jeito.
  *
  * O corretor nunca muda o próprio status. Ele envia, e a conferência é
  * manual: é justamente isso que dá valor ao selo que a lead vê.
@@ -45,7 +45,7 @@ export function CreciCard({ broker }: { broker: BrokerProfile }) {
         <h3 className="text-body font-semibold text-text">CRECI em análise</h3>
         <p className="mt-1 text-body-sm text-text-muted">
           Recebemos seu documento e estamos conferindo. Costuma levar até um dia
-          útil. Você continua usando o Nexlar normalmente enquanto isso.
+          útil. Você continua usando o Nextlar normalmente enquanto isso.
         </p>
         <p className="mt-3 text-caption text-text-subtle">
           Enviado: CRECI {broker.creci}

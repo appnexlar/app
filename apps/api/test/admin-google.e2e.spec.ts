@@ -16,15 +16,15 @@ import { RateLimitStore } from "../src/common/rate-limit/rate-limit.store";
 import { registerPlugins, resetDatabase } from "./e2e-utils";
 
 /**
- * Entrar com o Google no Nexlar Admin. A regra que estes testes guardam é a
+ * Entrar com o Google no Nextlar Admin. A regra que estes testes guardam é a
  * inversão do app do corretor: aqui o Google AUTENTICA, nunca cadastra.
  */
 
 class GoogleDouble extends GoogleOAuthService {
   identidade: GoogleIdentity = {
     googleId: "google-sub-admin-1",
-    email: "chefe@nexlar.app",
-    fullName: "Chefe Nexlar",
+    email: "chefe@nextlar.app",
+    fullName: "Chefe Nextlar",
   };
   falha: GoogleAuthError | null = null;
 
@@ -34,7 +34,7 @@ class GoogleDouble extends GoogleOAuthService {
   }
 }
 
-describe("Nexlar Admin: entrar com o Google", () => {
+describe("Nextlar Admin: entrar com o Google", () => {
   let app: NestFastifyApplication;
   let prisma: PrismaService;
   let google: GoogleDouble;
@@ -93,20 +93,20 @@ describe("Nexlar Admin: entrar com o Google", () => {
     google.falha = null;
     google.identidade = {
       googleId: "google-sub-admin-1",
-      email: "chefe@nexlar.app",
-      fullName: "Chefe Nexlar",
+      email: "chefe@nextlar.app",
+      fullName: "Chefe Nextlar",
     };
   });
 
   it("o início do fluxo usa o callback DO ADMIN, não o do corretor", async () => {
-    await criarAdmin("chefe@nexlar.app");
+    await criarAdmin("chefe@nextlar.app");
     const inicio = await app.inject({ method: "GET", url: "/api/admin/auth/google" });
     const url = new URL(inicio.headers.location as string);
     expect(url.searchParams.get("redirect_uri")).toContain("/api/admin/auth/google/callback");
   });
 
   it("admin existente entra pelo Google e o vínculo é gravado e auditado", async () => {
-    const admin = await criarAdmin("chefe@nexlar.app");
+    const admin = await criarAdmin("chefe@nextlar.app");
     const volta = await entrarPeloGoogle();
 
     expect(volta.statusCode).toBe(302);
@@ -140,13 +140,13 @@ describe("Nexlar Admin: entrar com o Google", () => {
   });
 
   it("admin suspenso é recusado com o mesmo código de e-mail desconhecido", async () => {
-    await criarAdmin("chefe@nexlar.app", "suspenso");
+    await criarAdmin("chefe@nextlar.app", "suspenso");
     const volta = await entrarPeloGoogle();
     expect(volta.headers.location).toContain("erro=sem_acesso");
   });
 
   it("e-mail já vinculado a OUTRA conta Google é recusado", async () => {
-    const admin = await criarAdmin("chefe@nexlar.app");
+    const admin = await criarAdmin("chefe@nextlar.app");
     await prisma.adminUser.update({
       where: { id: admin.id },
       data: { googleId: "google-sub-antigo" },
@@ -160,7 +160,7 @@ describe("Nexlar Admin: entrar com o Google", () => {
   });
 
   it("volta sem state que bata com o cookie é recusada", async () => {
-    await criarAdmin("chefe@nexlar.app");
+    await criarAdmin("chefe@nextlar.app");
     const inicio = await app.inject({ method: "GET", url: "/api/admin/auth/google" });
     const setCookie = String(inicio.headers["set-cookie"]);
     const oauthCookie = /nexlar_admin_oauth=([^;]*)/.exec(setCookie)?.[1] as string;
@@ -174,7 +174,7 @@ describe("Nexlar Admin: entrar com o Google", () => {
   });
 
   it("nas voltas seguintes entra direto pelo vínculo, sem nova auditoria", async () => {
-    await criarAdmin("chefe@nexlar.app");
+    await criarAdmin("chefe@nextlar.app");
     await entrarPeloGoogle();
     const segunda = await entrarPeloGoogle();
 

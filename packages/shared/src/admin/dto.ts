@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ADMIN_ROLES, type AdminPermission, type AdminRole } from "./permissions";
 
-/** Entrada no Nexlar Admin. Sem cadastro público: admin nasce por convite. */
+/** Entrada no Nextlar Admin. Sem cadastro público: admin nasce por convite. */
 export const adminLoginSchema = z.object({
   email: z.string().trim().toLowerCase().email("Informe um e-mail válido"),
   password: z.string().min(1, "Informe a senha"),

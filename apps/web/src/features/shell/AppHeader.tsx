@@ -98,7 +98,7 @@ export function AppHeader({
               bloco de identidade abaixo, igual em qualquer largura. */}
           <img
             src="/logo-wordmark.svg"
-            alt="Nexlar"
+            alt="Nextlar"
             className="h-7 w-auto object-contain object-left lg:hidden"
           />
         </div>

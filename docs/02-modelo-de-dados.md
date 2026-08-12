@@ -95,7 +95,7 @@ Atividades são geradas pelo sistema e também manualmente (nota de conversa). E
 
 ## 2.5 agenda_event (agenda unificada: tarefa, visita, compromisso, bloqueio)
 
-A agenda do corretor tem um único registro para todos os tipos de evento. Ele substitui a antiga tabela `task`: uma tarefa é apenas um `agenda_event` de `type = tarefa`. O Nexlar é a fonte principal; os campos `google_*` ficam preparados para a integração com o Google Calendar (fatia seguinte, ainda inertes).
+A agenda do corretor tem um único registro para todos os tipos de evento. Ele substitui a antiga tabela `task`: uma tarefa é apenas um `agenda_event` de `type = tarefa`. O Nextlar é a fonte principal; os campos `google_*` ficam preparados para a integração com o Google Calendar (fatia seguinte, ainda inertes).
 
 | Campo | Tipo | Regras |
 |---|---|---|
@@ -124,7 +124,7 @@ Regras de negócio (na API): vínculo de lead/imóvel precisa pertencer ao corre
 
 O campo `next_action_at` do lead reflete o `agenda_event` aberto (tarefa ou visita não encerrada) com `start_at` mais próximo. Sem evento aberto, o lead entra nos alertas de "sem próxima ação". Criar, editar, concluir ou excluir um evento vinculado recalcula esse campo.
 
-**Sub-fatia A (entregue):** tarefa e compromisso pela tela `/agenda` (FullCalendar), resumo operacional, filtros, conflito de horário. **Próximas fatias:** visita e bloqueio pela tela + drag-and-drop; integração individual com Google Calendar (OAuth no back, push Nexlar→Google, free/busy); horários de atendimento para o agendamento público futuro.
+**Sub-fatia A (entregue):** tarefa e compromisso pela tela `/agenda` (FullCalendar), resumo operacional, filtros, conflito de horário. **Próximas fatias:** visita e bloqueio pela tela + drag-and-drop; integração individual com Google Calendar (OAuth no back, push Nextlar→Google, free/busy); horários de atendimento para o agendamento público futuro.
 
 ## 2.6 document
 
@@ -431,7 +431,7 @@ Os dados pessoais sensíveis não moram na tabela `lead`.
 
 ## 2.20 Jornada 2: experiência guiada (product_event, guidance_progress, onboarding_profile)
 
-Camada transversal de ativação e adoção (ver `docs/07`). Três tabelas, todas isoladas por `broker_id` (a Nexlar é single-user por corretor; não há `organization_id`). Migração `20260724135826_jornada2_fundacao_guiada`, com RLS ligada nas três, como no resto do banco.
+Camada transversal de ativação e adoção (ver `docs/07`). Três tabelas, todas isoladas por `broker_id` (a Nextlar é single-user por corretor; não há `organization_id`). Migração `20260724135826_jornada2_fundacao_guiada`, com RLS ligada nas três, como no resto do banco.
 
 - `product_event` (log append-only, imutável): broker_id, type (String, validada no serviço contra o catálogo do `shared`, não enum do Prisma porque o catálogo cresce), entity_type, entity_id, source (ui/api/system), dedupe_key, metadata (Json), created_at. Índice único `(broker_id, dedupe_key)` garante a idempotência dos marcos de "primeira vez". NUNCA guarda dado sensível: só referências e metadados mínimos.
 - `guidance_progress` (estado por orientação, 1 por chave por corretor): broker_id, guidance_key (casa com o registry em código), status (enum available/shown/dismissed/skipped/in_progress/completed/reopened/expired), show_count, timestamps (first_shown_at, last_shown_at, dismissed_at, completed_at, reopened_at, expires_at), metadata. Único por `(broker_id, guidance_key)`.

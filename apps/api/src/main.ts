@@ -64,8 +64,8 @@ async function bootstrap(): Promise<void> {
   // superfície de ataque de graça.
   if (config.get("NODE_ENV", { infer: true }) !== "production") {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle("Nexlar API")
-      .setDescription("API do Nexlar — gestão para corretores")
+      .setTitle("Nextlar API")
+      .setDescription("API do Nextlar — gestão para corretores")
       .setVersion("0.1.0")
       .addBearerAuth()
       .build();
@@ -75,7 +75,7 @@ async function bootstrap(): Promise<void> {
 
   const port = config.get("PORT", { infer: true });
   await app.listen({ port, host: "0.0.0.0" });
-  new Logger("Bootstrap").log(`Nexlar API no ar em http://localhost:${port}/api`);
+  new Logger("Bootstrap").log(`Nextlar API no ar em http://localhost:${port}/api`);
 }
 
 void bootstrap();

@@ -142,7 +142,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
       contentType: "image/png",
     },
   ) {
-    const boundary = "----NexlarTeste123456";
+    const boundary = "----NextlarTeste123456";
     const campo = (nome: string, valor: string) =>
       `--${boundary}\r\nContent-Disposition: form-data; name="${nome}"\r\n\r\n${valor}\r\n`;
 

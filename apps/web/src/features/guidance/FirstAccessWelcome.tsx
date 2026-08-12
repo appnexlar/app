@@ -29,7 +29,7 @@ export function FirstAccessWelcome({
           </svg>
         </span>
         <p className="mt-5 max-w-xs text-body text-text-muted">
-          Você não precisa aprender tudo agora. A Nexlar vai apresentar cada
+          Você não precisa aprender tudo agora. A Nextlar vai apresentar cada
           recurso no momento em que ele puder ajudar sua operação.
         </p>
       </div>

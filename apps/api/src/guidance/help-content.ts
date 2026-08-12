@@ -17,7 +17,7 @@ const CONTEUDO: Record<string, HelpContent> = {
       {
         question: "O que aparece aqui?",
         answer:
-          "A próxima ação mais importante em destaque, seu progresso nos primeiros passos e um resumo do funil. A Nexlar aponta o que fazer agora, você não precisa procurar.",
+          "A próxima ação mais importante em destaque, seu progresso nos primeiros passos e um resumo do funil. A Nextlar aponta o que fazer agora, você não precisa procurar.",
       },
       {
         question: "Por que uma orientação some?",
@@ -33,7 +33,7 @@ const CONTEUDO: Record<string, HelpContent> = {
       {
         question: "O que é um lead?",
         answer:
-          "Uma pessoa que demonstrou interesse nos seus imóveis ou serviços. É o ponto de partida de todo atendimento na Nexlar.",
+          "Uma pessoa que demonstrou interesse nos seus imóveis ou serviços. É o ponto de partida de todo atendimento na Nextlar.",
       },
       {
         question: "Como cadastrar rápido?",
@@ -64,7 +64,7 @@ const CONTEUDO: Record<string, HelpContent> = {
       {
         question: "Como compartilhar com um lead?",
         answer:
-          "Na página do imóvel ou da lead, use Enviar imóvel. A Nexlar cria um link exclusivo, e você acompanha visualizações e manifestações de interesse.",
+          "Na página do imóvel ou da lead, use Enviar imóvel. A Nextlar cria um link exclusivo, e você acompanha visualizações e manifestações de interesse.",
       },
     ],
   },

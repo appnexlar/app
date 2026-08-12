@@ -43,7 +43,7 @@ const MINUTO = 60 * 1000;
 const CAMINHO_CALLBACK_ADMIN = "/api/admin/auth/google/callback";
 
 /**
- * Porta de entrada do Nexlar Admin.
+ * Porta de entrada do Nextlar Admin.
  *
  * O @Public() aqui fala com o guard GLOBAL do corretor: estas rotas não são
  * de corretor, então ele não deve tocá-las. Quem manda nelas é o

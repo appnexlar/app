@@ -13,7 +13,7 @@ import { AdminAuditService } from "../audit/admin-audit.service";
 import type { AuthenticatedAdmin } from "../rbac/current-admin.decorator";
 
 /**
- * Gestão de contas de corretor pelo Nexlar Admin (docs/10, Fase 3).
+ * Gestão de contas de corretor pelo Nextlar Admin (docs/10, Fase 3).
  *
  * O que este serviço NUNCA devolve: dado pessoal de lead ou cliente do
  * corretor. O Admin administra contas, não carteiras; o uso aparece como

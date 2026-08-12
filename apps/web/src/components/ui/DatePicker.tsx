@@ -38,7 +38,7 @@ function display(value: string): string {
 }
 
 /**
- * Seletor de data no Design System do Nexlar. Calendário em painel que expande
+ * Seletor de data no Design System do Nextlar. Calendário em painel que expande
  * abaixo do campo (funciona dentro de modais com scroll, sem ser cortado). Tem
  * troca rápida de mês e ano, o que torna prático até data de nascimento.
  */

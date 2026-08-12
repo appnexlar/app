@@ -42,7 +42,7 @@ import { PLANS, formatBRL, type Plan, type PlanId } from "./plans";
  *
  * Duas portas de entrada, e o Google é a recomendada, não a única: ninguém
  * inventa mais uma senha, o e-mail já chega confirmado (some o gate de
- * confirmação, que era a maior desistência da porta de entrada) e o Nexlar
+ * confirmação, que era a maior desistência da porta de entrada) e o Nextlar
  * deixa de guardar mais um hash. Quem prefere e-mail e senha segue por ali, com
  * o link de confirmação de sempre.
  *
@@ -283,7 +283,7 @@ export function RegisterWizard() {
           à esquerda, junto com a barra de progresso e os campos. */}
       <header className={emCadastro ? "mb-8" : "mb-8 text-center"}>
         <h1 className="text-h1 text-text">
-          {emCadastro ? title : "Crie sua conta no Nexlar"}
+          {emCadastro ? title : "Crie sua conta no Nextlar"}
         </h1>
         <p className="mt-2 text-body text-text-muted">
           {emCadastro ? subtitle : "Escolha por onde quer começar."}
@@ -584,7 +584,7 @@ function Aceites({
         {...register("acceptTerms" as never)}
       />
       <Checkbox
-        label="Quero receber novidades e dicas do Nexlar por e-mail (opcional)."
+        label="Quero receber novidades e dicas do Nextlar por e-mail (opcional)."
         {...register("marketingOptIn" as never)}
       />
     </div>

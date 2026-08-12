@@ -1,20 +1,20 @@
 # 07: Jornada 2, experiência guiada e inteligente
 
-Documento da camada de ativação e adoção da Nexlar, construída em julho de 2026. Substitui o conceito de onboarding tradicional por uma camada contínua que ensina o corretor durante o uso, no contexto certo, uma orientação por vez.
+Documento da camada de ativação e adoção da Nextlar, construída em julho de 2026. Substitui o conceito de onboarding tradicional por uma camada contínua que ensina o corretor durante o uso, no contexto certo, uma orientação por vez.
 
 Este documento é a fonte da verdade das regras da Jornada 2. Quem for evoluir a camada guiada lê isto antes.
 
 ## 7.1 Princípio
 
-A Nexlar não exige que o corretor aprenda o sistema antes de usá-lo. Ela ensina durante o uso: dentro da tela relacionada, quando a funcionalidade fica relevante, por ação real, com uma recomendação principal por vez, sem bloquear a navegação.
+A Nextlar não exige que o corretor aprenda o sistema antes de usá-lo. Ela ensina durante o uso: dentro da tela relacionada, quando a funcionalidade fica relevante, por ação real, com uma recomendação principal por vez, sem bloquear a navegação.
 
 O comportamento inteligente desta fase é determinístico: regras sobre os dados e eventos que já existem. Não há IA generativa. A arquitetura fica pronta para recebê-la depois sem quebrar contrato.
 
-## 7.2 Tradução do escopo para a realidade da Nexlar
+## 7.2 Tradução do escopo para a realidade da Nextlar
 
-O prompt original pressupunha Supabase Auth, `organization_id` e RLS de aplicação. A Nexlar não é assim. As decisões de tradução, todas registradas aqui para não se perderem:
+O prompt original pressupunha Supabase Auth, `organization_id` e RLS de aplicação. A Nextlar não é assim. As decisões de tradução, todas registradas aqui para não se perderem:
 
-- **Sem `organization_id`.** A Nexlar é single-user por corretor. O inquilino é o `broker_id`, sempre vindo do JWT. Todo isolamento e toda regra de negócio vivem na API, nunca em RLS de front. Isso atende GUI-07 e a seção de segurança no lugar onde a Nexlar já garante isolamento. Ver [[feedback-nexlar-regras-no-back]] e [[feedback-nexlar-seguranca]].
+- **Sem `organization_id`.** A Nextlar é single-user por corretor. O inquilino é o `broker_id`, sempre vindo do JWT. Todo isolamento e toda regra de negócio vivem na API, nunca em RLS de front. Isso atende GUI-07 e a seção de segurança no lugar onde a Nextlar já garante isolamento. Ver [[feedback-nexlar-regras-no-back]] e [[feedback-nexlar-seguranca]].
 - **Sem Supabase Auth / supabase-js / RLS de aplicação.** Mantida a stack da Jornada 1: NestJS + Prisma, JWT próprio em cookie httpOnly, design system próprio.
 - **Sem i18n nesta fase.** Interface em pt-BR direto, como o resto do produto. Internacionalização é dívida registrada, fatia própria quando houver um segundo idioma no horizonte.
 

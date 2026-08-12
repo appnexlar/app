@@ -1,10 +1,10 @@
-# CLAUDE.md: Nexlar
+# CLAUDE.md: Nextlar
 
 Instruções para o agente que vai construir este projeto. Leia isto antes de escrever qualquer código.
 
 ## O que é
 
-Nexlar é um CRM imobiliário enxuto para corretores organizarem leads de WhatsApp e redes sociais e conduzirem cada cliente até a próxima ação certa. A especificação completa está em `docs/`, na ordem numérica. Leia todos antes de começar:
+Nextlar é um CRM imobiliário enxuto para corretores organizarem leads de WhatsApp e redes sociais e conduzirem cada cliente até a próxima ação certa. A especificação completa está em `docs/`, na ordem numérica. Leia todos antes de começar:
 
 1. `docs/01-visao-e-stack.md`: visão, personas, stack e arquitetura
 2. `docs/02-modelo-de-dados.md`: entidades, campos, funil e telas

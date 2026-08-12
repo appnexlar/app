@@ -134,7 +134,7 @@ function Casca({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh bg-bg font-sans text-text">
       <main className="mx-auto flex max-w-md flex-col px-5 py-8 sm:py-12">{children}</main>
       <footer className="mx-auto max-w-md px-5 pb-8 text-center text-caption text-text-subtle">
-        Ambiente seguro Nexlar. Seus dados só ficam visíveis para o seu corretor.
+        Ambiente seguro Nextlar. Seus dados só ficam visíveis para o seu corretor.
       </footer>
     </div>
   );

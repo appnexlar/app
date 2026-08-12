@@ -13,14 +13,14 @@ import { createTestApp, registerBroker, resetDatabase } from "./e2e-utils";
 
 const SENHA = "senha-forte-de-teste-123";
 
-describe("Nexlar Admin: auditoria", () => {
+describe("Nextlar Admin: auditoria", () => {
   let app: NestFastifyApplication;
   let prisma: PrismaService;
 
   async function criarAdmin(
     role: "super_admin" | "admin" | "suporte" | "financeiro" = "admin",
   ): Promise<{ id: string; email: string }> {
-    const email = `${role}@nexlar.app`;
+    const email = `${role}@nextlar.app`;
     const admin = await prisma.adminUser.create({
       data: {
         email,
@@ -78,7 +78,7 @@ describe("Nexlar Admin: auditoria", () => {
     const body = res.json();
     expect(body.total).toBe(1);
     expect(body.items[0].newState).toEqual({ via: "senha" });
-    expect(body.items[0].actor.email).toBe("admin@nexlar.app");
+    expect(body.items[0].actor.email).toBe("admin@nextlar.app");
   });
 
   it("senha errada vira recusa na trilha, com o motivo", async () => {
@@ -100,7 +100,7 @@ describe("Nexlar Admin: auditoria", () => {
     await app.inject({
       method: "POST",
       url: "/api/admin/auth/login",
-      payload: { email: "ninguem@nexlar.app", password: "chute-qualquer-123" },
+      payload: { email: "ninguem@nextlar.app", password: "chute-qualquer-123" },
     });
 
     const token = await tokenDe("admin");

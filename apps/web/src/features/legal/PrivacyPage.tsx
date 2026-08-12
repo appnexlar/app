@@ -5,7 +5,7 @@ export function PrivacyPage() {
   return (
     <LegalLayout title="Política de Privacidade" updatedAt="rascunho">
       <p>
-        Esta Política explica como o Nexlar trata dados pessoais, em conformidade
+        Esta Política explica como o Nextlar trata dados pessoais, em conformidade
         com a Lei Geral de Proteção de Dados (LGPD, Lei nº 13.709/2018).
       </p>
 

@@ -296,7 +296,7 @@ describe("Extração: MG Imob (RealEstateListing da C2S)", () => {
   });
 });
 
-describe("Mapper: do canônico para o modelo da Nexlar", () => {
+describe("Mapper: do canônico para o modelo da Nextlar", () => {
   const canonical = extractFromHtml(
     fixture("jk.html"),
     "https://www.jkmacedoimoveis.com.br/imovel/2573040/chacara-venda-mairipora-sp-recanto-ceu-azul",

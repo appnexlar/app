@@ -10,7 +10,7 @@ A dor central não é cadastrar cliente. É conduzir cada lead até a próxima a
 
 Uma plataforma web simples para o corretor centralizar a operação comercial. Cada lead entra num funil visual, ganha uma ficha com histórico, uma próxima ação com data, documentos organizados por etapa e um lugar para registrar visitas e simulações. O dashboard mostra onde estão os leads e o que está parado.
 
-O princípio que guia cada decisão de produto: no uso diário, o Nexlar precisa ser mais rápido que a planilha e o WhatsApp. Se virar burocracia, o corretor não usa.
+O princípio que guia cada decisão de produto: no uso diário, o Nextlar precisa ser mais rápido que a planilha e o WhatsApp. Se virar burocracia, o corretor não usa.
 
 ## 1.3 Personas
 
@@ -32,7 +32,7 @@ Mobile-first. O corretor trabalha no celular. Toda tela precisa funcionar bem em
 
 ## 1.5 Stack
 
-O Nexlar é um produto comercial e nasce com as três camadas separadas: frontend, backend próprio e banco. A arquitetura completa, com as justificativas de cada escolha, está em `docs/06-arquitetura-tecnica.md`, que é o documento oficial dessa camada. O resumo:
+O Nextlar é um produto comercial e nasce com as três camadas separadas: frontend, backend próprio e banco. A arquitetura completa, com as justificativas de cada escolha, está em `docs/06-arquitetura-tecnica.md`, que é o documento oficial dessa camada. O resumo:
 
 **Frontend:** React com Vite e TypeScript. Tailwind CSS para estilo. React Router para navegação. TanStack Query para dados do servidor. React Hook Form com Zod para formulários e validação.
 

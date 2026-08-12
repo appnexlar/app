@@ -137,7 +137,7 @@ function ConfirmacaoPeloLink({ token }: { token: string }) {
           className="mt-8"
           onClick={() => navigate(isAuthenticated ? "/dashboard" : "/login", { replace: true })}
         >
-          {isAuthenticated ? "Ir para o Nexlar" : "Entrar"}
+          {isAuthenticated ? "Ir para o Nextlar" : "Entrar"}
         </Button>
       </div>
     </AuthLayout>

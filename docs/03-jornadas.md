@@ -6,7 +6,7 @@ Convenção: "corretor" é o usuário autenticado. Toda escrita de dado carrega 
 
 ## Enquadramento: lead x cliente (revisão de julho de 2026)
 
-O Nexlar acompanha uma pessoa desde o primeiro contato até virar cliente. Há duas grandes fases, e elas não podem se misturar:
+O Nextlar acompanha uma pessoa desde o primeiro contato até virar cliente. Há duas grandes fases, e elas não podem se misturar:
 
 - **Fase de lead (prospecção e avaliação).** A pessoa recebe imóveis, visualiza, demonstra ou rejeita interesse, pede e faz visitas, escolhe um imóvel prioritário e continua comparando. Tudo isso acontece sem exigir dados sensíveis. É o foco desta entrega, coberto pelas jornadas **JL1 a JL8** abaixo.
 - **Fase de cliente (etapa formal).** Começa por uma **conversão consciente** (JL8), quando a pessoa entra em financiamento, análise, documentos ou proposta. Só aí se liberam os dados e telas sensíveis. As jornadas **J5 (documentação), J6 (simulação) e J8 (negociação)** pertencem a esta fase e pressupõem uma lead já convertida.
@@ -19,7 +19,7 @@ Atualização de escopo (20 jul 2026): o **compartilhamento de imóveis com a le
 
 ## J0: Onboarding: cadastro e login do corretor
 
-**Gatilho.** Pessoa acessa o Nexlar pela primeira vez.
+**Gatilho.** Pessoa acessa o Nextlar pela primeira vez.
 
 **Passos.**
 1. Tela inicial oferece Entrar e Criar conta.
@@ -386,7 +386,7 @@ Atualização de escopo (20 jul 2026): o **compartilhamento de imóveis com a le
 
 **Passos.**
 1. Na ficha do lead, aba Simulação oferece um atalho que abre o simulador da Caixa em nova aba.
-2. O corretor faz a simulação fora do sistema e volta para registrar o resultado no Nexlar.
+2. O corretor faz a simulação fora do sistema e volta para registrar o resultado no Nextlar.
 3. Formulário de registro manual: valor do imóvel, entrada, valor financiado, prazo em meses, parcela estimada, subsídio (opcional), banco (default Caixa) e observações.
 4. Ao salvar, a simulação nasce com status `realizada` e o sistema sugere mover o lead para `simulacao_realizada`.
 5. Antes de rodar, o corretor pode registrar uma simulação `pendente` só para marcar que falta fazer, o que coloca o lead no alerta correspondente.

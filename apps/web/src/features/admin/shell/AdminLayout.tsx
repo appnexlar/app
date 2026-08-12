@@ -81,7 +81,7 @@ const SECTIONS: NavSection[] = [
 ];
 
 /**
- * Shell do Nexlar Admin: sidebar escura fixa, desktop primeiro. A inversão
+ * Shell do Nextlar Admin: sidebar escura fixa, desktop primeiro. A inversão
  * de superfície (navy) em relação ao app do corretor é proposital, para
  * ninguém operar uma conta de cliente achando que está no próprio CRM.
  */

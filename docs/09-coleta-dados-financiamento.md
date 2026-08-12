@@ -11,7 +11,7 @@ foram para a `main` no PR #5; E e F vieram depois.
 
 ## 1. Resumo executivo
 
-A épica é menos verde do que parece. Dos blocos que ela pede, a Nexlar já tem em
+A épica é menos verde do que parece. Dos blocos que ela pede, a Nextlar já tem em
 produção: registro financeiro do cliente, participantes da composição de renda,
 consentimento LGPD versionado, trilha de auditoria, timeline imutável da lead,
 eventos de produto idempotentes, notificações com sino, links públicos com token,
@@ -57,7 +57,7 @@ corretor).
 2. **OTP / confirmação de identidade.** Existem tokens de uso único por e-mail
    (verificação e senha), mas não código curto digitável com limite de
    tentativas. E não existe envio de WhatsApp pela plataforma (ver seção 6).
-3. **Autosave com retomada.** Nenhum formulário da Nexlar salva rascunho no
+3. **Autosave com retomada.** Nenhum formulário da Nextlar salva rascunho no
    backend. Padrão novo: PATCH por seção + detecção de conflito por `updatedAt`.
 4. **Versão imutável de respostas.** Nada hoje congela um snapshot versionado.
 5. **Sessão leve pós-OTP.** A página pública da seleção é token na URL, sem
@@ -108,7 +108,7 @@ corretor).
    `rascunho, enviada, respondida, em_revisao, correcao_solicitada,
    aprovada_para_simulacao, expirada, revogada, arquivada` (9), com
    `firstOpenedAt`, `startedAt`, `submittedAt`, `currentVersion` cobrindo o resto.
-2. **`organization_id` não existe.** A Nexlar é single-broker por conta, decisão
+2. **`organization_id` não existe.** A Nextlar é single-broker por conta, decisão
    registrada no schema. Usar `broker_id`, como todo o resto. Multiorganização é
    outra épica.
 3. **`deal_id`:** a "negociação" hoje é `ClientNegotiation`, 1:1 com a lead. Não
@@ -326,7 +326,7 @@ vencido sem envio. Nenhum evento ou notificação carrega renda, CPF ou token.
 
 - Sem criptografia de campo (disco do Supabase criptografado, tráfego em TLS).
 - Sem lembrete automático de prazo a vencer: exigiria agendador, que a
-  Nexlar ainda não tem. O corretor vê o prazo na ficha.
+  Nextlar ainda não tem. O corretor vê o prazo na ficha.
 - Rate limit em memória por processo: com uma réplica no Railway funciona; ao
   escalar réplicas, migra para o banco.
 - A área geral "Dados para simulação" (Task 22 da épica) segue fora: a entrada

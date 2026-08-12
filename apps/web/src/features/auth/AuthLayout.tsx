@@ -34,7 +34,7 @@ export function AuthLayout({ children, legal = false }: AuthLayoutProps) {
             {/* No desktop a marca já está no painel; duas juntas viram eco. */}
             <img
               src="/logo-wordmark.svg"
-              alt="Nexlar"
+              alt="Nextlar"
               className="mx-auto mb-8 h-10 w-auto lg:hidden"
             />
             {children}
@@ -141,7 +141,7 @@ function ShowcasePanel() {
       </div>
 
       {/* Marcadores: um traço por destaque, o ativo aceso em laranja. */}
-      <div className="relative flex gap-2" role="tablist" aria-label="Destaques do Nexlar">
+      <div className="relative flex gap-2" role="tablist" aria-label="Destaques do Nextlar">
         {DESTAQUES.map((d, i) => (
           <button
             key={d.chave}
@@ -208,7 +208,7 @@ export function LegalFootnote() {
       >
         Política de Privacidade
       </a>{" "}
-      do Nexlar.
+      do Nextlar.
     </p>
   );
 }
