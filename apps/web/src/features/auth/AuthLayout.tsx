@@ -35,7 +35,7 @@ export function AuthLayout({ children, legal = false }: AuthLayoutProps) {
             <img
               src="/logo-wordmark.svg"
               alt="Nextlar"
-              className="mx-auto mb-8 h-10 w-auto lg:hidden"
+              className="mx-auto mb-8 h-14 w-auto lg:hidden"
             />
             {children}
           </div>
@@ -125,7 +125,7 @@ function ShowcasePanel() {
         style={{ background: "var(--accent)" }}
       />
 
-      <img src="/logo-white.svg" alt="" aria-hidden="true" className="relative h-8 w-auto self-start" />
+      <img src="/logo-white.svg" alt="" aria-hidden="true" className="relative h-12 w-auto self-start" />
 
       {/* aria-live anuncia a troca para leitores de tela sem roubar o foco. */}
       <div className="relative" aria-live="polite">

@@ -99,7 +99,7 @@ export function AppHeader({
           <img
             src="/logo-wordmark.svg"
             alt="Nextlar"
-            className="h-7 w-auto object-contain object-left lg:hidden"
+            className="h-10 w-auto object-contain object-left lg:hidden"
           />
         </div>
 
