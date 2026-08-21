@@ -38,6 +38,39 @@ function display(value: string): string {
 }
 
 /**
+ * Vai pondo as barras conforme se digita, e nunca deixa passar de oito
+ * dígitos. Quem digita "20082026" vê "20/08/2026" sem tocar em barra nenhuma,
+ * e quem digita as barras também funciona: elas são descartadas na entrada.
+ */
+function mascarar(bruto: string): string {
+  const d = bruto.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}
+
+/**
+ * "DD/MM/AAAA" digitado para ISO, ou null se a data não existe.
+ *
+ * Confere o calendário de verdade, e não só o formato: 31/02 tem oito dígitos
+ * e mesmo assim não é um dia. O Date normalizaria para 03/03 em silêncio, o
+ * que faria o campo aceitar uma data que a pessoa não escolheu.
+ */
+function paraISO(texto: string, minYear: number, maxYear: number): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(texto);
+  if (!m) return null;
+  const [, dd, mm, aaaa] = m;
+  const dia = Number(dd);
+  const mes = Number(mm);
+  const ano = Number(aaaa);
+  if (mes < 1 || mes > 12) return null;
+  if (ano < minYear || ano > maxYear) return null;
+  const ultimoDia = new Date(ano, mes, 0).getDate();
+  if (dia < 1 || dia > ultimoDia) return null;
+  return `${aaaa}-${pad(mes)}-${pad(dia)}`;
+}
+
+/**
  * Seletor de data no Design System do Nextlar. Calendário em painel que expande
  * abaixo do campo (funciona dentro de modais com scroll, sem ser cortado). Tem
  * troca rápida de mês e ano, o que torna prático até data de nascimento.
@@ -54,7 +87,6 @@ export function DatePicker({
 }: DatePickerProps) {
   const id = useId();
   const errorId = `${id}-error`;
-  const invalid = Boolean(error);
   const ref = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
 
@@ -64,6 +96,68 @@ export function DatePicker({
 
   const [viewYear, setViewYear] = useState(initial ? initial[0] : today.getFullYear());
   const [viewMonth, setViewMonth] = useState(initial ? initial[1] - 1 : today.getMonth());
+
+  // O que está escrito no campo. Existe separado do `value` porque durante a
+  // digitação ("20/08/20…") ainda não há data nenhuma para avisar ao pai.
+  const [texto, setTexto] = useState(() => display(value));
+  const [erroDeDigitacao, setErroDeDigitacao] = useState<string | null>(null);
+
+  // O último valor que ESTE campo avisou ao formulário. Serve para saber, no
+  // efeito abaixo, se o `value` que chegou é notícia de fora ou o eco da
+  // própria digitação.
+  const ecoDaDigitacao = useRef<string | null>(null);
+
+  // Data escolhida por fora (calendário, "Hoje", "Limpar", ou o formulário
+  // preenchido a partir de um rascunho) reescreve o campo.
+  //
+  // O eco precisa ser ignorado: quem digita "31/02" faz o valor voltar vazio,
+  // e reescrever o campo a partir dele apagaria o que a pessoa acabou de
+  // escrever, no meio da digitação.
+  useEffect(() => {
+    if (value === ecoDaDigitacao.current) return;
+    setTexto(display(value));
+    setErroDeDigitacao(null);
+  }, [value]);
+
+  function digitar(bruto: string) {
+    const mascarado = mascarar(bruto);
+    setTexto(mascarado);
+    setErroDeDigitacao(null);
+
+    if (mascarado === "") {
+      if (value) {
+        ecoDaDigitacao.current = "";
+        onChange("");
+      }
+      return;
+    }
+    const iso = paraISO(mascarado, minYear, maxYear);
+    // Só avisa o formulário quando a data existe de verdade. Enquanto está
+    // pela metade, o campo guarda o texto e o valor de fora não muda.
+    if (iso) {
+      ecoDaDigitacao.current = iso;
+      onChange(iso);
+      const [a, m] = iso.split("-").map(Number);
+      setViewYear(a);
+      setViewMonth(m - 1);
+    } else if (value) {
+      // Data pela metade ou inexistente não é data: o formulário fica sem
+      // valor, mas o texto continua na tela para a pessoa terminar de digitar.
+      ecoDaDigitacao.current = "";
+      onChange("");
+    }
+  }
+
+  /** Ao sair do campo, data pela metade ou inexistente precisa ser dita. */
+  function conferirAoSair() {
+    if (texto === "") return;
+    if (paraISO(texto, minYear, maxYear)) return;
+    setErroDeDigitacao(
+      texto.replace(/\D/g, "").length < 8
+        ? "Data incompleta. Use DD/MM/AAAA."
+        : "Esta data não existe.",
+    );
+  }
 
   // Ao abrir, posiciona a visão no mês da data escolhida (ou hoje).
   useEffect(() => {
@@ -95,7 +189,14 @@ export function DatePicker({
     return out;
   }, [viewYear, viewMonth]);
 
+  // Erro de quem digitou e erro que o formulário mandou dizem a mesma coisa
+  // para quem lê: o campo está errado. O de digitação vem primeiro porque é
+  // sobre o que a pessoa acabou de fazer.
+  const mensagemDeErro = erroDeDigitacao ?? error;
+  const invalido = Boolean(mensagemDeErro);
+
   function pick(day: number) {
+    ecoDaDigitacao.current = null;
     onChange(`${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`);
     setOpen(false);
   }
@@ -120,25 +221,42 @@ export function DatePicker({
         )}
       </label>
 
-      <button
-        id={id}
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-invalid={invalid}
-        aria-describedby={invalid ? errorId : undefined}
-        aria-expanded={open}
+      {/* Digitar é o caminho mais rápido para quem já sabe a data; o
+          calendário serve para escolher, comparar dia da semana e navegar.
+          Os dois caminhos convivem no mesmo campo. */}
+      <div
         className={
-          "flex min-h-[var(--tap-target-min)] w-full items-center justify-between rounded-md border bg-surface px-4 text-body transition-colors duration-fast focus-visible:shadow-focus focus-visible:border-[var(--border-focus)] " +
-          (invalid ? "border-danger " : "border-border ") +
-          (value ? "text-text" : "text-text-subtle")
+          "flex min-h-[var(--tap-target-min)] w-full items-center rounded-md border bg-surface pr-1 transition-colors duration-fast focus-within:border-[var(--border-focus)] focus-within:shadow-focus " +
+          (invalido ? "border-danger" : "border-border")
         }
       >
-        <span>{value ? display(value) : "DD/MM/AAAA"}</span>
-        <svg className="h-5 w-5 shrink-0 text-text-subtle" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="3.5" y="4.5" width="17" height="16" rx="2.2" stroke="currentColor" strokeWidth="1.8" />
-          <path d="M3.5 9h17M8 3v3M16 3v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      </button>
+        <input
+          id={id}
+          type="text"
+          value={texto}
+          onChange={(e) => digitar(e.target.value)}
+          onBlur={conferirAoSair}
+          placeholder="DD/MM/AAAA"
+          // Teclado numérico no celular, sem trocar para o modo de texto.
+          inputMode="numeric"
+          autoComplete="off"
+          aria-invalid={invalido}
+          aria-describedby={invalido ? errorId : undefined}
+          className="min-w-0 flex-1 bg-transparent px-4 text-body tabular-nums text-text placeholder:text-text-subtle focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Fechar calendário" : "Abrir calendário"}
+          aria-expanded={open}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-subtle transition-colors hover:bg-surface-sunken hover:text-text focus-visible:shadow-focus"
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3.5" y="4.5" width="17" height="16" rx="2.2" stroke="currentColor" strokeWidth="1.8" />
+            <path d="M3.5 9h17M8 3v3M16 3v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
 
       {open && (
         <div className="w-full max-w-[320px] rounded-xl border border-border bg-surface p-4 shadow-md">
@@ -224,6 +342,7 @@ export function DatePicker({
             <button
               type="button"
               onClick={() => {
+                ecoDaDigitacao.current = null;
                 onChange("");
                 setOpen(false);
               }}
@@ -233,9 +352,10 @@ export function DatePicker({
             </button>
             <button
               type="button"
-              onClick={() =>
-                onChange(`${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`)
-              }
+              onClick={() => {
+                ecoDaDigitacao.current = null;
+                onChange(`${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`);
+              }}
               className="px-1 text-body-sm font-semibold text-accent hover:underline"
             >
               Hoje
@@ -244,8 +364,8 @@ export function DatePicker({
         </div>
       )}
 
-      {invalid ? (
-        <p id={errorId} className="text-caption text-[var(--danger-fg)]">{error}</p>
+      {invalido ? (
+        <p id={errorId} className="text-caption text-[var(--danger-fg)]">{mensagemDeErro}</p>
       ) : (
         hint && <p className="text-caption text-text-subtle">{hint}</p>
       )}

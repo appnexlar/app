@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 import { Select } from "../../components/ui/Select";
 import { TextField } from "../../components/ui/TextField";
+import { DatePicker } from "../../components/ui/DatePicker";
 import { ApiError } from "../../lib/http";
 import { changeLeadStatus } from "../leads/api";
 import { STATUS_LABELS } from "../leads/labels";
@@ -96,11 +97,10 @@ export function StageDialog({ lead, initialStatus, onClose }: StageDialogProps) 
         )}
 
         {status === "reativar_futuro" && (
-          <TextField
+          <DatePicker
             label="Reativar em"
-            type="date"
             value={reactivateAt}
-            onChange={(e) => setReactivateAt(e.target.value)}
+            onChange={setReactivateAt}
             error={fieldError ?? undefined}
             hint="Uma tarefa de reativação será criada para esta data."
           />

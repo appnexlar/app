@@ -8,6 +8,7 @@ import { Checkbox } from "../../components/ui/Checkbox";
 import { Modal } from "../../components/ui/Modal";
 import { Select } from "../../components/ui/Select";
 import { TextField } from "../../components/ui/TextField";
+import { DatePicker } from "../../components/ui/DatePicker";
 import { ApiError } from "../../lib/http";
 import { fetchLeads } from "../leads/api";
 import { conflictsFrom, createAgendaEvent, updateAgendaEvent } from "./api";
@@ -266,12 +267,7 @@ export function EventFormModal({ type, event, prefill, lockedLead, onClose }: Pr
           </>
         )}
 
-        <TextField
-          label="Data"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+        <DatePicker label="Data" value={date} onChange={setDate} />
 
         {type === "tarefa" && (
           <Checkbox
