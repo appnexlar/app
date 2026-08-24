@@ -135,7 +135,13 @@ export function ConvertDialog({ lead, onClose, onConverted }: Props) {
           value={reason}
           onValueChange={setReason}
           placeholder="Selecione"
-          options={CONVERSION_REASONS.map((r) => ({ value: r, label: REASON_LABELS[r] }))}
+          // "Já era cliente da carteira" é o motivo de quem foi cadastrado
+          // direto na lista, sem lead. Aqui existe uma lead sendo convertida,
+          // então oferecê-lo seria oferecer uma contradição.
+          options={CONVERSION_REASONS.filter((r) => r !== "cliente_da_carteira").map((r) => ({
+            value: r,
+            label: REASON_LABELS[r],
+          }))}
         />
         {reason === "outro" && (
           <TextField

@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import type {
   ClientDetail,
+  CreateClientDto,
   ClientFinancialData,
   ClientNegotiationData,
   ClientProfileData,
@@ -14,6 +15,7 @@ import type {
   UpdateClientProfileDto,
   UpsertParticipantDto,
 } from "@nexlar/shared";
+import { CONSENT_VERSION } from "@nexlar/shared";
 import {
   Prisma,
   type ClientFinancial,
@@ -33,6 +35,94 @@ type LeadWithConversion = Prisma.LeadGetPayload<{ include: typeof CLIENT_INCLUDE
 @Injectable()
 export class ClientsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Cadastra um cliente que já era cliente antes do Nextlar, sem lead anterior.
+   *
+   * Quem chega com a carteira formada não tem lead nenhuma para converter.
+   * Obrigá-lo a criar uma lead e convertê-la em seguida faz o corretor
+   * concluir que o sistema está com defeito: ele sabe que aquela pessoa é
+   * cliente e não encontra onde dizer isso.
+   *
+   * A pessoa nasce já convertida, e não passa pelo funil: criar a lead e
+   * converter depois, em duas chamadas, deixaria uma lead solta no funil se a
+   * segunda falhasse. Por isso tudo acontece na mesma transação, exatamente
+   * como na conversão a partir de uma lead.
+   */
+  async create(brokerId: string, dto: CreateClientDto): Promise<ClientSummary> {
+    // Mesmo WhatsApp já cadastrado é a mesma pessoa. Deixar passar criaria
+    // duas fichas da mesma pessoa, uma como lead e outra como cliente.
+    const existente = await this.prisma.lead.findFirst({
+      where: { brokerId, whatsapp: dto.phone },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existente) {
+      throw new ConflictException(
+        existente.isClient
+          ? "Você já tem um cliente com esse WhatsApp."
+          : "Você já tem um lead com esse WhatsApp. Converta a lead em cliente pela ficha dela.",
+      );
+    }
+
+    const agora = new Date();
+    const criado = await this.prisma.$transaction(async (tx) => {
+      const lead = await tx.lead.create({
+        data: {
+          brokerId,
+          fullName: dto.fullName,
+          whatsapp: dto.phone,
+          email: dto.email || undefined,
+          source: "outro",
+          isClient: true,
+          convertedAt: agora,
+          status: "convertida_em_cliente",
+          lastContactAt: agora,
+        },
+      });
+      await tx.conversion.create({
+        data: {
+          brokerId,
+          leadId: lead.id,
+          reason: "cliente_da_carteira",
+          // Nem motivo nem próxima etapa são perguntados: quem cadastra
+          // direto já respondeu os dois pelo próprio gesto, e a etapa
+          // seguinte é sempre completar a ficha.
+          nextStep: "coletar_dados",
+          purpose: dto.purpose,
+          consentGiven: dto.consent,
+        },
+      });
+      await tx.consent.create({
+        data: {
+          brokerId,
+          leadId: lead.id,
+          purpose: "coleta_dados_adicionais",
+          textVersion: CONSENT_VERSION,
+        },
+      });
+      await tx.leadActivity.create({
+        data: {
+          brokerId,
+          leadId: lead.id,
+          type: "conversao",
+          description: "Cliente cadastrado direto na lista",
+          metadata: { purpose: dto.purpose },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          brokerId,
+          action: "cliente_cadastrado_direto",
+          entityType: "lead",
+          entityId: lead.id,
+          metadata: { purpose: dto.purpose },
+        },
+      });
+      return tx.lead.findUniqueOrThrow({ where: { id: lead.id }, include: CLIENT_INCLUDE });
+    });
+
+    return this.toSummary(criado);
+  }
 
   /**
    * Lista apenas pessoas convertidas (is_client) do corretor autenticado.

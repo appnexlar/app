@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
+  createClientSchema,
   listClientsSchema,
   requestDeletionSchema,
   updateClientFinancialSchema,
@@ -25,6 +26,7 @@ import {
   type ClientProfileData,
   type ClientSummary,
   type DeletionRequestSummary,
+  type CreateClientDto,
   type ListClientsQuery,
   type ParticipantSummary,
   type RequestDeletionDto,
@@ -43,6 +45,17 @@ import { ClientsService } from "./clients.service";
 @Controller("clients")
 export class ClientsController {
   constructor(private readonly clients: ClientsService) {}
+
+  @Post()
+  @ApiOperation({
+    summary: "Cadastra um cliente sem lead anterior (carteira que já existia)",
+  })
+  create(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Body(new ZodValidationPipe(createClientSchema)) dto: CreateClientDto,
+  ): Promise<ClientSummary> {
+    return this.clients.create(brokerId, dto);
+  }
 
   @Get()
   @ApiOperation({ summary: "Lista os clientes (leads convertidos) do corretor, campos seguros" })

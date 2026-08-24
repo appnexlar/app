@@ -10,6 +10,7 @@ import type {
 } from "@nexlar/shared";
 
 export const REASON_LABELS: Record<ConversionReason, string> = {
+  cliente_da_carteira: "Já era cliente da carteira",
   inicio_financiamento: "Início de financiamento",
   solicitacao_documentos: "Solicitação de documentos",
   analise_cadastral: "Análise cadastral",

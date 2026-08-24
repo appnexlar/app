@@ -9,6 +9,9 @@ import type { LeadDetail } from "../leads/dto";
  */
 
 export const CONVERSION_REASONS = [
+  // Pessoa que já era cliente antes do Nextlar, cadastrada direto na lista.
+  // Não houve lead nem conversão: a carteira entrou depois de já existir.
+  "cliente_da_carteira",
   "inicio_financiamento",
   "solicitacao_documentos",
   "analise_cadastral",
@@ -374,3 +377,31 @@ export const listClientsSchema = z.object({
   hasRelatedProperty: boolFromQuery,
 });
 export type ListClientsQuery = z.infer<typeof listClientsSchema>;
+
+
+/**
+ * Cadastro de cliente direto, sem lead anterior (docs/02 §2.16).
+ *
+ * Existe porque quem chega ao Nextlar com carteira formada não tem lead
+ * nenhuma para converter, e obrigá-lo a inventar uma faz o corretor concluir
+ * que o sistema está com defeito: ele sabe que aquela pessoa é cliente e não
+ * encontra como dizer isso.
+ *
+ * Pede o mesmo que o cadastro rápido de lead (nome e WhatsApp), mais a
+ * finalidade e a ciência da coleta. Motivo e próxima etapa não são
+ * perguntados: quem cadastra assim já respondeu os dois pelo próprio gesto.
+ */
+export const createClientSchema = z.object({
+  fullName: z.string().trim().min(2, "Informe o nome do cliente.").max(120),
+  phone: z
+    .string()
+    .trim()
+    .min(8, "Informe um WhatsApp válido.")
+    .max(20),
+  email: z.string().trim().email("E-mail inválido.").max(150).optional().or(z.literal("")),
+  purpose: z.enum(CLIENT_PURPOSES),
+  consent: z.literal(true, {
+    errorMap: () => ({ message: "É preciso confirmar a ciência sobre a coleta de dados." }),
+  }),
+});
+export type CreateClientDto = z.infer<typeof createClientSchema>;
