@@ -22,6 +22,7 @@ import { TextField } from "../../components/ui/TextField";
 import { Select } from "../../components/ui/Select";
 import { Checkbox } from "../../components/ui/Checkbox";
 import { Spinner } from "../../components/ui/Spinner";
+import { DatePicker } from "../../components/ui/DatePicker";
 import { ApiError } from "../../lib/http";
 import { maskDate, maskMoney, maskPhone, onlyDigits, parseMoney } from "../../lib/masks";
 import { UFS } from "../../lib/brazil";
@@ -1200,12 +1201,11 @@ function StepValues({
               value={form.minTermMonths}
               onChange={(e) => set("minTermMonths", onlyDigits(e.target.value))}
             />
-            <TextField
+            <DatePicker
               label="Disponível a partir de"
               optionalLabel="opcional"
-              type="date"
               value={form.availableFrom}
-              onChange={(e) => set("availableFrom", e.target.value)}
+              onChange={(v) => set("availableFrom", v)}
             />
           </div>
           <TextField
