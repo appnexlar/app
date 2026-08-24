@@ -10,6 +10,7 @@ import { useDebounced } from "../../lib/useDebounced";
 import { clientPath } from "../../lib/routes";
 import { STATUS_LABELS, STATUS_TONE, STATUS_TONE_CLASS, displayWhatsapp } from "../leads/labels";
 import { fetchClients } from "./api";
+import { NewClientDialog } from "./NewClientDialog";
 import { PURPOSE_LABELS, displayDate } from "./labels";
 
 /** Finalidade "todas" precisa de um valor, já que o chip é sempre uma escolha. */
@@ -24,6 +25,7 @@ const PURPOSE_CHIPS: FilterChip<PurposeFilter>[] = [
 export function ClientsPage() {
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
+  const [cadastrando, setCadastrando] = useState(false);
   const [purpose, setPurpose] = useState<PurposeFilter>("todas");
 
   // A busca filtra no servidor, então espera a digitação parar antes de sair.
@@ -43,6 +45,15 @@ export function ClientsPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">
+      {/* O cadastro direto fica sempre à mão, com ou sem clientes na lista:
+          quem já tem carteira formada precisa dele no primeiro dia, e quem já
+          usa o sistema continua conhecendo gente fora do funil. */}
+      <div className="flex justify-end">
+        <Button type="button" variant="accent" onClick={() => setCadastrando(true)}>
+          Cadastrar cliente
+        </Button>
+      </div>
+
       {/* Busca + filtro de finalidade, mesmos componentes de Leads e Imóveis. */}
       <div className="flex flex-col gap-3">
         <SearchField
@@ -71,7 +82,10 @@ export function ClientsPage() {
           </Button>
         </div>
       ) : clients.length === 0 && !hasFilters ? (
-        <EmptyState onSeeLeads={() => navigate("/leads")} />
+        <EmptyState
+          onSeeLeads={() => navigate("/leads")}
+          onCadastrar={() => setCadastrando(true)}
+        />
       ) : clients.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-body-sm text-text-muted">
           Nenhum cliente encontrado com esses filtros.
@@ -124,21 +138,44 @@ export function ClientsPage() {
           </ul>
         </section>
       )}
+
+      {cadastrando && (
+        <NewClientDialog
+          onClose={() => setCadastrando(false)}
+          onCreated={(cliente) => {
+            setCadastrando(false);
+            // Vai direto para a ficha: o cadastro é curto de propósito, e o
+            // resto dos dados se completa lá, quando o corretor tiver.
+            navigate(clientPath(cliente.id));
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function EmptyState({ onSeeLeads }: { onSeeLeads: () => void }) {
+function EmptyState({
+  onSeeLeads,
+  onCadastrar,
+}: {
+  onSeeLeads: () => void;
+  onCadastrar: () => void;
+}) {
   return (
     <section className="animate-rise mx-auto mt-4 flex max-w-xl flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
       <h2 className="text-h2 text-text">Nenhum cliente ainda</h2>
       <p className="mt-2 max-w-sm text-body text-text-muted">
-        As leads que avançarem para documentação, financiamento, proposta ou negociação aparecerão
-        automaticamente nesta área.
+        As leads que avançarem para documentação, financiamento, proposta ou negociação aparecem
+        aqui sozinhas. E se você já tem clientes de antes, cadastre agora mesmo.
       </p>
-      <Button type="button" variant="accent" className="mt-6" onClick={onSeeLeads}>
-        Ver leads
-      </Button>
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+        <Button type="button" variant="accent" onClick={onCadastrar}>
+          Cadastrar cliente
+        </Button>
+        <Button type="button" variant="ghost" onClick={onSeeLeads}>
+          Ver leads
+        </Button>
+      </div>
     </section>
   );
 }

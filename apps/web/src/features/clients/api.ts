@@ -5,6 +5,7 @@ import type {
   ClientProfileData,
   ClientSummary,
   ConvertLeadDto,
+  CreateClientDto,
   DeletionRequestSummary,
   LeadSummary,
   ListClientsQuery,
@@ -24,6 +25,10 @@ function toQuery(q: ListClientsQuery): string {
   if (q.hasRelatedProperty != null) p.set("hasRelatedProperty", String(q.hasRelatedProperty));
   const s = p.toString();
   return s ? `?${s}` : "";
+}
+
+export function createClient(dto: CreateClientDto): Promise<ClientSummary> {
+  return http.post<ClientSummary>("/clients", dto);
 }
 
 export function fetchClients(query: ListClientsQuery): Promise<ClientSummary[]> {

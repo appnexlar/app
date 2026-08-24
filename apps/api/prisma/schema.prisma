@@ -511,6 +511,10 @@ model LeadActivity {
 // pessoa: a conversão nunca duplica o cadastro. Existe no máximo uma por lead.
 // ---------------------------------------------------------------------------
 enum ConversionReason {
+  /// Pessoa que já era cliente do corretor antes do Nextlar, cadastrada
+  /// direto na lista de clientes. Não houve conversão de lead nenhuma: a
+  /// carteira só entrou no sistema depois de existir.
+  cliente_da_carteira
   inicio_financiamento
   solicitacao_documentos
   analise_cadastral
