@@ -4,7 +4,7 @@ import { ICON } from "../../components/ui/icon";
 import { AccountMenu } from "./AccountMenu";
 import { NotificationBell } from "../notifications/NotificationBell";
 import type { PageAction } from "./ShellContext";
-import { breadcrumbsFor, pageTitleFor } from "./navigation";
+import { NAV_ITEMS, breadcrumbsFor, pageTitleFor } from "./navigation";
 
 interface AppHeaderProps {
   pathname: string;
@@ -44,7 +44,12 @@ export function AppHeader({
   const title = pageTitleFor(pathname);
   // Página de seção (sem subrota): marca + título grande no mobile. Tela interna:
   // botão de voltar + título da tela, como um app.
-  const isSection = crumbs.length === 1;
+  //
+  // Vem do caminho na URL, e não do tamanho do caminho de pão: desde que a
+  // Home abre o caminho, toda página tem mais de um item, e contar itens diria
+  // que nem seção existe.
+  const secaoAtual = NAV_ITEMS.find((i) => pathname.startsWith(i.path));
+  const isSection = Boolean(secaoAtual) && pathname.replace(/\/+$/, "") === secaoAtual!.path;
   const current = crumbs[crumbs.length - 1];
   const parent = crumbs.length > 1 ? crumbs[crumbs.length - 2] : undefined;
   // Home do app. As seções são acessadas a partir dela pelo menu.
@@ -130,18 +135,21 @@ export function AppHeader({
       {/* Na Home quem dá nome à página é a saudação do próprio conteúdo, então
           o bloco de identidade não aparece para não repetir. */}
       <div className={"mx-auto w-full max-w-6xl px-4 pt-5 sm:px-6 sm:pt-7" + (isHome ? " hidden" : "")}>
-        {isSection ? (
+        {isSection && (
           !isHome && (
             <button
               type="button"
               onClick={goHome}
-              className="-ml-1 mb-1 inline-flex items-center gap-1 text-body-sm font-semibold text-text-muted transition-colors hover:text-text lg:hidden"
+              // Some assim que o caminho de pão aparece (sm): os dois juntos
+              // seriam duas formas de dizer a mesma coisa, uma acima da outra.
+              className="-ml-1 mb-1 inline-flex items-center gap-1 text-body-sm font-semibold text-text-muted transition-colors hover:text-text sm:hidden"
             >
               <ChevronLeft size={ICON.hint} aria-hidden="true" />
               Voltar
             </button>
           )
-        ) : (
+        )}
+        {!isHome && (
           // No celular o caminho de pão não existe: um app orienta pelo título
           // e pela seta de voltar da barra. Do tablet em diante ele volta,
           // porque aí há espaço e o mouse aproveita os atalhos.
