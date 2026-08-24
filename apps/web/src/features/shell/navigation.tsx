@@ -115,6 +115,9 @@ export function pageTitleFor(pathname: string): string {
   return match?.label ?? "Nextlar";
 }
 
+/** A Home do app: começo de todo caminho de pão e destino do "Voltar". */
+export const HOME_PATH = "/dashboard";
+
 export interface Crumb {
   label: string;
   /** Ausente no último item (página atual). */
@@ -144,7 +147,12 @@ export function breadcrumbsFor(pathname: string): Crumb[] {
   const section = NAV_ITEMS.find((i) => pathname.startsWith(i.path));
   if (!section) return [{ label: "Nextlar" }];
 
-  const crumbs: Crumb[] = [{ label: section.label, to: section.path }];
+  // A Home abre o caminho de toda página, menos dela mesma. Sem ela, uma
+  // página de seção teria um único item, que só repetiria o título logo
+  // abaixo; com ela, a mesma tela ganha contexto e um atalho de volta.
+  const crumbs: Crumb[] = [];
+  if (section.path !== HOME_PATH) crumbs.push({ label: "Início", to: HOME_PATH });
+  crumbs.push({ label: section.label, to: section.path });
   const rest = pathname.slice(section.path.length).split("/").filter(Boolean);
 
   for (const segment of rest) {
@@ -158,10 +166,14 @@ export function breadcrumbsFor(pathname: string): Crumb[] {
 
   // Itens intermediários continuam clicáveis (ex.: Detalhes em .../editar),
   // menos os que não têm tela própria: link para lugar nenhum é pior que texto.
+  // Os intermediários continuam clicáveis (ex.: Detalhes em .../editar),
+  // menos os que não têm tela própria: link para lugar nenhum é pior que
+  // texto. O deslocamento pula a Home e a seção, que já têm destino.
+  const inicioDosSegmentos = crumbs.length - rest.length;
   let acc = section.path;
-  for (let i = 1; i < crumbs.length - 1; i++) {
-    acc += `/${rest[i - 1]}`;
-    if (!SEM_TELA_PROPRIA.has(rest[i - 1])) crumbs[i].to = acc;
+  for (let i = 0; i < rest.length - 1; i++) {
+    acc += `/${rest[i]}`;
+    if (!SEM_TELA_PROPRIA.has(rest[i])) crumbs[inicioDosSegmentos + i].to = acc;
   }
   return crumbs;
 }
