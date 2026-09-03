@@ -867,9 +867,12 @@ function PaymentStep({
         </span>
       </div>
 
+      {/* Não existe período de teste nem data de vencimento no sistema: a
+          conta é liberada e ponto. Prometer um prazo que não existe faz a
+          pessoa perguntar "terminar quando?" na hora de decidir se entra. */}
       <Banner variant="info">
-        Nenhuma cobrança agora. Sua conta começa liberada e a forma de pagamento
-        será pedida quando o período de uso terminar.
+        Nenhuma cobrança por enquanto. Sua conta começa liberada, e avisaremos com
+        antecedência quando o plano passar a ser cobrado.
       </Banner>
 
       {errorMessage && <Banner variant="danger">{errorMessage}</Banner>}
