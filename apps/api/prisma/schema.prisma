@@ -50,6 +50,13 @@ enum LeadAudience {
 }
 
 /// Etapas da jornada comercial (docs/02 §2.9). O status É a etapa do funil.
+enum PersonType {
+  cpf
+  cnpj
+
+  @@map("person_type")
+}
+
 enum LeadStatus {
   novo
   em_atendimento
@@ -294,6 +301,11 @@ model Broker {
   /// muda quando a pessoa troca o e-mail no Google, por isso o vínculo mora
   /// aqui e não no endereço.
   googleId             String?           @unique @map("google_id")
+  /// CPF (pessoa física) ou CNPJ (empresa), só dígitos. Único: a mesma pessoa
+  /// não abre duas contas. Opcional porque as contas criadas antes desta
+  /// coluna não têm documento, e exigir agora as trancaria para fora.
+  personType           PersonType?       @map("person_type")
+  document             String?           @unique
   fullName             String            @map("full_name")
   email                String            @unique
   phone                String?

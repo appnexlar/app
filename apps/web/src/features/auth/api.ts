@@ -95,7 +95,11 @@ export function authErrorMessage(error: unknown, context: AuthErrorContext): str
     if (context === "login" && error.status === 401) return "E-mail ou senha incorretos.";
     // Conta suspensa: a API já manda o texto certo, e não há o que reformular.
     if (context === "login" && error.status === 403) return error.message;
-    if (context === "register" && error.status === 409) return "Já existe uma conta com esse e-mail.";
+    // Repetido: a API diz QUAL campo (e-mail, CPF ou CNPJ). Uma frase fixa
+    // aqui mandaria quem repetiu o CPF passar a tarde conferindo o e-mail.
+    if (context === "register" && error.status === 409) {
+      return error.message || "Já existe uma conta com esses dados.";
+    }
     // Cadastro pelo Google que demorou demais: a identidade precisa ser
     // reconfirmada, e a tela oferece o botão para recomeçar.
     if (context === "register" && error.status === 401) {

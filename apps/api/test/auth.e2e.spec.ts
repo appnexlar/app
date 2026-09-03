@@ -13,7 +13,13 @@ import {
 } from "../src/email/email.service";
 import { RateLimitStore } from "../src/common/rate-limit/rate-limit.store";
 import { PrismaService } from "../src/prisma/prisma.service";
-import { comCookie, refreshCookieDe, registerPlugins, resetDatabase } from "./e2e-utils";
+import {
+  comCookie,
+  cpfDeTeste,
+  refreshCookieDe,
+  registerPlugins,
+  resetDatabase,
+} from "./e2e-utils";
 
 /**
  * Jornada 1 (autenticação), as três correções de prioridade zero:
@@ -109,6 +115,8 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
       email,
       password: SENHA,
       acceptTerms: true,
+      personType: "cpf",
+      document: cpfDeTeste(),
     });
     expect(response.statusCode).toBe(201);
     const corpo = response.json() as {
@@ -206,6 +214,8 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
       email: "marketing@teste.com",
       password: SENHA,
       acceptTerms: true,
+      personType: "cpf",
+      document: cpfDeTeste(),
       marketingOptIn: true,
     });
     expect(resposta.statusCode).toBe(201);
@@ -674,6 +684,8 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
       email,
       password: SENHA,
       acceptTerms: true,
+      personType: "cpf",
+      document: cpfDeTeste(),
     });
 
     const setCookie = String(resposta.headers["set-cookie"] ?? "");

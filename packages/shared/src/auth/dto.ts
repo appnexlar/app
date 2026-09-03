@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidCnpj, isValidCpf, onlyDigits } from "../common/documento";
 
 /**
  * DTOs de autenticação — fonte única de validação, compartilhada entre
@@ -27,11 +28,51 @@ const emailSchema = z
 export const TERMS_VERSION = "2026-07-23";
 
 // --- Registro ---------------------------------------------------------------
-export const registerSchema = z.object({
+/**
+ * Documento do corretor: CPF para pessoa física, CNPJ para empresa.
+ *
+ * Guardado só em dígitos. "913.943.413-34" e "91394341334" são o mesmo
+ * documento, e se cada um entrasse do seu jeito a trava de repetido não
+ * seguraria nada.
+ *
+ * Os dígitos verificadores são conferidos aqui, e não só na tela: documento
+ * inventado que passa vira problema no contrato lá na frente, e validação que
+ * mora só no front não vale para quem chama a API direto.
+ */
+export const PERSON_TYPES = ["cpf", "cnpj"] as const;
+export type PersonType = (typeof PERSON_TYPES)[number];
+
+/** Regra de dígitos usada nos dois cadastros (senha e Google). */
+function conferirDocumento(
+  data: { personType: PersonType; document: string },
+  ctx: z.RefinementCtx,
+): void {
+  const valido = data.personType === "cpf" ? isValidCpf : isValidCnpj;
+  if (valido(data.document)) return;
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: ["document"],
+    message:
+      data.personType === "cpf"
+        ? "CPF inválido. Confira os números."
+        : "CNPJ inválido. Confira os números.",
+  });
+}
+
+/**
+ * A base como objeto, sem a checagem de documento em volta.
+ *
+ * Existe porque o assistente de cadastro reaproveita campos soltos daqui
+ * (registerBaseSchema.shape.email, por exemplo), e um schema com refinamento
+ * em volta deixa de ser objeto e não tem shape para oferecer.
+ */
+export const registerBaseSchema = z.object({
   fullName: z.string().min(2, "Informe seu nome completo").max(160).transform((v) => v.trim()),
   email: emailSchema,
   password: senhaSchema,
   phone: z.string().max(40).trim().optional().or(z.literal("")),
+  personType: z.enum(PERSON_TYPES),
+  document: z.string().trim().min(1, "Informe o documento.").transform(onlyDigits),
   agencyName: z.string().max(160).trim().optional().or(z.literal("")),
   // O aceite tem que chegar como true: o front não pode criar conta sem ele, e
   // o backend confere de novo, para a regra não morar só na tela.
@@ -40,6 +81,8 @@ export const registerSchema = z.object({
   }),
   marketingOptIn: z.boolean().optional().default(false),
 });
+
+export const registerSchema = registerBaseSchema.superRefine(conferirDocumento);
 export type RegisterDto = z.infer<typeof registerSchema>;
 
 // --- Portas de entrada ------------------------------------------------------
@@ -64,12 +107,14 @@ export interface AuthProviders {
  */
 export const registerWithGoogleSchema = z.object({
   phone: z.string().max(40).trim().optional().or(z.literal("")),
+  personType: z.enum(PERSON_TYPES),
+  document: z.string().trim().min(1, "Informe o documento.").transform(onlyDigits),
   agencyName: z.string().max(160).trim().optional().or(z.literal("")),
   acceptTerms: z.literal(true, {
     errorMap: () => ({ message: "Aceite os Termos e a Política para continuar." }),
   }),
   marketingOptIn: z.boolean().optional().default(false),
-});
+}).superRefine(conferirDocumento);
 export type RegisterWithGoogleDto = z.infer<typeof registerWithGoogleSchema>;
 
 /** Identidade do convite em aberto, para a tela dizer quem está entrando. */

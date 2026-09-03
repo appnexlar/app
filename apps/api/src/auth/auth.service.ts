@@ -72,6 +72,8 @@ export class AuthService {
           email: dto.email,
           passwordHash,
           phone: dto.phone ? dto.phone : null,
+          personType: dto.personType,
+          document: dto.document,
           agencyName: dto.agencyName ? dto.agencyName : null,
           // Prova do aceite: o schema já garante que dto.acceptTerms é true.
           termsAcceptedAt: new Date(),
@@ -84,7 +86,7 @@ export class AuthService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2002"
       ) {
-        throw new ConflictException("Já existe uma conta com esse e-mail.");
+        throw new ConflictException(mensagemDeConflito(error, dto.personType));
       }
       throw error;
     }
@@ -185,22 +187,34 @@ export class AuthService {
       return this.buildSession(atualizado);
     }
 
-    const broker = await this.prisma.broker.create({
-      data: {
-        fullName: identity.fullName,
-        email: identity.email,
-        googleId: identity.googleId,
-        passwordHash: null,
-        phone: dto.phone ? dto.phone : null,
-        agencyName: dto.agencyName ? dto.agencyName : null,
-        // O Google já confirmou o endereço, então a conta nasce pronta e o
-        // corretor não passa pelo gate de confirmação por e-mail.
-        emailVerifiedAt: new Date(),
-        termsAcceptedAt: new Date(),
-        termsVersion: TERMS_VERSION,
-        marketingOptIn: dto.marketingOptIn ?? false,
-      },
-    });
+    let broker: Broker;
+    try {
+      broker = await this.prisma.broker.create({
+        data: {
+          fullName: identity.fullName,
+          email: identity.email,
+          googleId: identity.googleId,
+          passwordHash: null,
+          phone: dto.phone ? dto.phone : null,
+          personType: dto.personType,
+          document: dto.document,
+          agencyName: dto.agencyName ? dto.agencyName : null,
+          // O Google já confirmou o endereço, então a conta nasce pronta e o
+          // corretor não passa pelo gate de confirmação por e-mail.
+          emailVerifiedAt: new Date(),
+          termsAcceptedAt: new Date(),
+          termsVersion: TERMS_VERSION,
+          marketingOptIn: dto.marketingOptIn ?? false,
+        },
+      });
+    } catch (error) {
+      // Vale aqui também: entrar pelo Google não dá direito a uma segunda
+      // conta com o mesmo documento.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new ConflictException(mensagemDeConflito(error, dto.personType));
+      }
+      throw error;
+    }
 
     await this.email.sendWelcome({ to: broker.email, fullName: broker.fullName });
 
@@ -455,4 +469,22 @@ function toProfile(broker: Broker): BrokerProfile {
     createdAt: broker.createdAt.toISOString(),
     updatedAt: broker.updatedAt.toISOString(),
   };
+}
+
+/**
+ * Qual campo repetiu. O Prisma diz o índice que estourou, e sem olhar isso a
+ * pessoa que repetiu o documento leria "já existe conta com esse e-mail" e
+ * passaria a tarde conferindo o e-mail.
+ */
+function mensagemDeConflito(
+  error: Prisma.PrismaClientKnownRequestError,
+  personType: "cpf" | "cnpj",
+): string {
+  const alvo = String((error.meta as { target?: string | string[] } | undefined)?.target ?? "");
+  if (alvo.includes("document")) {
+    return personType === "cpf"
+      ? "Já existe uma conta com esse CPF."
+      : "Já existe uma conta com esse CNPJ.";
+  }
+  return "Já existe uma conta com esse e-mail.";
 }

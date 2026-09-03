@@ -78,6 +78,27 @@ export interface TestBroker {
 }
 
 /**
+ * CPF válido e diferente a cada chamada.
+ *
+ * O cadastro passou a exigir documento com dígito verificador correto e sem
+ * repetir entre contas, então os testes precisam de CPFs de verdade: um valor
+ * fixo faria o segundo corretor de cada cenário esbarrar na trava de repetido.
+ */
+let sequenciaDeCpf = 0;
+export function cpfDeTeste(): string {
+  const base = String(100_000_000 + (sequenciaDeCpf++ % 800_000_000)).padStart(9, "0");
+  const digito = (parcial: string): number => {
+    const peso = parcial.length + 1;
+    const soma = [...parcial].reduce((acc, n, i) => acc + Number(n) * (peso - i), 0);
+    const resto = (soma * 10) % 11;
+    return resto === 10 ? 0 : resto;
+  };
+  const d1 = digito(base);
+  const d2 = digito(`${base}${d1}`);
+  return `${base}${d1}${d2}`;
+}
+
+/**
  * Registra um corretor pela rota pública e devolve o token da sessão.
  *
  * Marca o e-mail como confirmado logo em seguida, direto no banco: conta nova
@@ -92,7 +113,14 @@ export async function registerBroker(
   const response = await app.inject({
     method: "POST",
     url: "/api/auth/register",
-    payload: { fullName, email, password: "SenhaForte123", acceptTerms: true },
+    payload: {
+      fullName,
+      email,
+      password: "SenhaForte123",
+      acceptTerms: true,
+      personType: "cpf",
+      document: cpfDeTeste(),
+    },
   });
   if (response.statusCode !== 201) {
     throw new Error(`Falha ao registrar ${email}: ${response.statusCode} ${response.body}`);
