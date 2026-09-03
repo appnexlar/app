@@ -12,7 +12,13 @@ import {
 } from "../src/auth/google-oauth.service";
 import { RateLimitStore } from "../src/common/rate-limit/rate-limit.store";
 import { PrismaService } from "../src/prisma/prisma.service";
-import { comCookie, refreshCookieDe, registerPlugins, resetDatabase } from "./e2e-utils";
+import {
+  comCookie,
+  cpfDeTeste,
+  refreshCookieDe,
+  registerPlugins,
+  resetDatabase,
+} from "./e2e-utils";
 
 /**
  * Entrar e criar conta com o Google.
@@ -227,7 +233,13 @@ describe("entrar com o Google (e2e)", () => {
       method: "POST",
       url: "/api/auth/register/google",
       headers: { cookie: `nexlar_cadastro=${convite}` },
-      payload: { phone: "11988887777", acceptTerms: true, marketingOptIn: false },
+      payload: {
+        phone: "11988887777",
+        acceptTerms: true,
+        marketingOptIn: false,
+        personType: "cpf",
+        document: cpfDeTeste(),
+      },
     });
 
     expect(criada.statusCode).toBe(201);
@@ -250,6 +262,8 @@ describe("entrar com o Google (e2e)", () => {
       headers: { cookie: `nexlar_cadastro=${convite}` },
       payload: {
         acceptTerms: true,
+        personType: "cpf",
+        document: cpfDeTeste(),
         // Tentativa de criar a conta com o e-mail de outra pessoa.
         email: "vitima@gmail.com",
         fullName: "Outra Pessoa",
@@ -281,7 +295,7 @@ describe("entrar com o Google (e2e)", () => {
     const resposta = await app.inject({
       method: "POST",
       url: "/api/auth/register/google",
-      payload: { acceptTerms: true },
+      payload: { acceptTerms: true, personType: "cpf", document: cpfDeTeste() },
     });
 
     expect(resposta.statusCode).toBe(401);
@@ -297,6 +311,8 @@ describe("entrar com o Google (e2e)", () => {
         email: "ana@gmail.com",
         password: "SenhaForte123",
         acceptTerms: true,
+        personType: "cpf",
+        document: cpfDeTeste(),
       },
     });
     expect(cadastro.statusCode).toBe(201);
@@ -326,6 +342,8 @@ describe("entrar com o Google (e2e)", () => {
         email: "ana@gmail.com",
         password: "SenhaForte123",
         acceptTerms: true,
+        personType: "cpf",
+        document: cpfDeTeste(),
       },
     });
     await prisma.broker.update({
@@ -375,7 +393,7 @@ describe("entrar com o Google (e2e)", () => {
       method: "POST",
       url: "/api/auth/register/google",
       headers: { cookie: `nexlar_cadastro=${convite}` },
-      payload: { acceptTerms: true },
+      payload: { acceptTerms: true, personType: "cpf", document: cpfDeTeste() },
     });
 
     const segundo = await abrirPedido();
@@ -403,7 +421,7 @@ describe("entrar com o Google (e2e)", () => {
       method: "POST",
       url: "/api/auth/register/google",
       headers: { cookie: `nexlar_cadastro=${convite}` },
-      payload: { acceptTerms: true },
+      payload: { acceptTerms: true, personType: "cpf", document: cpfDeTeste() },
     });
 
     const tentativa = await app.inject({

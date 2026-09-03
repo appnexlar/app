@@ -16,6 +16,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import {
   forgotPasswordSchema,
   loginSchema,
+  checkDocumentSchema,
   registerSchema,
   registerWithGoogleSchema,
   resendVerificationSchema,
@@ -26,6 +27,8 @@ import {
   type ForgotPasswordDto,
   type GooglePendingSignup,
   type LoginDto,
+  type CheckDocumentDto,
+  type DocumentAvailability,
   type RegisterDto,
   type RegisterWithGoogleDto,
   type ResendVerificationDto,
@@ -67,6 +70,19 @@ export class AuthController {
         expiresIn: resultado.tokens.expiresIn,
       },
     };
+  }
+
+  @Public()
+  // Mesma janela do cadastro: é uma pergunta pública sobre um CPF, e sem
+  // limite viraria uma forma de varrer documentos em busca de quem tem conta.
+  @RateLimit({ name: "register", limit: 10, windowMs: 60 * MINUTO })
+  @Post("document/check")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Diz se o documento ainda está livre para cadastro" })
+  checkDocument(
+    @Body(new ZodValidationPipe(checkDocumentSchema)) dto: CheckDocumentDto,
+  ): Promise<DocumentAvailability> {
+    return this.auth.documentAvailable(dto);
   }
 
   @Public()

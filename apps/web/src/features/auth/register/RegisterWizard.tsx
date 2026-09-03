@@ -8,7 +8,7 @@ import { z } from "zod";
 import {
   isValidCnpj,
   isValidCpf,
-  registerSchema,
+  registerBaseSchema,
   type GooglePendingSignup,
 } from "@nexlar/shared";
 import { Button } from "../../../components/ui/Button";
@@ -25,6 +25,7 @@ import {
   googlePendingSignup,
   register as registerAccount,
   registerWithGoogle,
+  checkDocument,
 } from "../api";
 import { ApiError } from "../../../lib/http";
 import {
@@ -56,8 +57,9 @@ import { PLANS, formatBRL, type Plan, type PlanId } from "./plans";
  * Exigir carteira e documento na porta de entrada afasta quem só quer
  * experimentar o sistema. Quem quiser o selo envia depois, em Perfil.
  *
- * TODO(backend): persistir cpf/cnpj e plano escolhido quando a API ganhar
- * esses campos. Hoje a API grava nome, e-mail, WhatsApp e imobiliária.
+ * O CPF ou CNPJ é gravado e não pode repetir entre contas; a etapa do perfil
+ * confere isso na hora de avançar. O plano escolhido ainda não vai para a
+ * API: a cobrança é uma fatia futura, e por enquanto ninguém paga nada.
  */
 
 // --- Schemas por etapa ------------------------------------------------------
@@ -85,9 +87,9 @@ type GoogleAccountValues = z.infer<typeof googleAccountSchema>;
 
 const emailAccountSchema = z
   .object({
-    fullName: registerSchema.shape.fullName,
-    email: registerSchema.shape.email,
-    password: registerSchema.shape.password,
+    fullName: registerBaseSchema.shape.fullName,
+    email: registerBaseSchema.shape.email,
+    password: registerBaseSchema.shape.password,
     confirmPassword: z.string().min(1, "Confirme a senha"),
     acceptTerms: aceitesSchema.shape.acceptTerms,
     marketingOptIn: z.boolean(),
@@ -103,7 +105,6 @@ type AccountValues =
   | ({ via: "google" } & GoogleAccountValues)
   | ({ via: "email" } & EmailAccountValues);
 
-// TODO(backend): mover para @nexlar/shared junto com a fatia que persiste.
 const profileSchema = z
   .object({
     phone: z.string().refine((v) => {
@@ -184,6 +185,8 @@ export function RegisterWizard() {
         // Nome e e-mail NÃO vão daqui: quem os fornece é o convite assinado.
         return registerWithGoogle({
           phone: values.perfil.phone,
+          personType: values.perfil.personType,
+          document: values.perfil.document,
           agencyName: values.perfil.agencyName ?? "",
           acceptTerms: true,
           marketingOptIn: values.conta.marketingOptIn,
@@ -194,6 +197,8 @@ export function RegisterWizard() {
         email: values.conta.email,
         password: values.conta.password,
         phone: values.perfil.phone,
+        personType: values.perfil.personType,
+        document: values.perfil.document,
         agencyName: values.perfil.agencyName ?? "",
         acceptTerms: true,
         marketingOptIn: values.conta.marketingOptIn,
@@ -212,8 +217,8 @@ export function RegisterWizard() {
 
   const finish = () => {
     if (!account || !profile) return;
-    // TODO(backend): enviar também personType/document e planId quando a API
-    // ganhar esses campos. O aceite dos termos e o opt-in já vão.
+    // O plano ainda não vai: a API não tem cobrança. O documento, sim, agora
+    // é gravado e não pode repetir entre contas.
     mutation.mutate({ conta: account, perfil: profile });
   };
 
@@ -615,6 +620,7 @@ function ProfileStep({
     handleSubmit,
     watch,
     setValue,
+    setError,
     formState: { errors },
   } = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
@@ -631,7 +637,36 @@ function ProfileStep({
   const phoneField = register("phone");
   const documentField = register("document");
 
-  const submit = (values: ProfileValues) => onNext(values);
+  const [conferindo, setConferindo] = useState(false);
+
+  // Antes de avançar, pergunta à API se o documento já tem conta. Descobrir
+  // isso só na última tela, depois de escolher plano, é o que faz a pessoa
+  // voltar duas etapas para corrigir uma coisa que estava na cara.
+  const submit = async (values: ProfileValues) => {
+    setConferindo(true);
+    try {
+      const { available } = await checkDocument({
+        personType: values.personType,
+        document: values.document,
+      });
+      if (!available) {
+        setError("document", {
+          message:
+            values.personType === "cpf"
+              ? "Já existe uma conta com esse CPF."
+              : "Já existe uma conta com esse CNPJ.",
+        });
+        return;
+      }
+      onNext(values);
+    } catch {
+      // Sem resposta da API, a conferência final do cadastro ainda segura o
+      // repetido: melhor deixar seguir do que travar a pessoa por instabilidade.
+      onNext(values);
+    } finally {
+      setConferindo(false);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
@@ -703,8 +738,8 @@ function ProfileStep({
         {...register("agencyName")}
       />
 
-      <Button type="submit" variant="accent" fullWidth className="mt-1">
-        Continuar
+      <Button type="submit" variant="accent" fullWidth className="mt-1" loading={conferindo}>
+        {conferindo ? "Conferindo..." : "Continuar"}
       </Button>
     </form>
   );
@@ -832,9 +867,12 @@ function PaymentStep({
         </span>
       </div>
 
+      {/* Não existe período de teste nem data de vencimento no sistema: a
+          conta é liberada e ponto. Prometer um prazo que não existe faz a
+          pessoa perguntar "terminar quando?" na hora de decidir se entra. */}
       <Banner variant="info">
-        Nenhuma cobrança agora. Sua conta começa liberada e a forma de pagamento
-        será pedida quando o período de uso terminar.
+        Nenhuma cobrança por enquanto. Sua conta começa liberada, e avisaremos com
+        antecedência quando o plano passar a ser cobrado.
       </Banner>
 
       {errorMessage && <Banner variant="danger">{errorMessage}</Banner>}

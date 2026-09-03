@@ -1,4 +1,6 @@
 import type {
+  CheckDocumentDto,
+  DocumentAvailability,
   AuthProviders,
   AuthResponse,
   ForgotPasswordDto,
@@ -12,6 +14,15 @@ import type {
 } from "@nexlar/shared";
 import { ApiError } from "../../lib/http";
 import { http } from "../../lib/http";
+
+/**
+ * Pergunta à API se o documento ainda está livre. Usado pela etapa do perfil
+ * para avisar "esse CPF já tem conta" na hora de avançar, e não na última
+ * tela, depois de a pessoa já ter escolhido plano.
+ */
+export function checkDocument(dto: CheckDocumentDto): Promise<DocumentAvailability> {
+  return http.post<DocumentAvailability>("/auth/document/check", dto);
+}
 
 /** Autentica o corretor. Retorna o perfil e os tokens de sessão. */
 export function login(credentials: LoginDto): Promise<AuthResponse> {
@@ -95,7 +106,11 @@ export function authErrorMessage(error: unknown, context: AuthErrorContext): str
     if (context === "login" && error.status === 401) return "E-mail ou senha incorretos.";
     // Conta suspensa: a API já manda o texto certo, e não há o que reformular.
     if (context === "login" && error.status === 403) return error.message;
-    if (context === "register" && error.status === 409) return "Já existe uma conta com esse e-mail.";
+    // Repetido: a API diz QUAL campo (e-mail, CPF ou CNPJ). Uma frase fixa
+    // aqui mandaria quem repetiu o CPF passar a tarde conferindo o e-mail.
+    if (context === "register" && error.status === 409) {
+      return error.message || "Já existe uma conta com esses dados.";
+    }
     // Cadastro pelo Google que demorou demais: a identidade precisa ser
     // reconfirmada, e a tela oferece o botão para recomeçar.
     if (context === "register" && error.status === 401) {
