@@ -12,6 +12,8 @@ import { Prisma } from "@prisma/client";
 import { TERMS_VERSION } from "@nexlar/shared";
 import type {
   BrokerProfile,
+  CheckDocumentDto,
+  DocumentAvailability,
   ForgotPasswordDto,
   GooglePendingSignup,
   LoginDto,
@@ -219,6 +221,21 @@ export class AuthService {
     await this.email.sendWelcome({ to: broker.email, fullName: broker.fullName });
 
     return this.buildSession(broker);
+  }
+
+  /**
+   * "Esse documento já tem conta?", para a etapa do perfil avisar na hora.
+   *
+   * Responde só sim ou não, e nada sobre a conta encontrada. O cadastro em si
+   * já revela a mesma coisa (409 no fim), então isto não abre porta nova: só
+   * adianta a resposta para antes de a pessoa escolher plano.
+   */
+  async documentAvailable(dto: CheckDocumentDto): Promise<DocumentAvailability> {
+    const existente = await this.prisma.broker.findUnique({
+      where: { document: dto.document },
+      select: { id: true },
+    });
+    return { available: existente === null };
   }
 
   /** Autentica o corretor por e-mail e senha. */

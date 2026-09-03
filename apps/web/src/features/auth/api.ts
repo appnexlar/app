@@ -1,4 +1,6 @@
 import type {
+  CheckDocumentDto,
+  DocumentAvailability,
   AuthProviders,
   AuthResponse,
   ForgotPasswordDto,
@@ -12,6 +14,15 @@ import type {
 } from "@nexlar/shared";
 import { ApiError } from "../../lib/http";
 import { http } from "../../lib/http";
+
+/**
+ * Pergunta à API se o documento ainda está livre. Usado pela etapa do perfil
+ * para avisar "esse CPF já tem conta" na hora de avançar, e não na última
+ * tela, depois de a pessoa já ter escolhido plano.
+ */
+export function checkDocument(dto: CheckDocumentDto): Promise<DocumentAvailability> {
+  return http.post<DocumentAvailability>("/auth/document/check", dto);
+}
 
 /** Autentica o corretor. Retorna o perfil e os tokens de sessão. */
 export function login(credentials: LoginDto): Promise<AuthResponse> {

@@ -25,6 +25,7 @@ import {
   googlePendingSignup,
   register as registerAccount,
   registerWithGoogle,
+  checkDocument,
 } from "../api";
 import { ApiError } from "../../../lib/http";
 import {
@@ -56,9 +57,9 @@ import { PLANS, formatBRL, type Plan, type PlanId } from "./plans";
  * Exigir carteira e documento na porta de entrada afasta quem só quer
  * experimentar o sistema. Quem quiser o selo envia depois, em Perfil.
  *
- * O CPF ou CNPJ é gravado e não pode repetir entre contas. O plano escolhido
- * ainda não vai para a API: a cobrança é uma fatia futura, e por enquanto
- * ninguém paga nada.
+ * O CPF ou CNPJ é gravado e não pode repetir entre contas; a etapa do perfil
+ * confere isso na hora de avançar. O plano escolhido ainda não vai para a
+ * API: a cobrança é uma fatia futura, e por enquanto ninguém paga nada.
  */
 
 // --- Schemas por etapa ------------------------------------------------------
@@ -619,6 +620,7 @@ function ProfileStep({
     handleSubmit,
     watch,
     setValue,
+    setError,
     formState: { errors },
   } = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
@@ -635,7 +637,36 @@ function ProfileStep({
   const phoneField = register("phone");
   const documentField = register("document");
 
-  const submit = (values: ProfileValues) => onNext(values);
+  const [conferindo, setConferindo] = useState(false);
+
+  // Antes de avançar, pergunta à API se o documento já tem conta. Descobrir
+  // isso só na última tela, depois de escolher plano, é o que faz a pessoa
+  // voltar duas etapas para corrigir uma coisa que estava na cara.
+  const submit = async (values: ProfileValues) => {
+    setConferindo(true);
+    try {
+      const { available } = await checkDocument({
+        personType: values.personType,
+        document: values.document,
+      });
+      if (!available) {
+        setError("document", {
+          message:
+            values.personType === "cpf"
+              ? "Já existe uma conta com esse CPF."
+              : "Já existe uma conta com esse CNPJ.",
+        });
+        return;
+      }
+      onNext(values);
+    } catch {
+      // Sem resposta da API, a conferência final do cadastro ainda segura o
+      // repetido: melhor deixar seguir do que travar a pessoa por instabilidade.
+      onNext(values);
+    } finally {
+      setConferindo(false);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
@@ -707,8 +738,8 @@ function ProfileStep({
         {...register("agencyName")}
       />
 
-      <Button type="submit" variant="accent" fullWidth className="mt-1">
-        Continuar
+      <Button type="submit" variant="accent" fullWidth className="mt-1" loading={conferindo}>
+        {conferindo ? "Conferindo..." : "Continuar"}
       </Button>
     </form>
   );

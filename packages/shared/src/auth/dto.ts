@@ -249,3 +249,22 @@ export interface AuthResponse {
   broker: BrokerProfile;
   tokens: AuthTokens;
 }
+
+/**
+ * Conferência do documento antes de concluir o cadastro.
+ *
+ * A etapa do perfil pergunta "esse CPF já tem conta?" na hora de avançar, em
+ * vez de deixar a pessoa descobrir só na última tela, depois de escolher
+ * plano. Mesma regra de dígitos e mesma normalização do cadastro.
+ */
+export const checkDocumentSchema = z
+  .object({
+    personType: z.enum(PERSON_TYPES),
+    document: z.string().trim().min(1, "Informe o documento.").transform(onlyDigits),
+  })
+  .superRefine(conferirDocumento);
+export type CheckDocumentDto = z.infer<typeof checkDocumentSchema>;
+
+export interface DocumentAvailability {
+  available: boolean;
+}
