@@ -30,7 +30,7 @@ export const STATUS_LABELS: Record<LeadStatus, string> = {
   visitando_imoveis: "Visitando imóveis",
   imovel_prioritario: "Imóvel prioritário",
   aguardando_decisao: "Aguardando decisão",
-  convertida_em_cliente: "Cliente",
+  fechado: "Fechado",
   perdida: "Perdida",
   reativar_futuro: "Reativar no futuro",
 };
@@ -54,7 +54,7 @@ export const STATUS_TONE: Record<LeadStatus, StatusTone> = {
   visitando_imoveis: "ativo",
   imovel_prioritario: "ativo",
   aguardando_decisao: "ativo",
-  convertida_em_cliente: "ganho",
+  fechado: "ganho",
   perdida: "encerrado",
   reativar_futuro: "encerrado",
 };

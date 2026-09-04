@@ -20,7 +20,7 @@ export const LEAD_AUDIENCES = ["brasil", "exterior"] as const;
 
 /**
  * Etapas da jornada comercial da lead (docs/02 §2.9). O status É a etapa do
- * funil. "convertida_em_cliente" nunca é alvo de mudança comum de status:
+ * funil. "fechado" nunca é alvo de mudança comum de status:
  * só a ação explícita de conversão chega lá (LEAD-13).
  */
 export const LEAD_STATUSES = [
@@ -35,7 +35,7 @@ export const LEAD_STATUSES = [
   "visitando_imoveis",
   "imovel_prioritario",
   "aguardando_decisao",
-  "convertida_em_cliente",
+  "fechado",
   "perdida",
   "reativar_futuro",
 ] as const;
@@ -73,7 +73,7 @@ export const FUNNEL_GROUP_BY_STATUS: Record<LeadStatus, FunnelGroup> = {
   visitando_imoveis: "visitas",
   imovel_prioritario: "visitas",
   aguardando_decisao: "visitas",
-  convertida_em_cliente: "clientes",
+  fechado: "clientes",
   perdida: "encerradas",
   reativar_futuro: "encerradas",
 };
@@ -118,13 +118,19 @@ export type CreateLeadDto = z.infer<typeof createLeadSchema>;
 /**
  * Mudança de etapa da lead no funil. Regras (docs/02 §2.9, LEAD-08/LEAD-13):
  * perdida exige motivo; reativar_futuro exige data futura (e a API cria a
- * tarefa de reativação); convertida_em_cliente é recusada aqui, só a ação
+ * tarefa de reativação); fechado é recusada aqui, só a ação
  * explícita de conversão chega lá.
  */
 export const changeLeadStatusSchema = z
   .object({
     status: z.enum(LEAD_STATUSES),
     lostReason: optionalTrimmed(500),
+    // Só para "fechado" (entidade única, set 2026): detalhes do fechamento,
+    // todos opcionais. A ciência da coleta vira obrigatória antes do primeiro
+    // dado complementar, não aqui.
+    purpose: z.enum(["compra", "locacao"]).optional(),
+    propertyId: z.string().uuid().optional(),
+    closeNote: optionalTrimmed(300),
     reactivateAt: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe a data no formato AAAA-MM-DD")

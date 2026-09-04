@@ -3,7 +3,6 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-  UnprocessableEntityException,
 } from "@nestjs/common";
 import type {
   ChangeLeadStatusDto,
@@ -15,6 +14,7 @@ import type {
 import { CONSENT_VERSION } from "@nexlar/shared";
 import { STATUS_LABELS } from "./status-labels";
 import { Prisma, type Lead, type LeadActivity } from "@prisma/client";
+import type { ClientPurpose, ConversionNextStep, ConversionReason } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { ProductEventService } from "../guidance/product-event.service";
 
@@ -107,9 +107,12 @@ export class LeadsService {
    * Lista só quem ainda é lead. Quem converteu vive na área Clientes: a pessoa
    * é a mesma no banco (2.16), mas a experiência separa as duas fases.
    */
-  async list(brokerId: string): Promise<LeadSummary[]> {
+  async list(brokerId: string, opts: { apenasAbertos?: boolean } = {}): Promise<LeadSummary[]> {
+    // Entidade única (set 2026): a lista é de todo mundo. O recorte
+    // "apenasAbertos" existe para a rota antiga /leads continuar devolvendo
+    // o que sempre devolveu enquanto o front não muda.
     const leads = await this.prisma.lead.findMany({
-      where: { brokerId, isClient: false },
+      where: { brokerId, ...(opts.apenasAbertos ? { isClient: false } : {}) },
       orderBy: { createdAt: "desc" },
     });
     return leads.map((lead) => this.toSummary(lead));
@@ -127,7 +130,7 @@ export class LeadsService {
   /**
    * Muda a etapa da lead no funil e registra na timeline. Regras de negócio
    * (docs/02 §2.9, LEAD-08, LEAD-13) moram aqui, nunca no front:
-   * - "convertida_em_cliente" é recusada: só a ação explícita de conversão
+   * - "fechado" é recusada: só a ação explícita de conversão
    *   chega lá (mudar etapa nunca converte).
    * - "perdida" exige motivo (lostReason).
    * - "reativar_futuro" exige data futura e cria a tarefa de reativação.
@@ -141,10 +144,27 @@ export class LeadsService {
     if (!lead) throw new NotFoundException("Lead não encontrado.");
     if (lead.status === dto.status) return this.toSummary(lead);
 
-    if (dto.status === "convertida_em_cliente") {
-      throw new UnprocessableEntityException(
-        "Mudar a etapa não converte a lead. Use a ação de conversão em cliente.",
+    // Entidade única (set 2026): "fechado" é uma etapa como as outras. Chegar
+    // nela grava o registro do fechamento, que continua sendo a fonte de
+    // "fechado em" e das métricas de tempo até fechar.
+    if (dto.status === "fechado") {
+      if (dto.propertyId) {
+        const property = await this.prisma.property.findFirst({
+          where: { id: dto.propertyId, brokerId },
+        });
+        if (!property) throw new NotFoundException("Imóvel não encontrado.");
+      }
+      const fechado = await this.prisma.$transaction((tx) =>
+        this.fecharNegocio(tx, brokerId, lead, {
+          reason: "negociacao_formal",
+          reasonDetail: dto.closeNote ?? null,
+          nextStep: "coletar_dados",
+          purpose: dto.purpose ?? "compra",
+          propertyId: dto.propertyId ?? null,
+          consentGiven: false,
+        }),
       );
+      return this.toSummary(fechado);
     }
     if (dto.status === "perdida" && !dto.lostReason) {
       throw new BadRequestException("Informe o motivo da perda.");
@@ -238,63 +258,94 @@ export class LeadsService {
       if (!property) throw new NotFoundException("Imóvel não encontrado.");
     }
 
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const next = await tx.lead.update({
-        where: { id },
-        data: {
-          isClient: true,
-          convertedAt: new Date(),
-          status: "convertida_em_cliente",
-          lastContactAt: new Date(),
-        },
-      });
-      await tx.conversion.create({
-        data: {
-          brokerId,
-          leadId: id,
-          reason: dto.reason,
-          reasonDetail: dto.reason === "outro" ? dto.reasonDetail : null,
-          nextStep: dto.nextStep,
-          purpose: dto.purpose,
-          propertyId: dto.propertyId ?? null,
-          consentGiven: dto.consent,
-        },
-      });
+    const updated = await this.prisma.$transaction((tx) =>
+      this.fecharNegocio(tx, brokerId, lead, {
+        reason: dto.reason,
+        reasonDetail: dto.reason === "outro" ? (dto.reasonDetail ?? null) : null,
+        nextStep: dto.nextStep,
+        purpose: dto.purpose,
+        propertyId: dto.propertyId ?? null,
+        consentGiven: dto.consent,
+      }),
+    );
+    return this.toSummary(updated);
+  }
+
+  /**
+   * O fechamento do negócio, numa transação só: marca a pessoa, grava o
+   * registro do fechamento, a ciência da coleta (quando dada), a timeline, a
+   * auditoria e o marco do checklist. É o mesmo caminho para quem fecha pelo
+   * funil e para quem usa a rota antiga de conversão.
+   */
+  private async fecharNegocio(
+    tx: Prisma.TransactionClient,
+    brokerId: string,
+    lead: Lead,
+    dados: {
+      reason: ConversionReason;
+      reasonDetail: string | null;
+      nextStep: ConversionNextStep;
+      purpose: ClientPurpose;
+      propertyId: string | null;
+      consentGiven: boolean;
+    },
+  ): Promise<Lead> {
+    const agora = new Date();
+    const next = await tx.lead.update({
+      where: { id: lead.id },
+      data: { isClient: true, convertedAt: agora, status: "fechado", lastContactAt: agora },
+    });
+    await tx.conversion.create({
+      data: {
+        brokerId,
+        leadId: lead.id,
+        reason: dados.reason,
+        reasonDetail: dados.reasonDetail,
+        nextStep: dados.nextStep,
+        purpose: dados.purpose,
+        propertyId: dados.propertyId,
+        consentGiven: dados.consentGiven,
+      },
+    });
+    if (dados.consentGiven) {
       await tx.consent.create({
         data: {
           brokerId,
-          leadId: id,
+          leadId: lead.id,
           purpose: "coleta_dados_adicionais",
           textVersion: CONSENT_VERSION,
         },
       });
-      await tx.leadActivity.create({
-        data: {
-          brokerId,
-          leadId: id,
-          type: "conversao",
-          description: "Lead convertida em cliente",
-          metadata: { reason: dto.reason, nextStep: dto.nextStep, purpose: dto.purpose },
-        },
-      });
-      await tx.auditLog.create({
-        data: {
-          brokerId,
-          action: "lead_convertida",
-          entityType: "lead",
-          entityId: id,
-          metadata: { reason: dto.reason, nextStep: dto.nextStep },
-        },
-      });
-      await this.events.track(
+    }
+    await tx.leadActivity.create({
+      data: {
         brokerId,
-        { type: "FIRST_LEAD_CONVERTED", source: "ui", entityType: "lead", entityId: id },
-        tx,
-      );
-      return next;
+        leadId: lead.id,
+        type: "conversao",
+        description: "Negócio fechado",
+        metadata: { from: lead.status, reason: dados.reason, purpose: dados.purpose },
+      },
     });
-
-    return this.toSummary(updated);
+    await tx.auditLog.create({
+      data: {
+        brokerId,
+        action: "lead_convertida",
+        entityType: "lead",
+        entityId: lead.id,
+        metadata: { reason: dados.reason, nextStep: dados.nextStep },
+      },
+    });
+    await this.events.track(
+      brokerId,
+      {
+        type: "FIRST_LEAD_CONVERTED",
+        entityType: "lead",
+        entityId: lead.id,
+        metadata: { reason: dados.reason },
+      },
+      tx,
+    );
+    return next;
   }
 
   /** Exclusão definitiva do lead (cascata apaga timeline, tarefas, visitas). */
