@@ -1,5 +1,6 @@
 export * from "./common/documento";
 export * from "./auth/dto";
+export * from "./auth/senha";
 export * from "./agenda/dto";
 export * from "./clients/dto";
 export * from "./leads/dto";

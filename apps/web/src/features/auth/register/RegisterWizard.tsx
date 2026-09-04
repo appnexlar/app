@@ -8,12 +8,14 @@ import { z } from "zod";
 import {
   isValidCnpj,
   isValidCpf,
+  pedacosAEvitar,
   registerBaseSchema,
   type GooglePendingSignup,
 } from "@nexlar/shared";
 import { Button } from "../../../components/ui/Button";
 import { TextField } from "../../../components/ui/TextField";
 import { PasswordField } from "../../../components/ui/PasswordField";
+import { PasswordRequirements } from "../../../components/ui/PasswordRequirements";
 import { AuthOptionButton, GoogleMark } from "../../../components/ui/AuthOptionButton";
 import { Checkbox } from "../../../components/ui/Checkbox";
 import { Banner } from "../../../components/ui/Banner";
@@ -491,6 +493,7 @@ function EmailAccountStep({
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<EmailAccountValues>({
     resolver: zodResolver(emailAccountSchema),
@@ -527,9 +530,14 @@ function EmailAccountStep({
         label="Senha"
         autoComplete="new-password"
         placeholder="Crie uma senha"
-        hint="Mínimo de 8 caracteres, com ao menos uma letra e um número."
         error={errors.password?.message}
         {...register("password")}
+      />
+      {/* O que ainda falta, enquanto digita. A regra é a mesma do servidor;
+          aqui ela só deixa de ser surpresa depois do clique. */}
+      <PasswordRequirements
+        senha={watch("password") ?? ""}
+        evitar={pedacosAEvitar({ fullName: watch("fullName"), email: watch("email") })}
       />
       <PasswordField
         label="Confirmar senha"
