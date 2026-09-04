@@ -318,8 +318,10 @@ describe("Isolamento por corretor", () => {
     });
 
     it("list devolve só os clientes do corretor autenticado", async () => {
-      const listAna = (await requestAs(app, ana, { method: "GET", url: "/api/clients" })).json();
-      const listBruno = (await requestAs(app, bruno, { method: "GET", url: "/api/clients" })).json();
+      // Entidade única: /clients lista todo mundo do corretor. O recorte de
+      // fechados é o que a antiga aba Clientes mostrava.
+      const listAna = (await requestAs(app, ana, { method: "GET", url: "/api/clients?fechados=true" })).json();
+      const listBruno = (await requestAs(app, bruno, { method: "GET", url: "/api/clients?fechados=true" })).json();
 
       expect(listAna.map((c: { id: string }) => c.id)).toEqual([clienteAna]);
       expect(listBruno.map((c: { id: string }) => c.id)).toEqual([clienteBruno]);

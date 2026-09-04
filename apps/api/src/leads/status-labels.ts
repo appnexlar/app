@@ -13,7 +13,7 @@ export const STATUS_LABELS: Record<LeadStatus, string> = {
   visitando_imoveis: "Visitando imóveis",
   imovel_prioritario: "Imóvel prioritário",
   aguardando_decisao: "Aguardando decisão",
-  convertida_em_cliente: "Cliente",
+  fechado: "Fechado",
   perdida: "Perdida",
   reativar_futuro: "Reativar no futuro",
 };

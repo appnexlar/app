@@ -31,7 +31,7 @@ export function StageDialog({ lead, initialStatus, onClose }: StageDialogProps) 
   const [reactivateAt, setReactivateAt] = useState("");
   const [fieldError, setFieldError] = useState<string | null>(null);
 
-  const options = LEAD_STATUSES.filter((s) => s !== "convertida_em_cliente").map((s) => ({
+  const options = LEAD_STATUSES.filter((s) => s !== "fechado").map((s) => ({
     value: s,
     label: STATUS_LABELS[s],
   }));

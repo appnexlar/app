@@ -69,9 +69,11 @@ export class LeadsController {
   }
 
   @Get()
-  @ApiOperation({ summary: "Lista os leads do corretor autenticado, mais recentes primeiro" })
+  @ApiOperation({ summary: "Apelido: lista quem ainda não fechou (use GET /clients)" })
   list(@CurrentBroker("brokerId") brokerId: string): Promise<LeadSummary[]> {
-    return this.leads.list(brokerId);
+    // Entidade única (set 2026): a rota antiga segue devolvendo só quem ainda
+    // não fechou, como sempre fez, até o front migrar para /clients.
+    return this.leads.list(brokerId, { apenasAbertos: true });
   }
 
   @Get(":id")

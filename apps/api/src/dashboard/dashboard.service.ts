@@ -22,7 +22,7 @@ const DIAS_PARA_ESTAGNAR = 7;
 const MESES_NO_GRAFICO = 6;
 
 /** Etapas que não contam como atendimento vivo. */
-const ENCERRADAS = ["convertida_em_cliente", "perdida", "reativar_futuro"] as const;
+const ENCERRADAS = ["fechado", "perdida", "reativar_futuro"] as const;
 
 @Injectable()
 export class DashboardService {
@@ -107,7 +107,7 @@ export class DashboardService {
       this.prisma.lead.count({
         where: {
           brokerId,
-          status: { in: ["imovel_prioritario", "aguardando_decisao", "convertida_em_cliente"] },
+          status: { in: ["imovel_prioritario", "aguardando_decisao", "fechado"] },
         },
       }),
       this.prisma.conversion.findMany({
