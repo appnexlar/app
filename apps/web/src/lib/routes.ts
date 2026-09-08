@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 /**
  * URLs das telas internas. O que aparece na barra de endereço é o código curto
- * (/leads/1042/selecoes/7), nunca o uuid: é mais limpo, dá para o corretor
+ * (/clientes/1042/selecoes/7), nunca o uuid: é mais limpo, dá para o corretor
  * citar por telefone e não expõe identificador interno.
  *
  * A API aceita as duas formas, então qualquer link antigo com uuid continua
@@ -11,11 +11,14 @@ import { useNavigate } from "react-router-dom";
  */
 export type RouteRef = string | number;
 
-export const leadPath = (lead: RouteRef) => `/leads/${lead}`;
-export const clientPath = (lead: RouteRef) => `/clientes/${lead}`;
-export const leadSharesPath = (lead: RouteRef) => `/leads/${lead}/imoveis-enviados`;
-export const selectionPath = (lead: RouteRef, selection: RouteRef) =>
-  `/leads/${lead}/selecoes/${selection}`;
+// Entidade única (set 2026): tudo vive em /clientes. `leadPath` continua
+// existindo como sinônimo para o código antigo não quebrar; /leads/* no
+// navegador redireciona para cá (ver LeadsRedirect no App).
+export const clientPath = (cliente: RouteRef) => `/clientes/${cliente}`;
+export const leadPath = clientPath;
+export const leadSharesPath = (cliente: RouteRef) => `/clientes/${cliente}/imoveis-enviados`;
+export const selectionPath = (cliente: RouteRef, selection: RouteRef) =>
+  `/clientes/${cliente}/selecoes/${selection}`;
 export const selectionPreviewPath = (lead: RouteRef, selection: RouteRef) =>
   `${selectionPath(lead, selection)}/previa`;
 

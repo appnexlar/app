@@ -8,7 +8,6 @@ import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 import { useShell } from "../shell/ShellContext";
 import { fetchLeads } from "../leads/api";
-import { fetchClients } from "../clients/api";
 import {
   STATUS_LABELS,
   STATUS_TONE,
@@ -32,10 +31,13 @@ function daysSince(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
 }
 
-/** Lead do pipeline sem contato há 7+ dias está parada e merece alerta. */
+/**
+ * Pessoa do pipeline sem contato há 7+ dias está parada e merece alerta.
+ * Quem fechou ou encerrou saiu do pipeline: negócio fechado não está parado.
+ */
 function stalledDays(lead: LeadSummary): number | null {
   const group = FUNNEL_GROUP_BY_STATUS[lead.status];
-  if (group === "clientes" || group === "encerradas") return null;
+  if (group === "encerradas" || group === "clientes") return null;
   const days = daysSince(lead.lastContactAt ?? lead.createdAt);
   return days >= 7 ? days : null;
 }
@@ -66,9 +68,9 @@ function attentionSort(a: LeadSummary, b: LeadSummary): number {
 export function FunnelPage() {
   const navigate = useNavigate();
   const { openNewLead } = useShell();
+  // Entidade única (set 2026): uma lista só, com todo mundo, inclusive quem
+  // fechou. A coluna de fechados deixa de precisar de uma segunda chamada.
   const query = useQuery({ queryKey: ["leads"], queryFn: fetchLeads });
-  // Convertidas não vêm em /leads: a contagem de clientes vem da área Clientes.
-  const clientsQuery = useQuery({ queryKey: ["clients", {}], queryFn: () => fetchClients({}) });
 
   const [actionLead, setActionLead] = useState<LeadSummary | null>(null);
   const [stageLead, setStageLead] = useState<LeadSummary | null>(null);
@@ -105,7 +107,7 @@ export function FunnelPage() {
 
   // Vazio de verdade: sem lead E sem cliente. Com clientes, o quadro aparece
   // (raias vazias orientam) junto do atalho para a área Clientes.
-  if (leads.length === 0 && (clientsQuery.data?.length ?? 0) === 0) {
+  if (leads.length === 0) {
     return (
       <section className="animate-rise mx-auto mt-4 flex max-w-xl flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
         <h2 className="text-h2 text-text">Seu funil aparece aqui</h2>
@@ -124,7 +126,9 @@ export function FunnelPage() {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-3">
-      {FUNNEL_GROUPS.filter((g) => g !== "clientes").map((group) => (
+      {/* Entidade única (set 2026): quem fechou é uma raia como as outras, e
+          não uma área à parte. */}
+      {FUNNEL_GROUPS.map((group) => (
         <StageLane
           key={group}
           group={group}
@@ -133,34 +137,10 @@ export function FunnelPage() {
         />
       ))}
 
-      {/* Cliente é outra fase, outra área: o funil mostra só o resumo e leva
-          para /clientes, em vez de repetir a lista aqui. */}
-      <Link
-        to="/clientes"
-        className="flex items-center gap-2.5 rounded-2xl border border-border bg-surface px-4 py-3.5 shadow-sm transition-colors hover:bg-surface-sunken/60"
-      >
-        <h2 className="text-body font-bold text-text">{FUNNEL_LABELS.clientes}</h2>
-        <span
-          className={
-            "flex h-6 min-w-[24px] items-center justify-center rounded-full px-1.5 text-caption font-bold tabular-nums " +
-            ((clientsQuery.data?.length ?? 0) > 0
-              ? "bg-[var(--success)] text-white"
-              : "bg-surface-sunken text-text-subtle")
-          }
-        >
-          {clientsQuery.data?.length ?? 0}
-        </span>
-        <span className="ml-auto inline-flex items-center gap-1 text-body-sm text-text-muted">
-          Abrir área Clientes
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-      </Link>
 
       {closedCount > 0 && (
         <Link
-          to="/leads"
+          to="/clientes"
           className="inline-flex items-center gap-1.5 self-start px-1 py-1 text-body-sm text-text-muted transition-colors hover:text-text"
         >
           {closedCount === 1 ? "1 lead encerrada" : `${closedCount} leads encerradas`} (perdidas ou

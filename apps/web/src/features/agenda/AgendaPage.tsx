@@ -1,3 +1,4 @@
+import { clientPath } from "../../lib/routes";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -397,7 +398,7 @@ export function AgendaPage() {
             });
             setActionEvent(null);
           }}
-          onOpenLead={() => navigate(`/leads/${actionEvent.leadId}`)}
+          onOpenLead={() => actionEvent.leadId && navigate(clientPath(actionEvent.leadId))}
           onDelete={() => setDeleteTarget(actionEvent)}
         />
       )}

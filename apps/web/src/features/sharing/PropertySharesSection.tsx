@@ -1,3 +1,4 @@
+import { clientPath } from "../../lib/routes";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -94,7 +95,7 @@ export function PropertySharesSection({ propertyId }: { propertyId: string }) {
                   </p>
                 </div>
                 <ShareRowMenu
-                  onOpenLead={() => navigate(`/leads/${share.leadId}`)}
+                  onOpenLead={() => navigate(clientPath(share.leadId))}
                   onWhatsapp={() => openWhatsapp(share)}
                   onResend={() => resend.mutate(share.id)}
                   onRevoke={() => setToRevoke(share)}

@@ -107,7 +107,7 @@ export function LeadsPage() {
     <div className="flex flex-col gap-4">
       {/* Orientação contextual da tela: preferências pendentes, follow-up
           vencido. Some sozinha quando não há nada relevante aqui. */}
-      <GuidanceInline prefixos={["/leads"]} />
+      <GuidanceInline prefixos={["/clientes", "/leads"]} />
 
       <div className="flex flex-col gap-3">
         <div className="flex gap-2">
