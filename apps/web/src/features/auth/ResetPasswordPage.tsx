@@ -7,6 +7,7 @@ import { z } from "zod";
 import { resetPasswordSchema } from "@nexlar/shared";
 import { Button } from "../../components/ui/Button";
 import { PasswordField } from "../../components/ui/PasswordField";
+import { PasswordRequirements } from "../../components/ui/PasswordRequirements";
 import { Banner } from "../../components/ui/Banner";
 import { AuthLayout } from "./AuthLayout";
 import { BackToLogin } from "./BackToLogin";
@@ -33,6 +34,7 @@ export function ResetPasswordPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ResetFormValues>({
     resolver: zodResolver(resetFormSchema),
@@ -116,11 +118,11 @@ export function ResetPasswordPage() {
           label="Nova senha"
           autoComplete="new-password"
           placeholder="Crie uma senha"
-          hint="Mínimo de 8 caracteres, com ao menos uma letra e um número."
           autoFocus
           error={errors.password?.message}
           {...register("password")}
         />
+        <PasswordRequirements senha={watch("password") ?? ""} />
 
         <PasswordField
           label="Confirmar nova senha"

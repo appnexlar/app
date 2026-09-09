@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidCnpj, isValidCpf, onlyDigits } from "../common/documento";
+import { motivoDeSenhaFraca, pedacosAEvitar } from "./senha";
 
 /**
  * DTOs de autenticação — fonte única de validação, compartilhada entre
@@ -7,12 +8,12 @@ import { isValidCnpj, isValidCpf, onlyDigits } from "../common/documento";
  * Mensagens em português do Brasil.
  */
 
-const senhaSchema = z
-  .string()
-  .min(8, "A senha precisa de pelo menos 8 caracteres")
-  .max(128, "A senha é longa demais")
-  .regex(/[A-Za-z]/, "Inclua ao menos uma letra")
-  .regex(/[0-9]/, "Inclua ao menos um número");
+// Comprimento, letra, número e, principalmente, não ser uma senha conhecida
+// por ser fraca. A regra completa e o porquê estão em ./senha.
+const senhaSchema = z.string().superRefine((senha, ctx) => {
+  const motivo = motivoDeSenhaFraca(senha);
+  if (motivo) ctx.addIssue({ code: z.ZodIssueCode.custom, message: motivo });
+});
 
 const emailSchema = z
   .string()
@@ -82,7 +83,14 @@ export const registerBaseSchema = z.object({
   marketingOptIn: z.boolean().optional().default(false),
 });
 
-export const registerSchema = registerBaseSchema.superRefine(conferirDocumento);
+export const registerSchema = registerBaseSchema
+  .superRefine(conferirDocumento)
+  .superRefine((data, ctx) => {
+    // "rafaelle2026" não é senha: o nome e o começo do e-mail ficam de fora.
+    // Só aqui, porque só aqui a senha chega junto de quem é a pessoa.
+    const motivo = motivoDeSenhaFraca(data.password, pedacosAEvitar(data));
+    if (motivo) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["password"], message: motivo });
+  });
 export type RegisterDto = z.infer<typeof registerSchema>;
 
 // --- Portas de entrada ------------------------------------------------------
