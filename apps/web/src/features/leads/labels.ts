@@ -42,6 +42,14 @@ export const STATUS_LABELS: Record<LeadStatus, string> = {
  */
 export type StatusTone = "novo" | "ativo" | "ganho" | "encerrado";
 
+/** Etiqueta de etapa (pílula pequena ao lado do nome), por tom. Mesma em lista e funil. */
+export const TONE_CHIP: Record<StatusTone, string> = {
+  novo: "bg-[var(--highlight-soft)] text-[var(--highlight-fg)]",
+  ativo: "bg-accent-soft text-accent",
+  ganho: "bg-[var(--success-soft)] text-[var(--success-fg)]",
+  encerrado: "bg-surface-sunken text-text-subtle",
+};
+
 export const STATUS_TONE: Record<LeadStatus, StatusTone> = {
   novo: "novo",
   em_atendimento: "ativo",
