@@ -31,7 +31,7 @@ export const STATUS_LABELS: Record<LeadStatus, string> = {
   imovel_prioritario: "Imóvel prioritário",
   aguardando_decisao: "Aguardando decisão",
   fechado: "Fechado",
-  perdida: "Perdida",
+  perdida: "Perdido",
   reativar_futuro: "Reativar no futuro",
 };
 

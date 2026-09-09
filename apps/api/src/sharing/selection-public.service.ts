@@ -273,7 +273,7 @@ export class SelectionPublicService {
 
     // Notifica fora da transação: notificação atrasada é melhor que rollback.
     const nome = primeiroNome(selection.lead.fullName);
-    const url = `/leads/${selection.leadId}/selecoes/${selection.id}`;
+    const url = `/clientes/${selection.leadId}/selecoes/${selection.id}`;
     if (dto.response === "tenho_interesse") {
       await this.notifications.create(
         selection.brokerId,
@@ -338,7 +338,7 @@ export class SelectionPublicService {
       "selecao_informacoes",
       `${nome} ${INFO_LABELS[dto.kind]}`,
       `${item.property.title}${dto.message ? ` · "${dto.message}"` : ""}`,
-      `/leads/${selection.leadId}/selecoes/${selection.id}`,
+      `/clientes/${selection.leadId}/selecoes/${selection.id}`,
     );
   }
 
@@ -392,7 +392,7 @@ export class SelectionPublicService {
       "selecao_visita",
       `${nome} quer visitar um imóvel`,
       `${item.property.title}. Entre em contato para combinar o horário.`,
-      `/leads/${selection.leadId}/selecoes/${selection.id}`,
+      `/clientes/${selection.leadId}/selecoes/${selection.id}`,
     );
   }
 
@@ -482,7 +482,7 @@ export class SelectionPublicService {
           brokerId: selection.brokerId,
           leadId: selection.leadId,
           type: "visita",
-          description: `Visita agendada pela lead: ${item.property.title} em ${rotuloVisita.format(inicio)}`,
+          description: `Visita agendada pelo cliente: ${item.property.title} em ${rotuloVisita.format(inicio)}`,
           metadata: {
             selectionId: selection.id,
             propertyId: item.propertyId,
@@ -543,7 +543,7 @@ export class SelectionPublicService {
           brokerId: selection.brokerId,
           leadId: selection.leadId,
           type: "visita",
-          description: `Visita cancelada pela lead: ${item.property.title}`,
+          description: `Visita cancelada pelo cliente: ${item.property.title}`,
           metadata: { selectionId: selection.id, propertyId: item.propertyId, visitId: visita.id, origin: "pagina_publica" },
         },
       });
@@ -559,7 +559,7 @@ export class SelectionPublicService {
       "selecao_visita_cancelada",
       `${primeiroNome(selection.lead.fullName)} cancelou a visita`,
       `${item.property.title} · era ${rotuloVisita.format(visita.scheduledAt)}. O interesse no imóvel continua registrado.`,
-      `/leads/${selection.leadId}/selecoes/${selection.id}`,
+      `/clientes/${selection.leadId}/selecoes/${selection.id}`,
     );
   }
 
@@ -748,7 +748,7 @@ export class SelectionPublicService {
         "selecao_aberta",
         `${primeiroNome(s.lead.fullName)} abriu a seleção`,
         `A seleção de ${s.items.length} ${s.items.length === 1 ? "imóvel" : "imóveis"} foi visualizada pela primeira vez.`,
-        `/leads/${s.leadId}/selecoes/${s.id}`,
+        `/clientes/${s.leadId}/selecoes/${s.id}`,
       );
     }
   }

@@ -181,7 +181,7 @@ export class DashboardService {
       id: e.id,
       title: e.title,
       // Tarefa solta (sem lead) ainda é trabalho do dia: entra sem dono.
-      leadName: e.lead?.fullName ?? "Sem lead vinculada",
+      leadName: e.lead?.fullName ?? "Sem cliente vinculado",
       dueAt: e.startAt.toISOString(),
     }));
   }

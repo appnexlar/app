@@ -48,7 +48,7 @@ export class SharingService {
       where: { id: dto.leadId, brokerId },
       select: { id: true, fullName: true, whatsapp: true },
     });
-    if (!lead) throw new NotFoundException("Lead não encontrada.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
 
     const selection = await this.prisma.$transaction(async (tx) => {
       // O envio rápido nasce direto ativo: criar, ativar e enviar são o

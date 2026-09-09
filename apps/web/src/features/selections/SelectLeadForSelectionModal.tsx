@@ -66,7 +66,7 @@ export function SelectLeadForSelectionModal({
     propertyIds!.length === 1 ? "1 imóvel marcado" : `${propertyIds!.length} imóveis marcados`;
 
   return (
-    <Modal open onClose={onClose} title="Enviar seleção para qual lead?">
+    <Modal open onClose={onClose} title="Enviar seleção para qual cliente?">
       <p className="text-body-sm text-text-muted">
         {quantos}. A seleção nasce como rascunho: você ainda organiza, destaca e escolhe o prazo
         antes de gerar o link.
@@ -74,7 +74,7 @@ export function SelectLeadForSelectionModal({
 
       <div className="mt-3">
         <SearchField
-          label="Buscar lead"
+          label="Buscar cliente"
           placeholder="Buscar por nome ou WhatsApp"
           value={search}
           onChange={setSearch}
@@ -100,7 +100,7 @@ export function SelectLeadForSelectionModal({
         </p>
       ) : filtered.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-border p-4 text-center text-body-sm text-text-muted">
-          {search ? "Nenhuma lead com esse nome ou WhatsApp." : "Cadastre uma lead para enviar seleções."}
+          {search ? "Nenhum cliente com esse nome ou WhatsApp." : "Cadastre um cliente para enviar seleções."}
         </p>
       ) : (
         <ul className="mt-2 flex max-h-80 flex-col divide-y divide-border overflow-y-auto">

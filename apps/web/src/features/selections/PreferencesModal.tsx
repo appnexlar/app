@@ -96,7 +96,7 @@ export function PreferencesModal({ leadId, leadName, current, onClose, onSaved }
   ];
 
   return (
-    <Modal open onClose={onClose} title="O que a lead procura">
+    <Modal open onClose={onClose} title="O que o cliente procura">
       <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto pb-1 pr-0.5">
         <p className="-mt-2 text-body-sm text-text-muted">
           Preencha o que você já sabe da conversa com {leadName}. Tudo é opcional e vira filtro na
@@ -228,7 +228,7 @@ export function PreferencesModal({ leadId, leadName, current, onClose, onSaved }
 
         <div>
           <label className="text-label text-text" htmlFor="pref-restricoes">
-            O que a lead não aceita
+            O que o cliente não aceita
           </label>
           <textarea
             id="pref-restricoes"

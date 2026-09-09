@@ -144,7 +144,7 @@ export function LeadSharesSection({ lead, onShare }: { lead: LeadRef; onShare: (
               Imóveis enviados
               {shares.length > 0 && <span className="ml-1 text-text-subtle">({shares.length})</span>}
             </h2>
-            <p className="mt-1 text-body-sm text-text-subtle">o que a lead recebeu e como respondeu</p>
+            <p className="mt-1 text-body-sm text-text-subtle">o que o cliente recebeu e como respondeu</p>
           </div>
           {shares.length > 0 && (
             <Button
@@ -173,7 +173,7 @@ export function LeadSharesSection({ lead, onShare }: { lead: LeadRef; onShare: (
             </div>
             <p className="mt-4 text-body font-semibold text-text">Nenhum imóvel enviado</p>
             <p className="mt-1 max-w-sm text-body-sm text-text-muted">
-              Envie imóveis da sua carteira que combinem com o perfil desta lead.
+              Envie imóveis da sua carteira que combinem com o perfil deste cliente.
             </p>
             <Button type="button" variant="accent" className="mt-4" onClick={onShare}>
               Compartilhar imóveis
@@ -311,7 +311,7 @@ export function ShareActionSheet({
                     navigate(`/imoveis/${share.propertyCode}`);
                   }}
                 />
-                <SheetItem label="Registrar resposta da lead" onClick={() => setView("resposta")} />
+                <SheetItem label="Registrar resposta do cliente" onClick={() => setView("resposta")} />
                 <SheetItem
                   label={share.isPriority ? "Remover prioridade" : "Marcar como prioritário"}
                   onClick={() => {
@@ -345,7 +345,7 @@ export function ShareActionSheet({
             </div>
           ) : (
             <div className="flex flex-col">
-              <p className="text-body-sm text-text-muted">Como a lead respondeu sobre este imóvel?</p>
+              <p className="text-body-sm text-text-muted">Como o cliente respondeu sobre este imóvel?</p>
               <div className="mt-4 flex flex-col gap-2">
                 {RESPONSE_OPTIONS.map((r) => (
                   <button
@@ -382,7 +382,7 @@ export function ShareActionSheet({
       <ConfirmDialog
         open={view === "revogar"}
         title="Revogar link"
-        description={`O link de "${share.propertyTitle}" deixa de funcionar para esta lead. O histórico é mantido.`}
+        description={`O link de "${share.propertyTitle}" deixa de funcionar para este cliente. O histórico é mantido.`}
         confirmLabel={revoke.isPending ? "Revogando..." : "Revogar link"}
         danger
         loading={revoke.isPending}

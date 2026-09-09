@@ -135,7 +135,7 @@ export function LeadSelectionsSection({ leadId, leadCode }: LeadSelectionsSectio
       <ConfirmDialog
         open={encerrando != null}
         title="Encerrar a seleção"
-        description="O link para de funcionar para a lead na hora. As respostas que ela já deu ficam guardadas nesta ficha."
+        description="O link para de funcionar para o cliente na hora. As respostas que ela já deu ficam guardadas nesta ficha."
         confirmLabel={revoke.isPending ? "Encerrando..." : "Encerrar seleção"}
         danger
         loading={revoke.isPending}

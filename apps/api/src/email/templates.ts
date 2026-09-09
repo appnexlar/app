@@ -180,12 +180,12 @@ export function welcomeTemplate(fullName: string, appUrl: string): Mensagem {
   // Direto para a lista de leads, e não para o painel: o e-mail pede uma ação
   // específica, e cair no painel vazio obrigaria a pessoa a procurar sozinha
   // onde se faz o que acabou de ser pedido.
-  const urlLeads = `${appUrl.replace(/\/$/, "")}/leads`;
+  const urlLeads = `${appUrl.replace(/\/$/, "")}/clientes`;
   const corpo = [
-    "A partir de agora, suas leads deixam de ficar espalhadas entre WhatsApp, Instagram, anotações e a sua memória.",
+    "A partir de agora, seus clientes deixam de ficar espalhadas entre WhatsApp, Instagram, anotações e a sua memória.",
     "No Nextlar, você organiza cada oportunidade, acompanha o histórico dos atendimentos e sabe quem precisa de retorno e qual é o próximo passo.",
     "Assim, fica mais fácil manter seus contatos em movimento e não deixar boas oportunidades para trás.",
-    "Comece adicionando sua primeira lead.",
+    "Comece adicionando seu primeiro cliente.",
   ];
   return {
     subject: "Sua conta do Nextlar está pronta",
@@ -194,14 +194,14 @@ export function welcomeTemplate(fullName: string, appUrl: string): Mensagem {
     html: layout({
       titulo: `Tudo pronto, ${primeiroNome}`,
       paragrafos: corpo,
-      botao: { texto: "Adicionar minha primeira lead", url: urlLeads },
+      botao: { texto: "Adicionar meu primeiro cliente", url: urlLeads },
     }),
     text: [
       `Tudo pronto, ${primeiroNome}.`,
       "",
       ...corpo.slice(0, 3),
       "",
-      "Comece adicionando sua primeira lead:",
+      "Comece adicionando seu primeiro cliente:",
       urlLeads,
     ].join("\n"),
   };

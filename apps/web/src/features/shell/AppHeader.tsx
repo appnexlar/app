@@ -22,7 +22,7 @@ interface AppHeaderProps {
  * A barra carrega só o que não muda de sentido: menu, marca, avisos e conta.
  * A ação de criar mora DENTRO da página, ao lado do título que a explica, e
  * quem a declara é cada seção (ver usePageAction). A exceção é a Home, que
- * não tem lista própria para criar nada: lá a barra leva "Novo lead", porque
+ * não tem lista própria para criar nada: lá a barra leva "Novo cliente", porque
  * cadastrar lead é a porta de entrada do produto.
  */
 export function AppHeader({
@@ -115,11 +115,11 @@ export function AppHeader({
             <button
               type="button"
               onClick={onNewLead}
-              aria-label="Novo lead"
+              aria-label="Novo cliente"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-on transition-colors hover:bg-accent-hover active:scale-[0.98] sm:w-auto sm:gap-2 sm:rounded-md sm:px-4 sm:text-body-sm sm:font-semibold"
             >
               <Plus size={ICON.bar} className="shrink-0 sm:size-[18px]" aria-hidden="true" />
-              <span className="hidden sm:inline">Novo lead</span>
+              <span className="hidden sm:inline">Novo cliente</span>
             </button>
           )}
           <NotificationBell />

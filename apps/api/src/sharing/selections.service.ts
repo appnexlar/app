@@ -90,7 +90,7 @@ export class SelectionsService {
       where: { id: dto.leadId, brokerId },
       select: { id: true },
     });
-    if (!lead) throw new NotFoundException("Lead não encontrada.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
 
     // Fluxo que nasce na carteira: os imóveis marcados em /imoveis já entram
     // como itens do rascunho. Validação em bloco ANTES de criar qualquer
@@ -160,7 +160,7 @@ export class SelectionsService {
   /** Histórico de seleções da lead, mais recente primeiro. */
   async listForLead(brokerId: string, leadId: string): Promise<SelectionSummary[]> {
     const lead = await this.prisma.lead.findFirst({ where: { id: leadId, brokerId }, select: { id: true } });
-    if (!lead) throw new NotFoundException("Lead não encontrada.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
 
     // Expira as vencidas da lead antes de listar, para o histórico não mentir.
     await this.prisma.propertySelection.updateMany({

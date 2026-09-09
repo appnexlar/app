@@ -10,7 +10,6 @@ import {
   SquareKanban,
   User,
   UserCheck,
-  Users,
 } from "lucide-react";
 
 export interface NavItem {
@@ -43,11 +42,6 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Relacionamento comercial",
     items: [
-      {
-        label: "Leads",
-        path: "/leads",
-        icon: Users,
-      },
       {
         label: "Funil",
         path: "/funil",

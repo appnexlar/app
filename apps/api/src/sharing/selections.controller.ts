@@ -41,7 +41,7 @@ export class SelectionsController {
   ) {}
 
   @Get("selections/:id/preview")
-  @ApiOperation({ summary: "Prévia autenticada: a página exatamente como a lead verá" })
+  @ApiOperation({ summary: "Prévia autenticada: a página exatamente como o cliente verá" })
   preview(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", SelectionRefPipe) id: string,
@@ -60,7 +60,7 @@ export class SelectionsController {
   }
 
   @Post("selections")
-  @ApiOperation({ summary: "Criar uma seleção em rascunho para uma lead" })
+  @ApiOperation({ summary: "Criar uma seleção em rascunho para um cliente" })
   create(
     @CurrentBroker("brokerId") brokerId: string,
     @Body(new ZodValidationPipe(createSelectionSchema)) dto: CreateSelectionDto,
@@ -78,7 +78,7 @@ export class SelectionsController {
   }
 
   @Get("leads/:id/selections")
-  @ApiOperation({ summary: "Histórico de seleções da lead" })
+  @ApiOperation({ summary: "Histórico de seleções do cliente" })
   listForLead(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", LeadRefPipe) leadId: string,

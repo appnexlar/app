@@ -291,7 +291,7 @@ export class AgendaService {
   ): Promise<void> {
     if (leadId) {
       const lead = await this.prisma.lead.findFirst({ where: { id: leadId, brokerId } });
-      if (!lead) throw new NotFoundException("Lead não encontrado.");
+      if (!lead) throw new NotFoundException("Cliente não encontrado.");
     }
     if (propertyId) {
       const property = await this.prisma.property.findFirst({ where: { id: propertyId, brokerId } });

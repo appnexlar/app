@@ -93,7 +93,7 @@ export class FinancingRequestsService {
       where: { id: dto.leadId, brokerId },
       select: { id: true, email: true },
     });
-    if (!lead) throw new NotFoundException("Lead não encontrada.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
 
     if (dto.propertyId) await this.garantirImovel(brokerId, dto.propertyId);
 
@@ -200,7 +200,7 @@ export class FinancingRequestsService {
     }
     if (!atual.lead.email) {
       throw new BadRequestException(
-        "A lead precisa de um e-mail para receber o código de acesso. Informe o e-mail antes de enviar.",
+        "O cliente precisa de um e-mail para receber o código de acesso. Informe o e-mail antes de enviar.",
       );
     }
 
@@ -346,7 +346,7 @@ export class FinancingRequestsService {
     const atual = await this.expirarSePreciso(await this.buscar(brokerId, id));
     this.garantirTransicao(atual.status, "correcao_solicitada");
     if (!atual.lead.email) {
-      throw new BadRequestException("A lead precisa de um e-mail para receber o código de acesso.");
+      throw new BadRequestException("O cliente precisa de um e-mail para receber o código de acesso.");
     }
 
     const ultima = await this.prisma.financingDataSubmission.findFirst({
@@ -704,7 +704,7 @@ export class FinancingRequestsService {
       "financiamento_expirado",
       "Prazo do financiamento terminou",
       `${row.lead.fullName} não enviou os dados a tempo. Gere um link novo se ainda quiser a simulação.`,
-      `/leads/${row.lead.code}`,
+      `/clientes/${row.lead.code}`,
     );
     return expirada;
   }

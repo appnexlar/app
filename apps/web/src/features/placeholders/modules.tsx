@@ -8,18 +8,18 @@ function iconFor(path: string) {
 const CONTENT: Record<string, ModuleContent> = {
   "/funil": {
     icon: iconFor("/funil"),
-    description: "A visão por etapas dos seus leads, em quadro arrastável.",
+    description: "A visão por etapas dos seus clientes, em quadro arrastável.",
     emptyTitle: "Seu funil aparece aqui",
     emptyDescription:
-      "Acompanhe cada lead pelas etapas, do primeiro contato ao fechamento, movendo entre as colunas.",
-    actionLabel: "Cadastrar primeiro lead",
+      "Acompanhe cado cliente pelas etapas, do primeiro contato ao fechamento, movendo entre as colunas.",
+    actionLabel: "Cadastrar primeiro cliente",
   },
   "/agenda": {
     icon: iconFor("/agenda"),
-    description: "Suas tarefas e follow-ups, para nenhum lead esfriar.",
+    description: "Suas tarefas e follow-ups, para nenhum cliente esfriar.",
     emptyTitle: "Nenhuma tarefa agendada",
     emptyDescription:
-      "Organize seus follow-ups e compromissos. Cada tarefa vira a próxima ação de um lead.",
+      "Organize seus follow-ups e compromissos. Cada tarefa vira a próxima ação de um cliente.",
     actionLabel: "Criar primeira tarefa",
   },
   "/visitas": {

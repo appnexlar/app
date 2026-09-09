@@ -88,7 +88,7 @@ export function EventFormModal({ type, event, prefill, lockedLead, onClose }: Pr
 
   const leadOptions = useMemo(
     () => [
-      { value: "", label: "Sem lead vinculada" },
+      { value: "", label: "Sem cliente vinculado" },
       ...(leadsQuery.data ?? []).map((l) => ({ value: l.id, label: l.fullName })),
     ],
     [leadsQuery.data],
@@ -251,14 +251,14 @@ export function EventFormModal({ type, event, prefill, lockedLead, onClose }: Pr
             />
             {lockedLead ? (
               <div className="flex flex-col gap-1.5">
-                <span className="text-label text-text">Lead vinculada</span>
+                <span className="text-label text-text">Cliente vinculado</span>
                 <div className="flex min-h-[var(--tap-target-min)] items-center rounded-md border border-border bg-surface-sunken px-3.5 text-body text-text">
                   {lockedLead.fullName}
                 </div>
               </div>
             ) : (
               <Select
-                label="Lead vinculada"
+                label="Cliente vinculado"
                 value={leadId}
                 onValueChange={setLeadId}
                 options={leadOptions}

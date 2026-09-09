@@ -144,7 +144,7 @@ describe("Página Pública — interesse do visitante e notificações", () => {
     const avisos = await notificacoes(broker);
     expect(avisos.unreadCount).toBe(1);
     expect(avisos.items[0]?.title).toContain("Novo interessado");
-    expect(avisos.items[0]?.actionUrl).toBe(`/leads/${lead.id}`);
+    expect(avisos.items[0]?.actionUrl).toBe(`/clientes/${lead.id}`);
   });
 
   it("mesmo WhatsApp duas vezes não duplica a lead: registra o novo interesse", async () => {
@@ -271,7 +271,7 @@ describe("Página Pública — interesse do visitante e notificações", () => {
     const avisos = await notificacoes(broker);
     expect(avisos.unreadCount).toBe(1);
     expect(avisos.items[0]?.body).toContain("WhatsApp");
-    expect(avisos.items[0]?.actionUrl).toBe(`/leads/${lead.id}`);
+    expect(avisos.items[0]?.actionUrl).toBe(`/clientes/${lead.id}`);
   });
 
   it("o mesmo visitante pedindo contato de novo não vira uma segunda lead", async () => {

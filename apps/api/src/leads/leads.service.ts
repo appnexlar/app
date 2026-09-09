@@ -53,7 +53,7 @@ export class LeadsService {
     });
     if (existing) {
       throw new ConflictException({
-        message: "Você já tem um lead com esse WhatsApp.",
+        message: "Você já tem um cliente com esse WhatsApp.",
         details: { existingLead: this.toSummary(existing) },
       });
     }
@@ -79,7 +79,7 @@ export class LeadsService {
           brokerId,
           leadId: created.id,
           type: "nota",
-          description: "Lead cadastrado",
+          description: "Cliente cadastrado",
           metadata: dto.source ? { source: dto.source } : undefined,
         },
       });
@@ -123,7 +123,7 @@ export class LeadsService {
       where: { id, brokerId },
       include: { activities: { orderBy: { createdAt: "desc" }, take: 50 } },
     });
-    if (!lead) throw new NotFoundException("Lead não encontrado.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
     return this.toDetail(lead);
   }
 
@@ -141,7 +141,7 @@ export class LeadsService {
     dto: ChangeLeadStatusDto,
   ): Promise<LeadSummary> {
     const lead = await this.prisma.lead.findFirst({ where: { id, brokerId } });
-    if (!lead) throw new NotFoundException("Lead não encontrado.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
     if (lead.status === dto.status) return this.toSummary(lead);
 
     // Entidade única (set 2026): "fechado" é uma etapa como as outras. Chegar
@@ -244,7 +244,7 @@ export class LeadsService {
    */
   async convert(brokerId: string, id: string, dto: ConvertLeadDto): Promise<LeadSummary> {
     const lead = await this.prisma.lead.findFirst({ where: { id, brokerId } });
-    if (!lead) throw new NotFoundException("Lead não encontrado.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
     if (lead.isClient) {
       throw new ConflictException("Esta pessoa já é cliente.");
     }
@@ -351,7 +351,7 @@ export class LeadsService {
   /** Exclusão definitiva do lead (cascata apaga timeline, tarefas, visitas). */
   async remove(brokerId: string, id: string): Promise<void> {
     const lead = await this.prisma.lead.findFirst({ where: { id, brokerId } });
-    if (!lead) throw new NotFoundException("Lead não encontrado.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
     await this.prisma.lead.delete({ where: { id } });
   }
 
