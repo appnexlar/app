@@ -4,6 +4,7 @@ import { Button } from "../../components/ui/Button";
 import { FinancialFormModal, NegotiationFormModal, ProfileFormModal } from "./ClientEditModals";
 import { ParticipantsSection } from "./ClientParticipants";
 import { DeletionDialog } from "./DeletionDialog";
+import { ConsentDialog } from "./ConsentDialog";
 import {
   DELETION_STATUS_LABELS,
   INCOME_LABELS,
@@ -27,11 +28,18 @@ const SECTIONS = [
   { id: "privacidade", label: "Privacidade" },
 ];
 
+/** Etapas em que a negociação pede dados que antes não faziam falta. */
+const ETAPAS_QUE_PEDEM_DADOS = new Set(["imovel_prioritario", "aguardando_decisao", "fechado"]);
+
 /**
  * Os dados complementares da pessoa (entidade única, set 2026): pessoais,
- * negociação, financeiro, participantes e privacidade. Antes só a ficha de
- * cliente tinha isto; agora vive na ficha de todo mundo, abaixo da timeline.
- * O pedido progressivo desses dados ao entrar em negociação é a etapa 5.
+ * negociação, financeiro, participantes e privacidade. Vive na ficha de todo
+ * mundo, abaixo da timeline, em qualquer etapa.
+ *
+ * Etapa 5: ao entrar em negociação ou fechar, um painel lista o que falta
+ * para esta etapa e leva direto ao formulário certo. Nada ali trava a etapa.
+ * O primeiro dado pessoal ou financeiro passa antes pela ciência da coleta
+ * (LGPD), registrada uma vez só; a API recusa o dado sem ela.
  */
 export function ClientDataSections({ client }: { client: ClientDetail }) {
   const [editProfile, setEditProfile] = useState(false);
@@ -39,8 +47,16 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
   const [editFinancial, setEditFinancial] = useState(false);
   const [deletionOpen, setDeletionOpen] = useState(false);
   const [tab, setTab] = useState("dados-pessoais");
+  const [consentGate, setConsentGate] = useState<{ depois: () => void } | null>(null);
   const conv = client.conversion;
   const stageLabel = conv ? STAGE_LABELS[conv.nextStep] : "Em atendimento";
+
+  const temCiencia = client.consents.some((c) => c.purpose === "coleta_dados_adicionais");
+  /** Abre um formulário protegido; sem ciência registrada, pede a ciência antes. */
+  const protegido = (abrir: () => void) => {
+    if (temCiencia) abrir();
+    else setConsentGate({ depois: abrir });
+  };
 
   // Campos essenciais de dados pessoais que ainda faltam (coleta progressiva).
   const missingPersonal = client.profile
@@ -58,8 +74,88 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
         .map(([, label]) => label)
     : ["CPF", "Data de nascimento", "Estado civil", "Endereço", "Nacionalidade", "Documento de identificação"];
 
+  // O que esta etapa pede e ainda não tem. Cada item leva ao formulário certo.
+  const pendencias: { key: string; titulo: string; detalhe: string; abrir: () => void }[] = [];
+  if (ETAPAS_QUE_PEDEM_DADOS.has(client.status)) {
+    if (!temCiencia) {
+      pendencias.push({
+        key: "ciencia",
+        titulo: "Ciência da coleta de dados",
+        detalhe: "Antes do primeiro dado pessoal. Leva um minuto na conversa.",
+        abrir: () => setConsentGate({ depois: () => undefined }),
+      });
+    }
+    if (missingPersonal.length > 0) {
+      const primeiros = missingPersonal.slice(0, 3).join(", ");
+      const resto = missingPersonal.length - 3;
+      pendencias.push({
+        key: "pessoais",
+        titulo: "Dados pessoais",
+        detalhe: resto > 0 ? `${primeiros} e mais ${resto}` : primeiros,
+        abrir: () => {
+          setTab("dados-pessoais");
+          protegido(() => setEditProfile(true));
+        },
+      });
+    }
+    if (!client.negotiation) {
+      pendencias.push({
+        key: "negociacao",
+        titulo: "Dados da negociação",
+        detalhe: "Valor, forma de pagamento e se vai precisar de financiamento.",
+        abrir: () => {
+          setTab("negociacao");
+          setEditNegotiation(true);
+        },
+      });
+    }
+    if (client.negotiation?.needsFinancing === true && !client.financial) {
+      pendencias.push({
+        key: "financeiro",
+        titulo: "Dados financeiros",
+        detalhe: "Renda, entrada e FGTS, porque a negociação vai passar pelo banco.",
+        abrir: () => {
+          setTab("financeiro");
+          protegido(() => setEditFinancial(true));
+        },
+      });
+    }
+  }
+
   return (
     <div className="flex flex-col gap-5">
+      {pendencias.length > 0 && (
+        <section
+          aria-labelledby="faltam-dados"
+          className="animate-rise rounded-2xl border border-[var(--accent)] bg-accent-soft p-4 sm:p-5"
+        >
+          <h2 id="faltam-dados" className="text-label font-semibold text-text">
+            Faltam estes dados
+          </h2>
+          <p className="mt-0.5 text-caption text-text-muted">
+            Para a etapa {client.status === "fechado" ? "de fechamento" : "de negociação"}. Nada aqui
+            trava o atendimento.
+          </p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {pendencias.map((p) => (
+              <li key={p.key}>
+                <button
+                  type="button"
+                  onClick={p.abrir}
+                  className="flex w-full items-center justify-between gap-3 rounded-xl bg-surface px-3.5 py-3 text-left shadow-sm transition-colors hover:bg-surface-sunken"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-body-sm font-semibold text-text">{p.titulo}</span>
+                    <span className="block truncate text-caption text-text-muted">{p.detalhe}</span>
+                  </span>
+                  <span className="shrink-0 text-body-sm font-semibold text-[var(--accent)]">Preencher</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Navegação em abas: uma seção por vez, sem paredão de scroll */}
       <div className="sticky top-16 z-10 -mx-4 border-b border-border bg-bg/90 px-4 backdrop-blur-md sm:top-0">
         <div className="-mb-px flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -92,7 +188,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
         id="dados-pessoais"
         title="Dados pessoais"
         action={
-          <Button type="button" variant="ghost" className="!min-h-9 !px-3.5 text-body-sm" onClick={() => setEditProfile(true)}>
+          <Button type="button" variant="ghost" className="!min-h-9 !px-3.5 text-body-sm" onClick={() => protegido(() => setEditProfile(true))}>
             {client.profile ? "Editar" : "Preencher"}
           </Button>
         }
@@ -130,7 +226,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
               Nenhum dado pessoal registrado ainda. Preencha só o necessário para a etapa atual
               (nada aqui é obrigatório).
             </p>
-            <Button type="button" variant="accent" className="!min-h-10" onClick={() => setEditProfile(true)}>
+            <Button type="button" variant="accent" className="!min-h-10" onClick={() => protegido(() => setEditProfile(true))}>
               Completar dados pessoais
             </Button>
           </div>
@@ -201,7 +297,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
         id="financeiro"
         title="Dados financeiros"
         action={
-          <Button type="button" variant="ghost" className="!min-h-9 !px-3.5 text-body-sm" onClick={() => setEditFinancial(true)}>
+          <Button type="button" variant="ghost" className="!min-h-9 !px-3.5 text-body-sm" onClick={() => protegido(() => setEditFinancial(true))}>
             {client.financial ? "Editar" : "Preencher"}
           </Button>
         }
@@ -238,7 +334,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
 
       {/* Participantes */}
       {tab === "participantes" && (
-        <ParticipantsSection clientId={client.id} participants={client.participants} />
+        <ParticipantsSection clientId={client.id} participants={client.participants} onBeforeAdd={protegido} />
       )}
 
       {/* Privacidade e consentimentos */}
@@ -277,7 +373,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
         <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
           <button
             type="button"
-            onClick={() => setEditProfile(true)}
+            onClick={() => protegido(() => setEditProfile(true))}
             className="inline-flex min-h-10 items-center rounded-md border border-border px-4 text-body-sm font-semibold text-text transition-colors hover:bg-surface-sunken"
           >
             Corrigir dados
@@ -314,6 +410,18 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
           clientId={client.id}
           financial={client.financial}
           onClose={() => setEditFinancial(false)}
+        />
+      )}
+      {consentGate && (
+        <ConsentDialog
+          clientId={client.id}
+          clientName={client.fullName}
+          onClose={() => setConsentGate(null)}
+          onRegistered={() => {
+            const { depois } = consentGate;
+            setConsentGate(null);
+            depois();
+          }}
         />
       )}
       {deletionOpen && (
