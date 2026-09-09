@@ -173,7 +173,7 @@ export async function criarCliente(
     budgetMin: number;
     budgetMax: number;
   }> = {},
-): Promise<{ id: string; code: number; status: string; isClient: boolean }> {
+): Promise<{ id: string; code: number; status: string; isClient: boolean; region: string | null; budgetMin: number | null; budgetMax: number | null }> {
   const response = await requestAs(app, broker, {
     method: "POST",
     url: "/api/clients",

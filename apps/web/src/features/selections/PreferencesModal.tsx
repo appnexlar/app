@@ -28,6 +28,7 @@ export function PreferencesModal({ leadId, leadName, current, onClose, onSaved }
   const [types, setTypes] = useState(current?.types.join(", ") ?? "");
   const [cities, setCities] = useState(current?.cities.join(", ") ?? "");
   const [neighborhoods, setNeighborhoods] = useState(current?.neighborhoods.join(", ") ?? "");
+  const [region, setRegion] = useState(current?.region ?? "");
   const [priceMin, setPriceMin] = useState(current?.priceMin?.toString() ?? "");
   const [priceMax, setPriceMax] = useState(current?.priceMax?.toString() ?? "");
   const [bedroomsMin, setBedroomsMin] = useState(current?.bedroomsMin?.toString() ?? "");
@@ -69,6 +70,7 @@ export function PreferencesModal({ leadId, leadName, current, onClose, onSaved }
       types: lista(types),
       cities: lista(cities),
       neighborhoods: lista(neighborhoods),
+      region: region.trim() || undefined,
       priceMin: numero(priceMin),
       priceMax: numero(priceMax),
       bedroomsMin: numero(bedroomsMin),
@@ -145,6 +147,13 @@ export function PreferencesModal({ leadId, leadName, current, onClose, onSaved }
           />
         </div>
 
+        <TextField
+          label="Região de interesse"
+          hint="Do jeito que a pessoa falou"
+          value={region}
+          onChange={(e) => setRegion(e.target.value)}
+          placeholder="Zona sul, perto do metrô"
+        />
         <TextField
           label="Cidades"
           hint="Separe por vírgula"

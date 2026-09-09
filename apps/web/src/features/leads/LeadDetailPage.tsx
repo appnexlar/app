@@ -12,6 +12,7 @@ import { Modal } from "../../components/ui/Modal";
 import { usePageEntityLabel } from "../shell/ShellContext";
 import { EscolhaDeEnvio, LeadPropertiesBlock } from "./LeadPropertiesBlock";
 import { NextActionCard } from "./NextActionCard";
+import { PreferencesCard } from "./PreferencesCard";
 import { ClientDataSections } from "../clients/ClientDataSections";
 import { FinancingBlock } from "../financing/FinancingBlock";
 import { SendFromLeadModal } from "../sharing/SendFromLeadModal";
@@ -28,7 +29,6 @@ import {
   STATUS_TONE_CLASS,
   TIMELINE_CATEGORY_LABELS,
   type TimelineCategory,
-  displayBudget,
   displayCreatedAt,
   displayWhatsapp,
   whatsappLink,
@@ -199,7 +199,7 @@ export function LeadDetailPage() {
         {/* Só mostra o que foi preenchido: campo vazio é ruído, não informação. */}
         <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-4">
           {lead.email && <Field label="E-mail" value={lead.email} />}
-          <Field label="Cadastrada" value={displayCreatedAt(lead.createdAt)} />
+          <Field label="Cadastro" value={displayCreatedAt(lead.createdAt)} />
         </dl>
       </header>
 
@@ -217,7 +217,7 @@ export function LeadDetailPage() {
 
       <FinancingBlock lead={{ id: lead.id, name: lead.fullName, email: lead.email ?? null }} />
 
-      <InfoCard lead={lead} />
+      <PreferencesCard lead={lead} />
 
       <Timeline lead={lead} />
 
@@ -314,28 +314,6 @@ function Field({ label, value }: { label: string; value: string }) {
       <dt className="text-caption text-text-subtle">{label}</dt>
       <dd className="truncate text-body-sm text-text">{value}</dd>
     </div>
-  );
-}
-
-function InfoCard({ lead }: { lead: LeadDetail }) {
-  const budget = displayBudget(lead.budgetMin, lead.budgetMax);
-  if (!budget && !lead.notes) return null;
-  return (
-    <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
-      <h2 className="text-label font-semibold text-text">Preferências e observações</h2>
-      {budget && (
-        <div className="mt-4">
-          <dt className="text-caption text-text-subtle">Orçamento</dt>
-          <dd className="text-body text-text">{budget}</dd>
-        </div>
-      )}
-      {lead.notes && (
-        <div className="mt-4">
-          <dt className="text-caption text-text-subtle">Observações</dt>
-          <dd className="mt-1 whitespace-pre-line text-body text-text">{lead.notes}</dd>
-        </div>
-      )}
-    </section>
   );
 }
 
