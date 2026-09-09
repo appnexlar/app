@@ -42,7 +42,8 @@ export function LeadSelectionsSection({ leadId, leadCode }: LeadSelectionsSectio
       // Os "imóveis enviados" são itens do mesmo registro: encerrar a seleção
       // muda o status deles também, então o cache dos dois precisa cair.
       queryClient.invalidateQueries({ queryKey: ["lead-shares", leadId] });
-      queryClient.invalidateQueries({ queryKey: ["lead", leadId] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
     },
   });
 

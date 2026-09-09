@@ -45,7 +45,8 @@ export function PreferencesModal({ leadId, leadName, current, onClose, onSaved }
     mutationFn: (dto: UpsertLeadPreferenceDto) => saveLeadPreferences(leadId, dto),
     onSuccess: (pref) => {
       queryClient.setQueryData(["lead-preferences", leadId], pref);
-      queryClient.invalidateQueries({ queryKey: ["lead", leadId] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       onSaved?.(pref);
       onClose();
     },

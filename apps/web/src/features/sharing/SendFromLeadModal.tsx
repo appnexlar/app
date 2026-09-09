@@ -67,7 +67,8 @@ export function SendFromLeadModal({ lead, onClose }: { lead: LeadRef | null; onC
       if (waWindow) waWindow.location.href = waLink;
       else window.open(waLink, "_blank", "noopener");
       queryClient.invalidateQueries({ queryKey: ["lead-shares", lead!.id] });
-      queryClient.invalidateQueries({ queryKey: ["lead", lead!.id] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       setStep("done");
     },
   });

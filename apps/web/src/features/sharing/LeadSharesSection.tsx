@@ -267,7 +267,8 @@ export function ShareActionSheet({
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["lead-shares", leadId] });
-    queryClient.invalidateQueries({ queryKey: ["lead", leadId] });
+    // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
   };
 
   const resend = useMutation({ mutationFn: resendShare, onSuccess: invalidate });

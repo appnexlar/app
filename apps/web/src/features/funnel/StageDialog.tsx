@@ -45,7 +45,8 @@ export function StageDialog({ lead, initialStatus, onClose }: StageDialogProps) 
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });
-      queryClient.invalidateQueries({ queryKey: ["lead", lead.id] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       onClose();
     },
   });
