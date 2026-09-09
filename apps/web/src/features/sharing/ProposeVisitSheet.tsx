@@ -48,7 +48,7 @@ export function ProposeVisitSheet({
 
   return (
     <Modal open onClose={onClose} title={titulo}>
-      <p className="text-body-sm text-text-muted">Como você quer combinar com a lead?</p>
+      <p className="text-body-sm text-text-muted">Como você quer combinar com o cliente?</p>
 
       <div className="mt-4 overflow-hidden rounded-xl border border-border">
         <Opcao onClick={abrirWhatsapp} icone={<WhatsAppGlyph className="h-5 w-5 text-[#25D366]" />}>

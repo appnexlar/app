@@ -11,7 +11,7 @@ const STATUS_NEGOCIACAO = [
 
 /** Status que a lead nunca deixa sozinha: não faz sentido cobrar follow-up. */
 const STATUS_ENCERRADOS = [
-  "convertida_em_cliente",
+  "fechado",
   "perdida",
   "reativar_futuro",
 ] as const;

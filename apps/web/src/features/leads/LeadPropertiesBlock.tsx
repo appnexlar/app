@@ -54,7 +54,7 @@ export function LeadPropertiesBlock({ lead, onSend, onShare }: LeadPropertiesBlo
   if (semNada) {
     return (
       <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
-        <h2 className="text-label font-semibold text-text">Imóveis para esta lead</h2>
+        <h2 className="text-label font-semibold text-text">Imóveis para este cliente</h2>
         <p className="mt-1 text-body-sm text-text-muted">
           Ela ainda não recebeu nenhum imóvel. Há duas formas de enviar, e elas servem a momentos
           diferentes.
@@ -97,7 +97,7 @@ export function EscolhaDeEnvio({ lead, onSend }: { lead: LeadRef; onSend: () => 
           icone={<Layers size={20} aria-hidden="true" />}
           destaque
           titulo="Montar uma seleção"
-          texto="Vários imóveis num link só. A lead marca o que gostou, o que descartou e o que quer visitar, e as respostas voltam para esta ficha."
+          texto="Vários imóveis num link só. O cliente marca o que gostou, o que descartou e o que quer visitar, e as respostas voltam para esta ficha."
           acao={
             <Button
               type="button"

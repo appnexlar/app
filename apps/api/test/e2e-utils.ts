@@ -153,3 +153,38 @@ export function requestAs(
     },
   });
 }
+
+/**
+ * Cadastra um cliente pela rota de verdade (entidade única, set 2026).
+ * Substitui os `prisma.lead.create` espalhados pelos testes: o que a rota
+ * grava (dedupe por WhatsApp, timeline, marcos) é o que o teste deve ver.
+ */
+export async function criarCliente(
+  app: NestFastifyApplication,
+  broker: TestBroker,
+  dados: Partial<{
+    fullName: string;
+    whatsapp: string;
+    email: string;
+    status: string;
+    purpose: "compra" | "locacao";
+    consent: boolean;
+    region: string;
+    budgetMin: number;
+    budgetMax: number;
+  }> = {},
+): Promise<{ id: string; code: number; status: string; isClient: boolean }> {
+  const response = await requestAs(app, broker, {
+    method: "POST",
+    url: "/api/clients",
+    payload: {
+      fullName: "Cliente de Teste",
+      whatsapp: `1199${String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0")}`,
+      ...dados,
+    },
+  });
+  if (response.statusCode !== 201) {
+    throw new Error(`criarCliente falhou: ${response.statusCode} ${response.body}`);
+  }
+  return response.json();
+}

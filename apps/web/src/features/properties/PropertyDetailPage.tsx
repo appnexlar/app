@@ -183,7 +183,7 @@ export function PropertyDetailPage() {
 
         <div className="flex flex-wrap gap-2.5">
           <Button type="button" variant="accent" onClick={() => setSendOpen(true)}>
-            Enviar para uma lead
+            Enviar para um cliente
           </Button>
           <Button type="button" variant="ghost" onClick={() => navigate(`/imoveis/${p.code}/editar`)}>
             Editar
@@ -314,7 +314,7 @@ export function PropertyDetailPage() {
               <p className="mt-1 text-body-sm text-text-muted">
                 {p.availabilityConfirmed && p.availabilityConfirmedAt
                   ? `Confirmada em ${new Date(p.availabilityConfirmedAt).toLocaleDateString("pt-BR")}${p.availabilityConfirmedBy ? ` por ${p.availabilityConfirmedBy}` : ""}.`
-                  : "Ainda sem confirmação. Confirme antes de apresentar o imóvel a uma lead."}
+                  : "Ainda sem confirmação. Confirme antes de apresentar o imóvel a um cliente."}
               </p>
               {p.availabilityNote && (
                 <p className="mt-1 text-body-sm text-text-subtle">{p.availabilityNote}</p>
@@ -427,7 +427,7 @@ export function PropertyDetailPage() {
             </div>
           )}
           <p className="pt-2 text-caption text-text-subtle">
-            Dados internos: não aparecem para a lead.
+            Dados internos: não aparecem para o cliente.
           </p>
         </Section>
       </div>

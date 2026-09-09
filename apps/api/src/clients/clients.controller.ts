@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
+  changeLeadStatusSchema,
   createClientSchema,
   listClientsSchema,
   requestDeletionSchema,
@@ -26,7 +27,9 @@ import {
   type ClientProfileData,
   type ClientSummary,
   type DeletionRequestSummary,
+  type ChangeLeadStatusDto,
   type CreateClientDto,
+  type LeadSummary,
   type ListClientsQuery,
   type ParticipantSummary,
   type RequestDeletionDto,
@@ -39,16 +42,20 @@ import { CurrentBroker } from "../common/decorators/current-broker.decorator";
 import { LeadRefPipe } from "../common/pipes/short-code.pipe";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 import { ClientsService } from "./clients.service";
+import { LeadsService } from "../leads/leads.service";
 
 @ApiTags("clients")
 @ApiBearerAuth()
 @Controller("clients")
 export class ClientsController {
-  constructor(private readonly clients: ClientsService) {}
+  constructor(
+    private readonly clients: ClientsService,
+    private readonly leads: LeadsService,
+  ) {}
 
   @Post()
   @ApiOperation({
-    summary: "Cadastra um cliente sem lead anterior (carteira que já existia)",
+    summary: "Cadastro rápido de cliente, com etapa inicial opcional",
   })
   create(
     @CurrentBroker("brokerId") brokerId: string,
@@ -57,8 +64,18 @@ export class ClientsController {
     return this.clients.create(brokerId, dto);
   }
 
+  @Patch(":id/status")
+  @ApiOperation({ summary: "Muda a etapa do cliente no funil (inclui fechar o negócio)" })
+  changeStatus(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("id", LeadRefPipe) id: string,
+    @Body(new ZodValidationPipe(changeLeadStatusSchema)) dto: ChangeLeadStatusDto,
+  ): Promise<LeadSummary> {
+    return this.leads.changeStatus(brokerId, id, dto);
+  }
+
   @Get()
-  @ApiOperation({ summary: "Lista os clientes (leads convertidos) do corretor, campos seguros" })
+  @ApiOperation({ summary: "Lista os clientes do corretor, com recorte opcional por etapa" })
   list(
     @CurrentBroker("brokerId") brokerId: string,
     @Query(new ZodValidationPipe(listClientsSchema)) query: ListClientsQuery,
@@ -67,7 +84,7 @@ export class ClientsController {
   }
 
   @Get(":id")
-  @ApiOperation({ summary: "Ficha do cliente: reaproveita a jornada da lead + conversão" })
+  @ApiOperation({ summary: "Ficha completa do cliente" })
   findOne(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", LeadRefPipe) id: string,

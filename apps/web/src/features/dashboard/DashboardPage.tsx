@@ -87,7 +87,7 @@ export function DashboardPage() {
               />
               <HeroChip
                 value={summary.metrics.leadsThisMonth}
-                label={summary.metrics.leadsThisMonth === 1 ? "lead no mês" : "leads no mês"}
+                label={summary.metrics.leadsThisMonth === 1 ? "cliente no mês" : "clientes no mês"}
               />
               <HeroChip
                 value={summary.metrics.openNegotiations}
@@ -158,7 +158,7 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
             <GroupCard>
               <p className="px-6 py-6 text-body-sm text-text-muted">
                 Nenhuma tarefa para hoje. Bom momento para dar o próximo passo com um
-                lead ativo.
+                cliente ativo.
               </p>
             </GroupCard>
           )}
@@ -187,7 +187,7 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
         <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
           <div className="grid grid-cols-2 gap-px bg-border lg:grid-cols-4">
             <KpiCell
-              label="Leads no mês"
+              label="Clientes no mês"
               value={metrics.leadsThisMonth}
               previous={metrics.leadsLastMonth}
               compare="mês passado"
@@ -213,7 +213,7 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
           </div>
           <div className="border-t border-border p-6 sm:p-6">
             <div className="flex items-baseline justify-between gap-4">
-              <h3 className="text-h3 text-text">Leads novos por mês</h3>
+              <h3 className="text-h3 text-text">Clientes novos por mês</h3>
               <span className="hidden text-body-sm text-text-subtle sm:block">
                 últimos {metrics.leadsByMonth.length} meses
               </span>
@@ -224,7 +224,7 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
       </Section>
 
       {/* Funil: retrato atual da carteira ativa. */}
-      <Section title="Funil" caption="leads ativos por etapa" delay={240}>
+      <Section title="Funil" caption="clientes ativos por etapa" delay={240}>
         <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-6">
           <div className="flex items-baseline justify-between gap-4">
             <span className="text-body-sm text-text-muted">Onde estão seus atendimentos</span>
@@ -243,7 +243,7 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
       {/* Conversões: um bloco só, três medidas. */}
       <Section title="Conversões" delay={300}>
         <div className="grid overflow-hidden rounded-2xl border border-border bg-surface shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-border">
-          <RingCell fraction={conversions.leadToVisit} label="Lead → visita" />
+          <RingCell fraction={conversions.leadToVisit} label="Cliente → visita" />
           <div className="border-t border-border sm:border-t-0">
             <RingCell fraction={conversions.visitToNegotiation} label="Visita → negociação" />
           </div>
@@ -622,14 +622,14 @@ function EmptyDashboard() {
             <path d="M18 8h4M20 6v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
         </div>
-        <h2 className="mt-6 text-h2 text-text">Tudo começa por um lead</h2>
+        <h2 className="mt-6 text-h2 text-text">Tudo começa por um cliente</h2>
         <p className="mt-2 max-w-sm text-body text-text-muted">
           Cadastre seu primeiro cliente para acompanhar cada atendimento até o
-          fechamento. Assim que seus leads e tarefas existirem, seu resumo do dia
+          fechamento. Assim que seus clientes e tarefas existirem, seu resumo do dia
           aparece aqui.
         </p>
         <Button variant="accent" type="button" className="mt-8" onClick={openNewLead}>
-          Cadastrar lead
+          Cadastrar cliente
         </Button>
         <p className="mt-4 text-caption text-text-subtle">
           Só o nome e o WhatsApp são obrigatórios.

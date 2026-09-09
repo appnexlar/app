@@ -90,7 +90,7 @@ export function VisitAvailabilitySection() {
     <section className="animate-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <h2 className="text-label uppercase tracking-wide text-text-subtle">Horários de visita</h2>
       <p className="mt-1 text-body-sm text-text-muted">
-        Nos dias marcados, a lead agenda a visita sozinha pelo link da seleção, só em horário livre
+        Nos dias marcados, o cliente agenda a visita sozinha pelo link da seleção, só em horário livre
         da sua agenda. Sem dias marcados, ela apenas solicita e você confirma.
       </p>
 
@@ -181,8 +181,8 @@ export function VisitAvailabilitySection() {
       <div className="mt-4 flex items-center justify-between gap-3">
         <p className="text-caption text-text-subtle">
           {algumAtivo
-            ? "A lead verá só horários realmente livres da sua agenda."
-            : "Nenhum dia marcado: a lead poderá apenas solicitar visita."}
+            ? "O cliente verá só horários realmente livres da sua agenda."
+            : "Nenhum dia marcado: o cliente poderá apenas solicitar visita."}
         </p>
         <Button type="button" loading={save.isPending} onClick={submit}>
           {salvo ? "Salvo!" : "Salvar horários"}

@@ -404,7 +404,7 @@ describe("Financiamento: formulário público", () => {
       where: { brokerId: broker.brokerId, type: "financiamento_respondido" },
     });
     expect(notificacao?.body).toContain("Mariana");
-    expect(notificacao?.actionUrl).toMatch(/^\/leads\/\d+$/);
+    expect(notificacao?.actionUrl).toMatch(/^\/clientes\/\d+$/);
 
     // Depois do envio o link encerra: estado explica, formulário não abre mais.
     const estado = await app.inject({ method: "GET", url: `/api/public/financiamento/${token}` });

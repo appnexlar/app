@@ -12,10 +12,10 @@ import { Modal } from "../../components/ui/Modal";
 import { usePageEntityLabel } from "../shell/ShellContext";
 import { EscolhaDeEnvio, LeadPropertiesBlock } from "./LeadPropertiesBlock";
 import { NextActionCard } from "./NextActionCard";
+import { ClientDataSections } from "../clients/ClientDataSections";
 import { FinancingBlock } from "../financing/FinancingBlock";
 import { SendFromLeadModal } from "../sharing/SendFromLeadModal";
 import { StageDialog } from "../funnel/StageDialog";
-import { ConvertDialog } from "../clients/ConvertDialog";
 import { clientPath, isUuid, leadPath, useCanonicalPath } from "../../lib/routes";
 import { deleteLead, fetchLead } from "./api";
 import {
@@ -48,7 +48,6 @@ export function LeadDetailPage() {
   const [sendOpen, setSendOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
-  const [convertOpen, setConvertOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +80,7 @@ export function LeadDetailPage() {
     mutationFn: () => deleteLead(id as string),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });
-      navigate("/leads");
+      navigate("/clientes");
     },
   });
 
@@ -183,21 +182,13 @@ export function LeadDetailPage() {
                     Alterar etapa no funil
                   </MenuItem>
                   <MenuItem
-                    onClick={() => {
-                      setMoreOpen(false);
-                      setConvertOpen(true);
-                    }}
-                  >
-                    Converter em cliente
-                  </MenuItem>
-                  <MenuItem
                     danger
                     onClick={() => {
                       setMoreOpen(false);
                       setConfirmDelete(true);
                     }}
                   >
-                    Excluir lead
+                    Excluir cliente
                   </MenuItem>
                 </div>
               )}
@@ -230,11 +221,17 @@ export function LeadDetailPage() {
 
       <Timeline lead={lead} />
 
+      {/* Entidade única (set 2026): os dados que antes só a ficha de cliente
+          tinha (pessoais, negociação, financeiro, participantes, privacidade)
+          vivem aqui para todo mundo. O pedido progressivo deles ao entrar em
+          negociação é a etapa 5. */}
+      <ClientDataSections client={lead} />
+
       <ConfirmDialog
         open={confirmDelete}
-        title="Excluir lead"
+        title="Excluir cliente"
         description={`Excluir ${lead.fullName} apaga a lead e todo o histórico dela. Essa ação não pode ser desfeita.`}
-        confirmLabel={remove.isPending ? "Excluindo..." : "Excluir lead"}
+        confirmLabel={remove.isPending ? "Excluindo..." : "Excluir cliente"}
         danger
         loading={remove.isPending}
         onConfirm={() => remove.mutate()}
@@ -269,16 +266,6 @@ export function LeadDetailPage() {
         />
       )}
 
-      {convertOpen && (
-        <ConvertDialog
-          lead={{ id: lead.id, fullName: lead.fullName }}
-          onClose={() => setConvertOpen(false)}
-          onConverted={(clientId) => {
-            setConvertOpen(false);
-            navigate(`/clientes/${clientId}`);
-          }}
-        />
-      )}
     </div>
   );
 }

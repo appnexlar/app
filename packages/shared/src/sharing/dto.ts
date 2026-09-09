@@ -38,7 +38,7 @@ export type SelectionResponse = (typeof SELECTION_RESPONSES)[number];
 
 /** Corpo do envio: escolhe a lead e, opcionalmente, uma mensagem personalizada. */
 export const createShareSchema = z.object({
-  leadId: z.string().uuid("Selecione uma lead"),
+  leadId: z.string().uuid("Selecione um cliente"),
   message: z.string().trim().max(1000).optional().or(z.literal("")).transform((v) => (v ? v : undefined)),
 });
 export type CreateShareDto = z.infer<typeof createShareSchema>;
@@ -51,7 +51,7 @@ export type SetResponseDto = z.infer<typeof setResponseSchema>;
 export const setPrioritySchema = z.object({ isPriority: z.boolean() });
 export type SetPriorityDto = z.infer<typeof setPrioritySchema>;
 
-/** Um envio deste imóvel para uma lead (linha de "Leads que receberam"). */
+/** Um envio deste imóvel para uma lead (linha de "Clientes que receberam"). */
 export interface PropertyShareSummary {
   id: string;
   leadId: string;

@@ -1,3 +1,4 @@
+import { clientPath } from "../../lib/routes";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -53,7 +54,7 @@ export function PropertySharesSection({ propertyId }: { propertyId: string }) {
 
   return (
     <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-      <h2 className="text-label text-text-subtle">Leads que receberam este imóvel</h2>
+      <h2 className="text-label text-text-subtle">Clientes que receberam este imóvel</h2>
 
       {query.isPending ? (
         <div className="mt-4 h-16 animate-pulse rounded-lg bg-surface-sunken" />
@@ -63,7 +64,7 @@ export function PropertySharesSection({ propertyId }: { propertyId: string }) {
         </div>
       ) : query.data.length === 0 ? (
         <p className="mt-3 text-body-sm text-text-muted">
-          Nenhum envio ainda. Use "Enviar para uma lead" para compartilhar este imóvel.
+          Nenhum envio ainda. Use "Enviar para um cliente" para compartilhar este imóvel.
         </p>
       ) : (
         <ul className="mt-4 flex flex-col divide-y divide-border">
@@ -94,7 +95,7 @@ export function PropertySharesSection({ propertyId }: { propertyId: string }) {
                   </p>
                 </div>
                 <ShareRowMenu
-                  onOpenLead={() => navigate(`/leads/${share.leadId}`)}
+                  onOpenLead={() => navigate(clientPath(share.leadId))}
                   onWhatsapp={() => openWhatsapp(share)}
                   onResend={() => resend.mutate(share.id)}
                   onRevoke={() => setToRevoke(share)}
@@ -161,7 +162,7 @@ function ShareRowMenu({
       {open && (
         <div className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-border bg-surface py-1.5 shadow-md">
           <button type="button" className={item} onMouseDown={onOpenLead}>
-            Abrir lead
+            Abrir cliente
           </button>
           {!revoked && (
             <>

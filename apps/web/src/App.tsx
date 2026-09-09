@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { LoginPage } from "./features/auth/LoginPage";
 import { RegisterPage } from "./features/auth/RegisterPage";
 import { ForgotPasswordPage } from "./features/auth/ForgotPasswordPage";
@@ -22,8 +22,6 @@ import { PropertyWizard } from "./features/properties/PropertyWizard";
 import { ImportPropertyPage } from "./features/properties/ImportPropertyPage";
 import { PropertyDetailPage } from "./features/properties/PropertyDetailPage";
 import { FunnelPage } from "./features/funnel/FunnelPage";
-import { ClientsPage } from "./features/clients/ClientsPage";
-import { ClientDetailPage } from "./features/clients/ClientDetailPage";
 import { AgendaPage } from "./features/agenda/AgendaPage";
 import { MyPagePage } from "./features/public-page/MyPagePage";
 import { PublicPropertiesPage } from "./features/public-page/PublicPropertiesPage";
@@ -104,16 +102,18 @@ export function App() {
           <Route path="/minha-pagina/previa/quadro" element={<PreviewFramePage />} />
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/leads" element={<LeadsPage />} />
-            <Route path="/leads/:id" element={<LeadDetailPage />} />
-            <Route path="/leads/:id/imoveis-enviados" element={<LeadSharesPage />} />
-            <Route path="/leads/:id/selecoes/:selectionId" element={<SelectionBuilderPage />} />
-            <Route path="/leads/:id/financiamento/:code" element={<FinancingReviewPage />} />
-            <Route path="/leads/:id/selecoes/:selectionId/previa" element={<SelectionPreviewPage />} />
-            <Route path="/funil" element={<FunnelPage />} />
-            <Route path="/clientes" element={<ClientsPage />} />
-            <Route path="/clientes/:id" element={<ClientDetailPage />} />
+            {/* Entidade única (set 2026): uma lista e uma ficha para todo
+                mundo, em /clientes. /leads/* redireciona preservando o resto
+                do caminho, para link antigo, notificação e e-mail continuarem
+                abrindo. */}
+            <Route path="/clientes" element={<LeadsPage />} />
+            <Route path="/clientes/:id" element={<LeadDetailPage />} />
+            <Route path="/clientes/:id/imoveis-enviados" element={<LeadSharesPage />} />
+            <Route path="/clientes/:id/selecoes/:selectionId" element={<SelectionBuilderPage />} />
+            <Route path="/clientes/:id/selecoes/:selectionId/previa" element={<SelectionPreviewPage />} />
             <Route path="/clientes/:id/financiamento/:code" element={<FinancingReviewPage />} />
+            <Route path="/leads/*" element={<LeadsRedirect />} />
+            <Route path="/funil" element={<FunnelPage />} />
             <Route path="/agenda" element={<AgendaPage />} />
             <Route path="/visitas" element={<VisitsPage />} />
             <Route path="/imoveis" element={<PropertiesPage />} />
@@ -134,4 +134,14 @@ export function App() {
       </Routes>
     </SessionBoot>
   );
+}
+
+/**
+ * /leads/... virou /clientes/... Mantém o resto do caminho e a query string:
+ * /leads/1042/selecoes/7?x=1 abre /clientes/1042/selecoes/7?x=1.
+ */
+function LeadsRedirect() {
+  const { pathname, search, hash } = useLocation();
+  const destino = pathname.replace(/^\/leads/, "/clientes");
+  return <Navigate to={`${destino}${search}${hash}`} replace />;
 }

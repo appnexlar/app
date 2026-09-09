@@ -220,7 +220,7 @@ export function PropertiesPage() {
         <SmartEmptyState
           icon={<HouseIcon className="h-8 w-8" />}
           title="Sua carteira de imóveis"
-          description="Com imóveis cadastrados, você seleciona os certos para cada lead e envia num link exclusivo. Comece pelo essencial: fotos e detalhes entram depois."
+          description="Com imóveis cadastrados, você seleciona os certos para cado cliente e envia num link exclusivo. Comece pelo essencial: fotos e detalhes entram depois."
           action={{ label: "Cadastrar primeiro imóvel", onClick: () => setChooserOpen(true) }}
         />
         <NewPropertyChooser open={chooserOpen} onClose={() => setChooserOpen(false)} />
@@ -490,7 +490,7 @@ export function PropertiesPage() {
               disabled={marked.length === 0}
               onClick={() => setPickerIds(marked)}
             >
-              Enviar para lead
+              Enviar paro cliente
             </Button>
           </div>
         </div>
@@ -733,7 +733,7 @@ function RowMenu({
               onSend();
             }}
           >
-            Enviar para uma lead
+            Enviar para um cliente
           </button>
           <div className="my-1 border-t border-border" />
           {AVAILABLE_STATUS_ACTIONS.filter((a) => a.status !== property.status).map((action) => (

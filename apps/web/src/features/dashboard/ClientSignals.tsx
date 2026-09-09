@@ -102,7 +102,7 @@ export function ClientSignals() {
 function SinalRow({ sinal, onAbrir }: { sinal: NotificationDTO; onAbrir: () => void }) {
   const def = SINAIS[sinal.type];
   const Icone = def.icone;
-  const destino = sinal.actionUrl ?? "/leads";
+  const destino = sinal.actionUrl ?? "/clientes";
   // Peso visual só para o que ainda não foi visto: destaque em tudo é
   // destaque em nada.
   const novo = !sinal.readAt;

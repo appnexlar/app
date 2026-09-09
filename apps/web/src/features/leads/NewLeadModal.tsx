@@ -18,16 +18,20 @@ import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
 import { TextField } from "../../components/ui/TextField";
 import { Banner } from "../../components/ui/Banner";
+import { Select } from "../../components/ui/Select";
+import { Checkbox } from "../../components/ui/Checkbox";
 import { ApiError } from "../../lib/http";
 import { maskPhone, onlyDigits } from "../../lib/masks";
 import { leadPath } from "../../lib/routes";
 import { createLead, duplicateLeadFrom } from "./api";
+import { LEAD_STATUSES, type LeadStatus } from "@nexlar/shared";
 import {
   INTENT_LABELS,
   SOURCE_LABELS,
   displayCreatedAt,
   displayWhatsapp,
   whatsappLink,
+  STATUS_LABELS,
 } from "./labels";
 
 /**
@@ -131,6 +135,10 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
   const [source, setSource] = useState<LeadSource | null>(null);
   const [intent, setIntent] = useState<LeadIntent | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  // Entidade única (set 2026): quem traz carteira formada pode cadastrar a
+  // pessoa já na etapa em que ela está. O padrão é "novo", como sempre foi.
+  const [status, setStatus] = useState<LeadStatus>("novo");
+  const [consent, setConsent] = useState(false);
   const [created, setCreated] = useState<LeadSummary | null>(null);
 
   const {
@@ -154,6 +162,8 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
     setSource(null);
     setIntent(null);
     setShowDetails(false);
+    setStatus("novo");
+    setConsent(false);
     setCreated(null);
     mutation.reset();
   };
@@ -175,7 +185,7 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
       budgetMax: parseBudget(values.budgetMax),
       notes: values.notes || undefined,
     };
-    mutation.mutate(dto);
+    mutation.mutate({ ...dto, status, consent: status === "fechado" ? consent : undefined });
   };
 
   const duplicate = duplicateLeadFrom(mutation.error);
@@ -188,7 +198,7 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
 
   const goToLeads = () => {
     close();
-    navigate("/leads");
+    navigate("/clientes");
   };
 
   /** Abre a ficha da lead recém-criada, onde o histórico é registrado. */
@@ -211,7 +221,7 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
   };
 
   return (
-    <Modal open={open} onClose={close} title={created ? "Lead cadastrado" : "Novo lead"}>
+    <Modal open={open} onClose={close} title={created ? "Cliente cadastrado" : "Novo cliente"}>
       {created ? (
         <div className="flex flex-col items-center text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--success-soft)] text-[var(--success-fg)]">
@@ -311,7 +321,7 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
           </div>
 
           {!showDetails ? (
-            // Sem laranja: o acento é do "Salvar lead". Um link opcional
+            // Sem laranja: o acento é do "Salvar cliente". Um link opcional
             // disputando a mesma cor do botão principal empata a decisão.
             <button
               type="button"
@@ -374,6 +384,27 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
                   {...register("notes")}
                 />
               </div>
+              <Select
+                label="Etapa"
+                value={status}
+                onValueChange={(v) => setStatus(v as LeadStatus)}
+                options={LEAD_STATUSES.map((st) => ({ value: st, label: STATUS_LABELS[st] }))}
+              />
+              {status === "fechado" && (
+                <div className="rounded-xl bg-surface-sunken p-3.5">
+                  <p className="text-caption text-text-muted">
+                    Cadastrar já como fechado guarda dados sensíveis na ficha, então a pessoa
+                    precisa ter ciência da coleta.
+                  </p>
+                  <div className="mt-2.5">
+                    <Checkbox
+                      label="Confirmo que a pessoa tem ciência da coleta de dados para esta finalidade."
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -387,7 +418,7 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
               if (errors.fullName) setFocus("fullName");
             }}
           >
-            {mutation.isPending ? "Salvando..." : "Salvar lead"}
+            {mutation.isPending ? "Salvando..." : "Salvar cliente"}
           </Button>
         </form>
       )}

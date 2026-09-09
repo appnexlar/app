@@ -568,7 +568,7 @@ function CandidateCard({
   const meta = [c.type, c.neighborhood ?? c.city, detalheCurto(c)].filter(Boolean).join(" · ");
   const historico =
     c.history && c.history.response !== "nao_visualizado"
-      ? `Enviado antes: a lead ${RESPONSE_HISTORY_LABELS[c.history.response] ?? "recebeu"}${c.history.responseReason ? ` (${c.history.responseReason})` : ""}`
+      ? `Enviado antes: o cliente ${RESPONSE_HISTORY_LABELS[c.history.response] ?? "recebeu"}${c.history.responseReason ? ` (${c.history.responseReason})` : ""}`
       : c.history
         ? "Enviado antes, sem resposta"
         : null;
@@ -699,7 +699,7 @@ function OrganizePhase({
     return (
       <div className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center">
         <p className="text-body font-semibold text-text">A seleção ainda está vazia</p>
-        <p className="mt-1 text-body-sm text-text-muted">Volte à etapa 1 e escolha os imóveis para esta lead.</p>
+        <p className="mt-1 text-body-sm text-text-muted">Volte à etapa 1 e escolha os imóveis para este cliente.</p>
       </div>
     );
   }
@@ -731,7 +731,7 @@ function OrganizePhase({
 
       <section className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
         <label className="text-label uppercase tracking-wide text-text-subtle" htmlFor="sel-mensagem">
-          Mensagem para a lead
+          Mensagem para o cliente
         </label>
         <textarea
           id="sel-mensagem"
@@ -749,7 +749,7 @@ function OrganizePhase({
       <section className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
         <h3 className="text-label uppercase tracking-wide text-text-subtle">Prazo de acesso</h3>
         <p className="mt-1 text-body-sm text-text-muted">
-          Depois desse prazo o link expira e a lead precisa pedir uma seleção nova.
+          Depois desse prazo o link expira e o cliente precisa pedir uma seleção nova.
         </p>
         <div className="mt-3 grid grid-cols-3 gap-1 rounded-xl bg-surface-sunken p-1">
           {SELECTION_EXPIRY_OPTIONS.map((dias) => (
@@ -836,7 +836,7 @@ function ItemRow({
           </button>
           <button
             type="button"
-            aria-label="Observação para a lead"
+            aria-label="Observação para o cliente"
             aria-pressed={noteOpen}
             onClick={() => setNoteOpen((v) => !v)}
             className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors duration-fast ${
@@ -1047,7 +1047,7 @@ function ActiveView({
       <ConfirmDialog
         open={confirmRevoke}
         title="Encerrar acesso"
-        description="A lead deixa de ver os imóveis imediatamente. O histórico das respostas continua na ficha."
+        description="O cliente deixa de ver os imóveis imediatamente. O histórico das respostas continua na ficha."
         confirmLabel={revokePending ? "Encerrando..." : "Encerrar acesso"}
         danger
         loading={revokePending}

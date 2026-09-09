@@ -128,7 +128,7 @@ export function AdminUserProfilePage() {
 
         <Cartao titulo="Uso da plataforma" largura="md:col-span-2">
           <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
-            <Indicador rotulo="Leads" valor={data.usage.leads} />
+            <Indicador rotulo="Clientes" valor={data.usage.leads} />
             <Indicador rotulo="Clientes" valor={data.usage.clientes} />
             <Indicador rotulo="Imóveis" valor={data.usage.imoveis} />
             <Indicador rotulo="Seleções" valor={data.usage.selecoes} />
@@ -268,7 +268,7 @@ function AcaoDeStatusModal({
         <div className="flex flex-col gap-4">
           <p className="text-body text-text-muted">
             {suspender
-              ? "A pessoa perde o acesso imediatamente e as sessões abertas são encerradas. Nenhum dado é apagado: leads, imóveis e agenda ficam intactos, à espera de uma reativação."
+              ? "A pessoa perde o acesso imediatamente e as sessões abertas são encerradas. Nenhum dado é apagado: clientes, imóveis e agenda ficam intactos, à espera de uma reativação."
               : "A conta volta a entrar normalmente, com tudo como estava."}
           </p>
           <TextField

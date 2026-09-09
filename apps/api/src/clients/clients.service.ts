@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import type {
   ClientDetail,
   CreateClientDto,
@@ -15,7 +15,7 @@ import type {
   UpdateClientProfileDto,
   UpsertParticipantDto,
 } from "@nexlar/shared";
-import { CONSENT_VERSION } from "@nexlar/shared";
+import { CONSENT_VERSION, FUNNEL_GROUP_BY_STATUS, LEAD_STATUSES, normalizeWhatsapp } from "@nexlar/shared";
 import {
   Prisma,
   type ClientFinancial,
@@ -25,6 +25,7 @@ import {
   type DataDeletionRequest,
 } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { LeadsService } from "../leads/leads.service";
 
 const CLIENT_INCLUDE = {
   conversion: { include: { property: { select: { title: true } } } },
@@ -34,102 +35,75 @@ type LeadWithConversion = Prisma.LeadGetPayload<{ include: typeof CLIENT_INCLUDE
 
 @Injectable()
 export class ClientsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly leads: LeadsService,
+  ) {}
 
   /**
-   * Cadastra um cliente que já era cliente antes do Nextlar, sem lead anterior.
-   *
-   * Quem chega com a carteira formada não tem lead nenhuma para converter.
-   * Obrigá-lo a criar uma lead e convertê-la em seguida faz o corretor
-   * concluir que o sistema está com defeito: ele sabe que aquela pessoa é
-   * cliente e não encontra onde dizer isso.
-   *
-   * A pessoa nasce já convertida, e não passa pelo funil: criar a lead e
-   * converter depois, em duas chamadas, deixaria uma lead solta no funil se a
-   * segunda falhasse. Por isso tudo acontece na mesma transação, exatamente
-   * como na conversão a partir de uma lead.
+   * Cadastro de cliente (entidade única, set 2026). É o cadastro rápido de
+   * sempre, pelo mesmo caminho e com o mesmo dedupe por WhatsApp da rota
+   * antiga de lead. A diferença é a etapa inicial opcional: quem traz carteira
+   * formada pode cadastrar alguém já em "fechado", e aí o fechamento é gravado
+   * na mesma transação de quem fecha pelo funil.
    */
   async create(brokerId: string, dto: CreateClientDto): Promise<ClientSummary> {
-    // Mesmo WhatsApp já cadastrado é a mesma pessoa. Deixar passar criaria
-    // duas fichas da mesma pessoa, uma como lead e outra como cliente.
-    const existente = await this.prisma.lead.findFirst({
-      where: { brokerId, whatsapp: dto.phone },
-      orderBy: { createdAt: "desc" },
-    });
-    if (existente) {
-      throw new ConflictException(
-        existente.isClient
-          ? "Você já tem um cliente com esse WhatsApp."
-          : "Você já tem um lead com esse WhatsApp. Converta a lead em cliente pela ficha dela.",
-      );
+    const { status, purpose, consent, phone, ...cadastro } = dto;
+    const whatsapp = cadastro.whatsapp ?? normalizeWhatsapp(phone ?? "");
+    const criado = await this.leads.create(brokerId, { ...cadastro, whatsapp });
+
+    if (purpose) {
+      // A finalidade é preferência, e vive com as outras preferências. Lá o
+      // vocabulário é o do imóvel ("venda"), não o do cliente ("compra").
+      const finalidade = purpose === "compra" ? "venda" : "locacao";
+      await this.prisma.leadPreference.upsert({
+        where: { leadId: criado.id },
+        create: { brokerId, leadId: criado.id, purpose: finalidade },
+        update: { purpose: finalidade },
+      });
     }
 
-    const agora = new Date();
-    const criado = await this.prisma.$transaction(async (tx) => {
-      const lead = await tx.lead.create({
-        data: {
-          brokerId,
-          fullName: dto.fullName,
-          whatsapp: dto.phone,
-          email: dto.email || undefined,
-          source: "outro",
-          isClient: true,
-          convertedAt: agora,
-          status: "convertida_em_cliente",
-          lastContactAt: agora,
-        },
+    if (status && status !== "novo") {
+      await this.leads.changeStatus(brokerId, criado.id, {
+        status,
+        purpose,
+        ...(status === "fechado" && consent ? { closeNote: "Cadastrado já como fechado" } : {}),
       });
-      await tx.conversion.create({
-        data: {
-          brokerId,
-          leadId: lead.id,
-          reason: "cliente_da_carteira",
-          // Nem motivo nem próxima etapa são perguntados: quem cadastra
-          // direto já respondeu os dois pelo próprio gesto, e a etapa
-          // seguinte é sempre completar a ficha.
-          nextStep: "coletar_dados",
-          purpose: dto.purpose,
-          consentGiven: dto.consent,
-        },
-      });
-      await tx.consent.create({
-        data: {
-          brokerId,
-          leadId: lead.id,
-          purpose: "coleta_dados_adicionais",
-          textVersion: CONSENT_VERSION,
-        },
-      });
-      await tx.leadActivity.create({
-        data: {
-          brokerId,
-          leadId: lead.id,
-          type: "conversao",
-          description: "Cliente cadastrado direto na lista",
-          metadata: { purpose: dto.purpose },
-        },
-      });
-      await tx.auditLog.create({
-        data: {
-          brokerId,
-          action: "cliente_cadastrado_direto",
-          entityType: "lead",
-          entityId: lead.id,
-          metadata: { purpose: dto.purpose },
-        },
-      });
-      return tx.lead.findUniqueOrThrow({ where: { id: lead.id }, include: CLIENT_INCLUDE });
-    });
+      if (status === "fechado" && consent) {
+        await this.prisma.$transaction([
+          this.prisma.conversion.update({
+            where: { leadId: criado.id },
+            data: { reason: "cliente_da_carteira", consentGiven: true },
+          }),
+          this.prisma.consent.create({
+            data: { brokerId, leadId: criado.id, purpose: "coleta_dados_adicionais", textVersion: CONSENT_VERSION },
+          }),
+        ]);
+      }
+    }
 
-    return this.toSummary(criado);
+    const completo = await this.prisma.lead.findUniqueOrThrow({
+      where: { id: criado.id },
+      include: CLIENT_INCLUDE,
+    });
+    return this.toSummary(completo);
   }
 
   /**
-   * Lista apenas pessoas convertidas (is_client) do corretor autenticado.
-   * Só campos seguros: nunca CPF completo, renda ou documentos (LGPD).
+   * Lista de clientes: todo mundo do corretor, com recorte opcional por etapa
+   * do funil (entidade única, set 2026). "fechados" é o atalho da antiga aba
+   * Clientes. Só campos seguros: nunca CPF completo, renda ou documentos.
    */
   async list(brokerId: string, query: ListClientsQuery): Promise<ClientSummary[]> {
-    const where: Prisma.LeadWhereInput = { brokerId, isClient: true };
+    const where: Prisma.LeadWhereInput = { brokerId };
+    if (query.fechados === true) where.isClient = true;
+    if (query.fechados === false) where.isClient = false;
+    if (query.status) where.status = query.status;
+    if (query.grupo) {
+      where.status = {
+        in: LEAD_STATUSES.filter((st) => FUNNEL_GROUP_BY_STATUS[st] === query.grupo),
+      };
+    }
 
     if (query.q) {
       where.OR = [
@@ -150,7 +124,10 @@ export class ClientsService {
     const clients = await this.prisma.lead.findMany({
       where,
       include: CLIENT_INCLUDE,
-      orderBy: { convertedAt: "desc" },
+      // Quem fechou por último aparece primeiro entre os fechados; entre os
+      // demais, quem entrou por último. A ordem por data de criação cobre os
+      // dois, porque fechar não muda a data de entrada.
+      orderBy: [{ convertedAt: "desc" }, { createdAt: "desc" }],
     });
     return clients.map((c) => this.toSummary(c));
   }
@@ -158,7 +135,7 @@ export class ClientsService {
   /** Ficha do cliente: reaproveita a jornada da lead + dados da conversão. */
   async findOne(brokerId: string, id: string): Promise<ClientDetail> {
     const lead = await this.prisma.lead.findFirst({
-      where: { id, brokerId, isClient: true },
+      where: { id, brokerId },
       include: {
         conversion: { include: { property: { select: { title: true } } } },
         consents: { orderBy: { acceptedAt: "desc" } },
@@ -523,7 +500,14 @@ export class ClientsService {
       fullName: lead.fullName,
       whatsapp: lead.whatsapp,
       status: lead.status,
+      isClient: lead.isClient,
       convertedAt: lead.convertedAt?.toISOString() ?? null,
+      source: lead.source,
+      intent: lead.intent,
+      region: lead.region,
+      budgetMin: lead.budgetMin != null ? Number(lead.budgetMin) : null,
+      budgetMax: lead.budgetMax != null ? Number(lead.budgetMax) : null,
+      createdAt: lead.createdAt.toISOString(),
       purpose: lead.conversion?.purpose ?? null,
       reason: lead.conversion?.reason ?? null,
       relatedPropertyId: lead.conversion?.propertyId ?? null,

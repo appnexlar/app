@@ -897,7 +897,7 @@ function StepLocation({
 
       <Select
         label="Como exibir a localização"
-        hint="Usada futuramente no link enviado à lead. Os dados completos ficam só com você."
+        hint="Usada futuramente no link enviado ao cliente. Os dados completos ficam só com você."
         value={form.addressDisplay}
         options={ADDRESS_DISPLAY_MODES.map((mode) => ({
           value: mode,
@@ -1242,7 +1242,7 @@ function StepOrigin({
   return (
     <>
       <Banner variant="info">
-        Estes dados são internos, para o seu dia a dia. Eles não aparecem para a lead.
+        Estes dados são internos, para o seu dia a dia. Eles não aparecem para o cliente.
       </Banner>
       {form.origin && (
         <section className="flex flex-col gap-5 rounded-xl border border-border bg-surface p-5 shadow-sm">

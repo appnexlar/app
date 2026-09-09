@@ -25,7 +25,7 @@ export class SharingController {
 
   @Post("properties/:id/shares")
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Enviar um imóvel para uma lead (cria o compartilhamento)" })
+  @ApiOperation({ summary: "Enviar um imóvel para um cliente (cria o compartilhamento)" })
   create(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", PropertyRefPipe) propertyId: string,
@@ -36,7 +36,7 @@ export class SharingController {
 
   @Get("properties/:id/shares")
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Leads que receberam este imóvel" })
+  @ApiOperation({ summary: "Clientes que receberam este imóvel" })
   listForProperty(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", PropertyRefPipe) propertyId: string,
@@ -46,7 +46,7 @@ export class SharingController {
 
   @Get("leads/:id/shares")
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Imóveis enviados para esta lead" })
+  @ApiOperation({ summary: "Imóveis enviados para este cliente" })
   listForLead(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", LeadRefPipe) leadId: string,
@@ -79,7 +79,7 @@ export class SharingController {
   @Post("shares/:shareId/items/:itemId/response")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Registrar manualmente a resposta da lead sobre o imóvel" })
+  @ApiOperation({ summary: "Registrar manualmente a resposta do cliente sobre o imóvel" })
   setResponse(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("shareId", ParseUUIDPipe) shareId: string,
@@ -92,7 +92,7 @@ export class SharingController {
   @Post("shares/:shareId/items/:itemId/priority")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Marcar/desmarcar o imóvel como prioritário para a lead" })
+  @ApiOperation({ summary: "Marcar/desmarcar o imóvel como prioritário para o cliente" })
   setPriority(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("shareId", ParseUUIDPipe) shareId: string,

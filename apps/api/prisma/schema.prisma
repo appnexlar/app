@@ -69,7 +69,7 @@ enum LeadStatus {
   visitando_imoveis
   imovel_prioritario
   aguardando_decisao
-  convertida_em_cliente
+  fechado
   perdida
   reativar_futuro
 
@@ -1475,6 +1475,11 @@ model LeadPreference {
   types         String[]         @default([])
   cities        String[]         @default([])
   neighborhoods String[]         @default([])
+  /// Região como a pessoa disse no cadastro rápido ("zona sul", "perto do
+  /// metrô"). Texto livre, ao lado das listas de cidade e bairro: o cadastro
+  /// não obriga ninguém a escolher de uma lista, e o que foi dito não se
+  /// perde. Movido do cadastro para cá na unificação de cliente (set 2026).
+  region        String?
   priceMin      Decimal?         @map("price_min") @db.Decimal(14, 2)
   priceMax      Decimal?         @map("price_max") @db.Decimal(14, 2)
   bedroomsMin   Int?             @map("bedrooms_min")

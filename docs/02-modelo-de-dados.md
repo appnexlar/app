@@ -214,6 +214,21 @@ No MVP a simulação é registro manual do resultado, com atalho para o simulado
 | simulated_at | date | quando foi feita |
 | created_at / updated_at | timestamptz | |
 
+## 2.8b Entidade única de cliente (decisão de 4 set 2026)
+
+**Lead deixa de existir como conceito de produto.** Toda pessoa é *cliente* desde o cadastro rápido; o que muda ao longo da relação é a etapa do funil, e a etiqueta da etapa é o que antes se lia como "ainda é lead". A tabela física continua `lead` (renomear as quinze chaves estrangeiras não traria ganho a quem usa), e a palavra some das rotas, dos textos e do código de aplicação.
+
+O que mudou no modelo:
+
+- `convertida_em_cliente` virou **`fechado`**. É uma etapa comum, alcançável pelo funil. Chegar nela grava `conversion` (mantida como registro do fechamento), `is_client` e `converted_at`, que passam a significar "negócio fechado" e "fechado em". "Cliente desde" é `created_at`.
+- **Não existe mais ação de conversão.** `POST /leads/:id/convert` segue por uma versão como apelido de "mudar etapa para fechado", com os detalhes a mais, e sai depois.
+- **Um conjunto só de preferências.** `lead_preference` é a fonte única do que a pessoa procura; ganhou `region` (texto livre, como no cadastro). As colunas `region`, `budget_min`, `budget_max` e `cpf` de `lead` ficam por compatibilidade, param de ser escritas e saem numa migration posterior. O CPF vive em `client_profile`.
+- **A ciência da coleta (LGPD) muda de lugar:** deixa de ser exigida ao mudar de etapa e passa a ser exigida antes de gravar o primeiro dado complementar (perfil, financeiro, participantes). Cadastrar alguém já em `fechado` continua exigindo a ciência, porque é aí que a ficha passa a guardar dado sensível.
+- `GET /clients` lista todo mundo, com recorte por `status`, `grupo` do funil ou `fechados=true` (a antiga aba Clientes). `GET /leads` segue devolvendo só quem não fechou, como apelido, até o front migrar.
+- Chaves internas com "lead" (eventos `FIRST_LEAD_*`, notificação `novo_lead_pagina_publica`, chaves de guidance) ficam como estão por ora.
+
+Onde este documento ainda diz "lead", leia "cliente em etapa anterior a fechado". A reescrita completa do texto fica para depois da unificação estar em produção.
+
 ## 2.9 Funil e status da lead (`lead_status`)
 
 Os status representam a evolução geral da jornada da lead, do primeiro contato até a conversão. O funil na interface é um kanban com colunas agrupadas para não virar uma parede de colunas no celular. Cada status pertence a um grupo visual.

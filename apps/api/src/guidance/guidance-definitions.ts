@@ -60,10 +60,10 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     key: "cadastrar-primeiro-lead",
     category: "educational",
     priority: 100, // o primeiro passo de todos: prioridade máxima quando cabe
-    title: "Cadastre seu primeiro lead",
+    title: "Cadastre seu primeiro cliente",
     description:
-      "Seus leads são as pessoas interessadas nos seus imóveis. Comece organizando o primeiro atendimento.",
-    actionLabel: "Cadastrar primeiro lead",
+      "Seus clientes são as pessoas interessadas nos seus imóveis. Comece organizando o primeiro atendimento.",
+    actionLabel: "Cadastrar primeiro cliente",
     actionType: "abrir-novo-lead",
     actionUrl: "/leads",
     dismissible: false, // é o coração do produto; não some
@@ -75,10 +75,10 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     key: "adicionar-preferencias-lead",
     category: "educational",
     priority: 80,
-    title: "Adicione as preferências de um lead",
+    title: "Adicione as preferências de um cliente",
     description:
       "Com região, intenção e faixa de preço, a Nextlar ajuda a encontrar imóveis mais compatíveis.",
-    actionLabel: "Ver leads",
+    actionLabel: "Ver clientes",
     actionUrl: "/leads",
     dismissible: true,
     dismissPolicy: "reapresentar_se_relevante",
@@ -91,7 +91,7 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     priority: 75,
     title: "Cadastre seu primeiro imóvel",
     description:
-      "Com imóveis na sua carteira, você começa a relacioná-los aos leads certos.",
+      "Com imóveis na sua carteira, você começa a relacioná-los aos clientes certos.",
     actionLabel: "Cadastrar primeiro imóvel",
     actionUrl: "/imoveis/novo",
     dismissible: true,
@@ -103,10 +103,10 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     key: "relacionar-imovel-lead",
     category: "educational",
     priority: 70,
-    title: "Envie um imóvel para um lead",
+    title: "Envie um imóvel para um cliente",
     description:
-      "Agora você pode selecionar imóveis conforme o perfil do lead e enviar num link exclusivo.",
-    actionLabel: "Ver leads",
+      "Agora você pode selecionar imóveis conforme o perfil do cliente e enviar num link exclusivo.",
+    actionLabel: "Ver clientes",
     actionUrl: "/leads",
     dismissible: true,
     dismissPolicy: "reapresentar_se_relevante",
@@ -135,9 +135,9 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     key: "follow-up-pendente",
     category: "operational",
     priority: 60,
-    title: "Você tem leads esperando um retorno",
+    title: "Você tem clientes esperando um retorno",
     description:
-      "Alguns leads estão com a próxima ação vencida. Um contato hoje mantém a conversa viva.",
+      "Alguns clientes estão com a próxima ação vencida. Um contato hoje mantém a conversa viva.",
     actionLabel: "Ver quem contatar",
     actionUrl: "/leads",
     dismissible: true,
@@ -193,7 +193,7 @@ export const CHECKLIST_MILESTONES: ChecklistMilestone[] = [
   },
   {
     key: "primeiro-lead",
-    title: "Cadastrar primeiro lead",
+    title: "Cadastrar primeiro cliente",
     event: "FIRST_LEAD_CREATED",
     derivable: (ctx) => ctx.leadCount > 0,
     actionType: "abrir-novo-lead",
@@ -201,7 +201,7 @@ export const CHECKLIST_MILESTONES: ChecklistMilestone[] = [
   },
   {
     key: "preferencias",
-    title: "Adicionar preferências a um lead",
+    title: "Adicionar preferências a um cliente",
     event: "LEAD_PREFERENCES_ADDED",
     derivable: (ctx) => ctx.leadCount > 0 && ctx.leadsSemPreferencias < ctx.leadCount,
     actionUrl: "/leads",
@@ -215,7 +215,7 @@ export const CHECKLIST_MILESTONES: ChecklistMilestone[] = [
   },
   {
     key: "relacionar-imovel",
-    title: "Relacionar um imóvel a um lead",
+    title: "Relacionar um imóvel a um cliente",
     event: "FIRST_PROPERTY_MATCH_CREATED",
     derivable: (ctx) => ctx.matchCount > 0,
     actionUrl: "/imoveis",
@@ -243,7 +243,7 @@ export const CHECKLIST_MILESTONES: ChecklistMilestone[] = [
   },
   {
     key: "primeira-conversao",
-    title: "Converter o primeiro lead em cliente",
+    title: "Fechar o primeiro negócio",
     event: "FIRST_LEAD_CONVERTED",
     derivable: (ctx) => ctx.milestones.has("FIRST_LEAD_CONVERTED"),
     actionUrl: "/funil",

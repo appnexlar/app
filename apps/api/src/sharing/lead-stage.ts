@@ -4,7 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { STATUS_LABELS } from "../leads/status-labels";
 
 /** Etapas que nunca mudam sozinhas: sair delas é sempre decisão do corretor. */
-const FROZEN_STATUSES: LeadStatus[] = ["convertida_em_cliente", "perdida", "reativar_futuro"];
+const FROZEN_STATUSES: LeadStatus[] = ["fechado", "perdida", "reativar_futuro"];
 
 /**
  * Promove a etapa da lead no funil quando um evento comercial acontece

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isValidCpf } from "../common/documento";
-import type { LeadDetail } from "../leads/dto";
+import type { LeadDetail, LeadIntent, LeadSource, LeadStatus } from "../leads/dto";
+import { FUNNEL_GROUPS, LEAD_STATUSES, createLeadSchema } from "../leads/dto";
 
 /**
  * Conversão de lead em cliente e área de Clientes (docs/02 §2.16, §4.2.4).
@@ -95,8 +96,16 @@ export interface ClientSummary {
   code: number;
   fullName: string;
   whatsapp: string;
-  status: string;
+  status: LeadStatus;
+  /** Negócio fechado (o que antes se chamava "convertida em cliente"). */
+  isClient: boolean;
   convertedAt: string | null;
+  source: LeadSource | null;
+  intent: LeadIntent | null;
+  region: string | null;
+  budgetMin: number | null;
+  budgetMax: number | null;
+  createdAt: string;
   purpose: ClientPurpose | null;
   reason: ConversionReason | null;
   relatedPropertyId: string | null;
@@ -375,33 +384,46 @@ export const listClientsSchema = z.object({
     .transform((v) => (v ? v : undefined)),
   purpose: z.enum(CLIENT_PURPOSES).optional(),
   hasRelatedProperty: boolFromQuery,
+  // Entidade única (set 2026): a lista é de todo mundo, e o recorte é por
+  // etapa do funil. "fechados" é o atalho para a antiga aba Clientes.
+  status: z.enum(LEAD_STATUSES).optional(),
+  grupo: z.enum([...FUNNEL_GROUPS, "encerradas"]).optional(),
+  fechados: boolFromQuery,
 });
 export type ListClientsQuery = z.infer<typeof listClientsSchema>;
 
 
 /**
- * Cadastro de cliente direto, sem lead anterior (docs/02 §2.16).
+ * Cadastro de cliente (entidade única, set 2026).
  *
- * Existe porque quem chega ao Nextlar com carteira formada não tem lead
- * nenhuma para converter, e obrigá-lo a inventar uma faz o corretor concluir
- * que o sistema está com defeito: ele sabe que aquela pessoa é cliente e não
- * encontra como dizer isso.
+ * É o mesmo cadastro rápido de sempre: nome e WhatsApp obrigatórios, o resto
+ * opcional. A pessoa nasce na etapa "novo" e a etiqueta do funil diz onde ela
+ * está; "cliente completo" é quem chega em negociação, e aí os dados
+ * complementares são pedidos aos poucos.
  *
- * Pede o mesmo que o cadastro rápido de lead (nome e WhatsApp), mais a
- * finalidade e a ciência da coleta. Motivo e próxima etapa não são
- * perguntados: quem cadastra assim já respondeu os dois pelo próprio gesto.
+ * `status` inicial existe para quem traz carteira formada: dá para cadastrar
+ * alguém já em "fechado". A ciência da coleta só é exigida nesse caso, porque
+ * é aí que a ficha passa a guardar dado sensível.
  */
-export const createClientSchema = z.object({
-  fullName: z.string().trim().min(2, "Informe o nome do cliente.").max(120),
-  phone: z
-    .string()
-    .trim()
-    .min(8, "Informe um WhatsApp válido.")
-    .max(20),
-  email: z.string().trim().email("E-mail inválido.").max(150).optional().or(z.literal("")),
-  purpose: z.enum(CLIENT_PURPOSES),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: "É preciso confirmar a ciência sobre a coleta de dados." }),
-  }),
-});
+export const createClientSchema = createLeadSchema
+  .partial({ whatsapp: true })
+  .extend({
+    /** Aceito por compatibilidade com o formulário anterior; vira whatsapp. */
+    phone: z.string().trim().max(20).optional(),
+    status: z.enum(LEAD_STATUSES).optional(),
+    purpose: z.enum(CLIENT_PURPOSES).optional(),
+    consent: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.whatsapp && !data.phone) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["whatsapp"], message: "Informe o WhatsApp" });
+    }
+    if (data.status === "fechado" && data.consent !== true) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["consent"],
+        message: "Para cadastrar já como fechado, confirme a ciência sobre a coleta de dados.",
+      });
+    }
+  });
 export type CreateClientDto = z.infer<typeof createClientSchema>;
