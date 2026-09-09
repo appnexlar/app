@@ -55,6 +55,9 @@ export interface DashboardMetrics {
   visitsLastMonth: number;
   openNegotiations: number;
   negotiationsLastMonth: number;
+  /** Negócios fechados no mês corrente e no anterior (entidade única, set 2026). */
+  closedThisMonth: number;
+  closedLastMonth: number;
   /** Últimos meses (mais antigo primeiro, inclui o corrente). */
   leadsByMonth: MonthCount[];
   activeByStage: FunnelStageCount[];

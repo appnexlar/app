@@ -203,7 +203,7 @@ export function AdminDashboardPage() {
                 >
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
                     <StatCard label="Clientes" value={data.uso.leads} />
-                    <StatCard label="Clientes" value={data.uso.clientes} />
+                    <StatCard label="Fechados" value={data.uso.clientes} />
                     <StatCard label="Imóveis" value={data.uso.imoveis} />
                     <StatCard label="Seleções" value={data.uso.selecoes} />
                     <StatCard label="Visitas" value={data.uso.visitas} />
