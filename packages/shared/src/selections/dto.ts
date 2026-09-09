@@ -36,6 +36,8 @@ export const upsertLeadPreferenceSchema = z
     types: listaCurta.optional(),
     cities: listaCurta.optional(),
     neighborhoods: listaCurta.optional(),
+    /** Região em texto livre, como veio do cadastro rápido ("zona sul"). */
+    region: z.string().trim().max(160).nullish(),
     priceMin: z.number().nonnegative().max(999_999_999).nullish(),
     priceMax: z.number().nonnegative().max(999_999_999).nullish(),
     bedroomsMin: z.number().int().min(0).max(20).nullish(),
@@ -64,6 +66,7 @@ export interface LeadPreferenceView {
   types: string[];
   cities: string[];
   neighborhoods: string[];
+  region: string | null;
   priceMin: number | null;
   priceMax: number | null;
   bedroomsMin: number | null;

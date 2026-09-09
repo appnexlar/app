@@ -65,7 +65,7 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
       "Seus clientes são as pessoas interessadas nos seus imóveis. Comece organizando o primeiro atendimento.",
     actionLabel: "Cadastrar primeiro cliente",
     actionType: "abrir-novo-lead",
-    actionUrl: "/leads",
+    actionUrl: "/clientes",
     dismissible: false, // é o coração do produto; não some
     dismissPolicy: "sempre",
     eligible: (ctx) => ctx.leadCount === 0,
@@ -79,7 +79,7 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     description:
       "Com região, intenção e faixa de preço, a Nextlar ajuda a encontrar imóveis mais compatíveis.",
     actionLabel: "Ver clientes",
-    actionUrl: "/leads",
+    actionUrl: "/clientes",
     dismissible: true,
     dismissPolicy: "reapresentar_se_relevante",
     eligible: (ctx) => ctx.leadCount > 0 && ctx.leadsSemPreferencias > 0,
@@ -107,7 +107,7 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     description:
       "Agora você pode selecionar imóveis conforme o perfil do cliente e enviar num link exclusivo.",
     actionLabel: "Ver clientes",
-    actionUrl: "/leads",
+    actionUrl: "/clientes",
     dismissible: true,
     dismissPolicy: "reapresentar_se_relevante",
     eligible: (ctx) => ctx.leadCount > 0 && ctx.propertyCount > 0 && ctx.matchCount === 0,
@@ -139,7 +139,7 @@ export const GUIDANCE_DEFINITIONS: GuidanceDefinition[] = [
     description:
       "Alguns clientes estão com a próxima ação vencida. Um contato hoje mantém a conversa viva.",
     actionLabel: "Ver quem contatar",
-    actionUrl: "/leads",
+    actionUrl: "/clientes",
     dismissible: true,
     dismissPolicy: "reapresentar_se_relevante",
     eligible: (ctx) => ctx.leadsSemFollowUp > 0,
@@ -197,14 +197,14 @@ export const CHECKLIST_MILESTONES: ChecklistMilestone[] = [
     event: "FIRST_LEAD_CREATED",
     derivable: (ctx) => ctx.leadCount > 0,
     actionType: "abrir-novo-lead",
-    actionUrl: "/leads",
+    actionUrl: "/clientes",
   },
   {
     key: "preferencias",
     title: "Adicionar preferências a um cliente",
     event: "LEAD_PREFERENCES_ADDED",
     derivable: (ctx) => ctx.leadCount > 0 && ctx.leadsSemPreferencias < ctx.leadCount,
-    actionUrl: "/leads",
+    actionUrl: "/clientes",
   },
   {
     key: "primeiro-imovel",
@@ -225,7 +225,7 @@ export const CHECKLIST_MILESTONES: ChecklistMilestone[] = [
     title: "Gerar o primeiro link personalizado",
     event: "FIRST_PERSONALIZED_LINK_GENERATED",
     derivable: (ctx) => ctx.linkCount > 0,
-    actionUrl: "/leads",
+    actionUrl: "/clientes",
   },
   {
     key: "configurar-agenda",

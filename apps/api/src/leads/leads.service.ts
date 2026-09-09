@@ -74,6 +74,21 @@ export class LeadsService {
           notes: dto.notes,
         },
       });
+      // Região e faixa do cadastro rápido nascem já como preferência
+      // (entidade única, set 2026): é o mesmo registro que a ficha edita e
+      // que a seleção personalizada usa para filtrar. As colunas antigas de
+      // lead continuam recebendo o espelho até a etapa que as remove.
+      if (dto.region || dto.budgetMin != null || dto.budgetMax != null) {
+        await tx.leadPreference.create({
+          data: {
+            brokerId,
+            leadId: created.id,
+            region: dto.region ?? null,
+            priceMin: dto.budgetMin != null ? new Prisma.Decimal(dto.budgetMin) : null,
+            priceMax: dto.budgetMax != null ? new Prisma.Decimal(dto.budgetMax) : null,
+          },
+        });
+      }
       await tx.leadActivity.create({
         data: {
           brokerId,
