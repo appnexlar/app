@@ -90,7 +90,7 @@ export function VisitAvailabilitySection() {
     <section className="animate-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <h2 className="text-label uppercase tracking-wide text-text-subtle">Horários de visita</h2>
       <p className="mt-1 text-body-sm text-text-muted">
-        Nos dias marcados, o cliente agenda a visita sozinha pelo link da seleção, só em horário livre
+        Nos dias marcados, o cliente agenda a visita sozinho pelo link da seleção, só em horário livre
         da sua agenda. Sem dias marcados, ela apenas solicita e você confirma.
       </p>
 
