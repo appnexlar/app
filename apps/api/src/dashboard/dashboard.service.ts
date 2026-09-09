@@ -51,6 +51,8 @@ export class DashboardService {
       visitasMesPassado,
       negociacoesAbertas,
       negociacoesMesPassado,
+      fechadosMesAtual,
+      fechadosMesPassado,
       leadsDoGrafico,
       totalLeads,
       leadsQueVisitaram,
@@ -97,6 +99,10 @@ export class DashboardService {
           status: { in: ["imovel_prioritario", "aguardando_decisao"] },
           updatedAt: { gte: p.inicioMesPassado, lt: p.inicioDoMes },
         },
+      }),
+      this.prisma.conversion.count({ where: { brokerId, convertedAt: { gte: p.inicioDoMes } } }),
+      this.prisma.conversion.count({
+        where: { brokerId, convertedAt: { gte: p.inicioMesPassado, lt: p.inicioDoMes } },
       }),
       this.prisma.lead.findMany({
         where: { brokerId, createdAt: { gte: p.inicioDoGrafico } },
@@ -145,6 +151,8 @@ export class DashboardService {
         visitsLastMonth: visitasMesPassado,
         openNegotiations: negociacoesAbertas,
         negotiationsLastMonth: negociacoesMesPassado,
+        closedThisMonth: fechadosMesAtual,
+        closedLastMonth: fechadosMesPassado,
         leadsByMonth: porMes(leadsDoGrafico.map((l) => l.createdAt), agora),
         activeByStage: porEtapa(leadsAtivas),
       },

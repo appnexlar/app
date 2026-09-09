@@ -185,7 +185,7 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
       {/* Os números do mês vêm depois do trabalho do dia. */}
       <Section title="Este mês" caption="comparado ao período anterior" delay={180}>
         <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-          <div className="grid grid-cols-2 gap-px bg-border lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-px bg-border lg:grid-cols-5">
             <KpiCell
               label="Clientes no mês"
               value={metrics.leadsThisMonth}
@@ -209,6 +209,13 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
               value={metrics.openNegotiations}
               previous={metrics.negotiationsLastMonth}
               compare="mês passado"
+            />
+            <KpiCell
+              label="Negócios fechados"
+              value={metrics.closedThisMonth}
+              previous={metrics.closedLastMonth}
+              compare="mês passado"
+              className="col-span-2 lg:col-span-1"
             />
           </div>
           <div className="border-t border-border p-6 sm:p-6">
@@ -406,15 +413,17 @@ function KpiCell({
   value,
   previous,
   compare,
+  className = "",
 }: {
   label: string;
   value: number;
   previous: number;
   compare: string;
+  className?: string;
 }) {
   return (
-    <div className="bg-surface p-4 sm:p-6">
-      <div className="truncate text-caption text-text-muted sm:text-body-sm">{label}</div>
+    <div className={`bg-surface p-4 sm:p-6 ${className}`}>
+      <div className="text-caption leading-snug text-text-muted sm:text-body-sm">{label}</div>
       <div className="mt-1 text-h1 font-extrabold tabular-nums text-text sm:mt-1 sm:text-display">
         {value}
       </div>

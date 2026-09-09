@@ -129,7 +129,7 @@ export function AdminUserProfilePage() {
         <Cartao titulo="Uso da plataforma" largura="md:col-span-2">
           <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
             <Indicador rotulo="Clientes" valor={data.usage.leads} />
-            <Indicador rotulo="Clientes" valor={data.usage.clientes} />
+            <Indicador rotulo="Fechados" valor={data.usage.clientes} />
             <Indicador rotulo="Imóveis" valor={data.usage.imoveis} />
             <Indicador rotulo="Seleções" valor={data.usage.selecoes} />
             <Indicador rotulo="Visitas" valor={data.usage.visitas} />

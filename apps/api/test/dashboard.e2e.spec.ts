@@ -52,6 +52,8 @@ describe("Dashboard: resumo real do corretor", () => {
     expect(s.today.overdue).toEqual([]);
     expect(s.alerts.newLeadsAwaitingContact).toBe(0);
     expect(s.metrics.leadsThisMonth).toBe(0);
+    expect(s.metrics.closedThisMonth).toBe(0);
+    expect(s.metrics.closedLastMonth).toBe(0);
 
     // Sem lead nenhuma, a taxa não pode virar NaN nem Infinity.
     expect(s.conversions.leadToVisit).toBe(0);
@@ -100,9 +102,40 @@ describe("Dashboard: resumo real do corretor", () => {
       },
     });
 
+    // Um negócio fechado neste mês e outro no mês passado: o contador de
+    // fechados olha a data do fechamento, não a do cadastro.
+    const mesPassado = new Date();
+    mesPassado.setDate(1);
+    mesPassado.setDate(0);
+    for (const [nome, convertedAt] of [
+      ["Fechado agora", new Date()],
+      ["Fechado antes", mesPassado],
+    ] as const) {
+      const fechado = await criarLead(ana, {
+        fullName: nome,
+        status: "fechado",
+        isClient: true,
+        convertedAt,
+        createdAt: mesPassado,
+      });
+      await prisma.conversion.create({
+        data: {
+          brokerId: ana.brokerId,
+          leadId: fechado.id,
+          reason: "preparacao_proposta",
+          nextStep: "preparar_proposta",
+          purpose: "compra",
+          consentGiven: false,
+          convertedAt,
+        },
+      });
+    }
+
     const s = await resumo(ana);
 
     expect(s.metrics.leadsThisMonth).toBe(4);
+    expect(s.metrics.closedThisMonth).toBe(1);
+    expect(s.metrics.closedLastMonth).toBe(1);
     expect(s.alerts.newLeadsAwaitingContact).toBe(1);
 
     // Encerradas ficam fora do funil vivo: 3 ativas, não 4.
