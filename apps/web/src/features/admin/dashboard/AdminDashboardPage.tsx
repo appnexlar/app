@@ -104,7 +104,7 @@ export function AdminDashboardPage() {
       {isLoading && <Esqueleto />}
 
       {isError && (
-        <div className="rounded-xl border border-border bg-surface p-8 text-center">
+        <div className="rounded-lg border border-border bg-surface p-8 text-center">
           <p className="text-body text-text">Não foi possível carregar os indicadores.</p>
           <div className="mt-4 flex justify-center">
             <Button type="button" variant="ghost" onClick={() => void refetch()}>
@@ -119,7 +119,7 @@ export function AdminDashboardPage() {
           {/* Perfil sem alcance sobre contas: a API devolve os blocos vazios
               de propósito, e a tela explica em vez de mostrar caixas zeradas. */}
           {!data.contas ? (
-            <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center">
+            <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center">
               <p className="text-body text-text">
                 Seu perfil não acompanha indicadores de contas.
               </p>
@@ -129,7 +129,7 @@ export function AdminDashboardPage() {
               </p>
             </div>
           ) : data.contas.total === 0 ? (
-            <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center">
+            <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center">
               <p className="text-body text-text">Nenhuma conta de corretor ainda.</p>
               <p className="mt-2 text-caption text-text-subtle">
                 Assim que a primeira pessoa se cadastrar, os indicadores aparecem aqui.
@@ -139,7 +139,7 @@ export function AdminDashboardPage() {
             <>
               <Secao titulo="Precisa de atenção">
                 {data.alertas.length === 0 ? (
-                  <div className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4">
+                  <div className="flex items-center gap-3 rounded-lg border border-border bg-surface p-4">
                     <CheckCircle2
                       size={20}
                       className="shrink-0 text-[var(--success-fg)]"
@@ -212,7 +212,7 @@ export function AdminDashboardPage() {
               )}
 
               <Secao titulo="Cadastros recentes">
-                <div className="overflow-hidden rounded-xl border border-border bg-surface">
+                <div className="overflow-hidden rounded-lg border border-border bg-surface">
                   {data.recentes.map((conta) => (
                     <Link
                       key={conta.id}
@@ -302,7 +302,7 @@ function CartaoDeAlerta({ alerta }: { alerta: AdminAlert }) {
     </>
   );
 
-  const classes = "flex items-start gap-3 rounded-xl border p-4";
+  const classes = "flex items-start gap-3 rounded-lg border p-4";
   const cor = { backgroundColor: fundo, borderColor: fundo };
 
   // Alerta sem destino não vira link: um cartão clicável que não leva a lugar
@@ -327,15 +327,15 @@ function Esqueleto() {
   return (
     <div className="flex animate-pulse flex-col gap-8" aria-hidden>
       <div className="grid gap-3 md:grid-cols-2">
-        <div className="h-24 rounded-xl bg-surface-sunken" />
-        <div className="h-24 rounded-xl bg-surface-sunken" />
+        <div className="h-24 rounded-lg bg-surface-sunken" />
+        <div className="h-24 rounded-lg bg-surface-sunken" />
       </div>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="h-24 rounded-xl bg-surface-sunken" />
+          <div key={i} className="h-24 rounded-lg bg-surface-sunken" />
         ))}
       </div>
-      <div className="h-64 rounded-xl bg-surface-sunken" />
+      <div className="h-64 rounded-lg bg-surface-sunken" />
     </div>
   );
 }

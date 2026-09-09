@@ -114,7 +114,7 @@ export function PreferencesModal({ leadId, leadName, current, onClose, onSaved }
         {/* Finalidade em segmented control: uma escolha, sempre visível. */}
         <div>
           <span className="text-label text-text">Finalidade</span>
-          <div className="mt-1.5 grid grid-cols-4 gap-1 rounded-xl bg-surface-sunken p-1">
+          <div className="mt-1.5 grid grid-cols-4 gap-1 rounded-lg bg-surface-sunken p-1">
             {purposes.map((p) => (
               <button
                 key={p.value || "any"}
@@ -247,7 +247,7 @@ export function PreferencesModal({ leadId, leadName, current, onClose, onSaved }
             rows={2}
             maxLength={1000}
             placeholder="Ex.: nada em avenida movimentada, sem escadas"
-            className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-body text-text placeholder:text-text-subtle focus:border-accent focus:outline-none"
+            className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-body text-text placeholder:text-text-subtle focus:border-accent focus:outline-none"
           />
         </div>
       </div>

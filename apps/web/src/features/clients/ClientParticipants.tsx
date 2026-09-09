@@ -44,7 +44,7 @@ export function ParticipantsSection({
   });
 
   return (
-    <section id="participantes" className="animate-rise scroll-mt-20 rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <section id="participantes" className="animate-rise scroll-mt-20 rounded-lg border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-label uppercase tracking-wide text-text-subtle">Participantes</h2>
         <Button type="button" variant="ghost" className="!min-h-9 !px-3.5 text-body-sm" onClick={() => (onBeforeAdd ? onBeforeAdd(() => setForm({ mode: "add" })) : setForm({ mode: "add" }))}>
@@ -58,7 +58,7 @@ export function ParticipantsSection({
           exigir.
         </p>
       ) : (
-        <ul className="mt-3 flex flex-col divide-y divide-border/70 overflow-hidden rounded-xl border border-border">
+        <ul className="mt-3 flex flex-col divide-y divide-border/70 overflow-hidden rounded-lg border border-border">
           {participants.map((p) => (
             <li key={p.id} className="flex items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">

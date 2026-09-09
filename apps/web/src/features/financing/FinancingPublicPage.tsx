@@ -68,7 +68,7 @@ export function FinancingPublicPage() {
       <Casca>
         <div className="flex flex-col gap-3" aria-busy="true">
           <div className="h-8 w-2/3 animate-pulse rounded-md bg-surface-sunken" />
-          <div className="h-24 animate-pulse rounded-xl bg-surface-sunken" />
+          <div className="h-24 animate-pulse rounded-lg bg-surface-sunken" />
           <div className="h-12 animate-pulse rounded-md bg-surface-sunken" />
         </div>
       </Casca>
@@ -142,7 +142,7 @@ function Casca({ children }: { children: React.ReactNode }) {
 
 function Aviso({ titulo, texto }: { titulo: string; texto: string }) {
   return (
-    <div className="rounded-2xl bg-surface p-6 text-center shadow-sm">
+    <div className="rounded-lg bg-surface p-6 text-center shadow-sm">
       <h1 className="text-h2 text-text">{titulo}</h1>
       <p className="mt-2 text-body-sm text-text-muted">{texto}</p>
     </div>
@@ -196,13 +196,13 @@ function Portao({
           autorização.
         </p>
         {dados.message && (
-          <blockquote className="mt-3 rounded-xl bg-surface p-4 text-body-sm italic text-text-muted shadow-xs">
+          <blockquote className="mt-3 rounded-lg bg-surface p-4 text-body-sm italic text-text-muted shadow-xs">
             "{dados.message}"
           </blockquote>
         )}
       </header>
 
-      <ul className="flex flex-col gap-2.5 rounded-2xl bg-surface p-5 shadow-sm">
+      <ul className="flex flex-col gap-2.5 rounded-lg bg-surface p-5 shadow-sm">
         <ItemSeguranca icone={<Lock size={ICON.row} aria-hidden="true" />}>
           Link exclusivo seu: não repasse para outras pessoas.
         </ItemSeguranca>
@@ -341,7 +341,7 @@ function Formulario({
       <Etapas etapas={etapas} completed={form.completedSections} atual={etapa} onIr={setEtapa} />
 
       {form.correctionNote && (
-        <div className="rounded-2xl bg-surface p-4 shadow-sm">
+        <div className="rounded-lg bg-surface p-4 shadow-sm">
           <p className="text-caption font-extrabold uppercase tracking-wide text-accent">
             Pedido do seu corretor
           </p>
@@ -438,7 +438,7 @@ function IndicadorDeSalvamento({ estado }: { estado: EstadoSalvo }) {
 
 function Sucesso({ nome, resultado }: { nome: string; resultado: FinancingSubmitResult }) {
   return (
-    <div className="rounded-2xl bg-surface p-6 text-center shadow-sm">
+    <div className="rounded-lg bg-surface p-6 text-center shadow-sm">
       <CheckCircle2
         size={44}
         className="mx-auto text-[var(--success-fg)]"

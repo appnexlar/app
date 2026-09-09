@@ -308,7 +308,7 @@ export function AgendaPage() {
             />
           )}
           {noResults && activeFilterCount > 0 && (
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-body-sm text-text-muted">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-body-sm text-text-muted">
               Nenhum evento com os filtros atuais.
               <button
                 type="button"
@@ -319,7 +319,7 @@ export function AgendaPage() {
               </button>
             </div>
           )}
-          <div className="agenda-calendar rounded-2xl border border-border bg-surface p-2 shadow-sm sm:p-3">
+          <div className="agenda-calendar rounded-lg border border-border bg-surface p-2 shadow-sm sm:p-3">
             <FullCalendar
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -494,7 +494,7 @@ function SummaryCard({
       type="button"
       onClick={onClick}
       className={
-        "flex flex-col items-start gap-0.5 rounded-xl border bg-surface px-3.5 py-3 text-left transition-colors hover:bg-surface-sunken " +
+        "flex flex-col items-start gap-0.5 rounded-lg border bg-surface px-3.5 py-3 text-left transition-colors hover:bg-surface-sunken " +
         (active ? "border-accent ring-1 ring-accent" : "border-border")
       }
     >
@@ -548,7 +548,7 @@ function CreateChooser({
             disabled={it.soon}
             onClick={() => it.type && onChoose(it.type)}
             className={
-              "flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3.5 text-left transition-colors " +
+              "flex items-center justify-between gap-3 rounded-lg border border-border px-4 py-3.5 text-left transition-colors " +
               (it.soon ? "cursor-not-allowed opacity-55" : "hover:bg-surface-sunken")
             }
           >
@@ -610,7 +610,7 @@ function EventActionSheet({
           <p className="text-body-sm text-text-muted">{event.description}</p>
         )}
 
-        <div className="flex flex-col divide-y divide-border overflow-hidden rounded-xl border border-border">
+        <div className="flex flex-col divide-y divide-border overflow-hidden rounded-lg border border-border">
           {isTask && !done && (
             <SheetItem label={completing ? "Concluindo..." : "Concluir"} onClick={onComplete} />
           )}
@@ -755,7 +755,7 @@ function GoogleModal({ onClose }: { onClose: () => void }) {
         <p className="text-body text-text-muted">
           Sincronize visitas e compromissos e evite oferecer horários em que você já está ocupado.
         </p>
-        <div className="rounded-xl bg-surface-sunken p-3 text-body-sm text-text-muted">
+        <div className="rounded-lg bg-surface-sunken p-3 text-body-sm text-text-muted">
           A conexão com o Google chega na próxima etapa da agenda. Por enquanto seus eventos vivem
           no Nextlar.
         </div>
@@ -775,7 +775,7 @@ function EmptyHint({
   onConnectGoogle: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-surface px-6 py-6 text-center">
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border bg-surface px-6 py-6 text-center">
       <div>
         <p className="text-body font-semibold text-text">Sua agenda está livre neste período</p>
         <p className="mt-1 text-body-sm text-text-muted">

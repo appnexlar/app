@@ -53,7 +53,7 @@ export function LeadPropertiesBlock({ lead, onSend, onShare }: LeadPropertiesBlo
 
   if (semNada) {
     return (
-      <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+      <section className="animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6">
         <h2 className="text-label font-semibold text-text">Imóveis para este cliente</h2>
         <p className="mt-1 text-body-sm text-text-muted">
           Ela ainda não recebeu nenhum imóvel. Há duas formas de enviar, e elas servem a momentos
@@ -141,13 +141,13 @@ function Opcao({
   return (
     <div
       className={
-        "flex flex-col rounded-xl border p-4 " +
+        "flex flex-col rounded-lg border p-4 " +
         (destaque ? "border-accent/40 bg-accent-soft/30" : "border-border bg-surface-sunken/40")
       }
     >
       <div
         className={
-          "flex h-10 w-10 items-center justify-center rounded-xl " +
+          "flex h-10 w-10 items-center justify-center rounded-lg " +
           (destaque ? "bg-accent-soft text-accent" : "bg-surface text-text-muted")
         }
       >

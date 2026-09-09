@@ -107,7 +107,7 @@ export function AdminAuditPage() {
       )}
 
       {isError && (
-        <div className="rounded-xl border border-border bg-surface p-8 text-center">
+        <div className="rounded-lg border border-border bg-surface p-8 text-center">
           <p className="text-body text-text">Não foi possível carregar a trilha.</p>
           <div className="mt-4 flex justify-center">
             <Button type="button" variant="ghost" onClick={() => void refetch()}>
@@ -118,7 +118,7 @@ export function AdminAuditPage() {
       )}
 
       {data && data.items.length === 0 && (
-        <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center">
+        <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center">
           <p className="text-body text-text">
             {filtrando ? "Nada neste recorte." : "Nenhuma ação registrada ainda."}
           </p>

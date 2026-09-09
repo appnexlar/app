@@ -127,7 +127,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
       {pendencias.length > 0 && (
         <section
           aria-labelledby="faltam-dados"
-          className="animate-rise rounded-2xl border border-[var(--accent)] bg-accent-soft p-4 sm:p-5"
+          className="animate-rise rounded-lg border border-[var(--accent)] bg-accent-soft p-4 sm:p-5"
         >
           <h2 id="faltam-dados" className="text-label font-semibold text-text">
             Faltam estes dados
@@ -142,7 +142,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
                 <button
                   type="button"
                   onClick={p.abrir}
-                  className="flex w-full items-center justify-between gap-3 rounded-xl bg-surface px-3.5 py-3 text-left shadow-sm transition-colors hover:bg-surface-sunken"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg bg-surface px-3.5 py-3 text-left shadow-sm transition-colors hover:bg-surface-sunken"
                 >
                   <span className="min-w-0">
                     <span className="block text-body-sm font-semibold text-text">{p.titulo}</span>
@@ -348,7 +348,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
         {client.consents.length > 0 ? (
           <ul className="mt-3 flex flex-col gap-2">
             {client.consents.map((c) => (
-              <li key={c.id} className="rounded-xl border border-border bg-surface-sunken/50 p-3">
+              <li key={c.id} className="rounded-lg border border-border bg-surface-sunken/50 p-3">
                 <p className="text-body-sm font-medium text-text">Ciência sobre coleta de dados adicionais</p>
                 <p className="mt-0.5 text-caption text-text-muted">
                   Registrado em {displayDateTime(c.acceptedAt)} · versão {c.textVersion}
@@ -360,7 +360,7 @@ export function ClientDataSections({ client }: { client: ClientDetail }) {
           <p className="mt-3 text-body-sm text-text-muted">Nenhum consentimento registrado ainda.</p>
         )}
         {client.deletionRequest && (
-          <div className="mt-3 rounded-xl border border-[var(--danger)] bg-[var(--danger-soft)] p-3">
+          <div className="mt-3 rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] p-3">
             <p className="text-body-sm font-semibold text-[var(--danger-fg)]">
               Exclusão de dados: {DELETION_STATUS_LABELS[client.deletionRequest.status]}
             </p>
@@ -447,7 +447,7 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="animate-rise scroll-mt-20 rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <section id={id} className="animate-rise scroll-mt-20 rounded-lg border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-label uppercase tracking-wide text-text-subtle">{title}</h2>
         {action}
@@ -469,7 +469,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 /** Aviso discreto de área com dados sensíveis (LGPD). */
 function ProtectedNotice() {
   return (
-    <div className="mb-3 flex items-start gap-2 rounded-xl bg-surface-sunken px-3 py-2.5">
+    <div className="mb-3 flex items-start gap-2 rounded-lg bg-surface-sunken px-3 py-2.5">
       <svg className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" strokeWidth="1.7" />
         <path d="M8 10.5V8a4 4 0 018 0v2.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />

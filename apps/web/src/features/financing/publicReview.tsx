@@ -125,7 +125,7 @@ export function Revisao({
   return (
     <div className="flex flex-col gap-4">
       {pendencias.length > 0 && (
-        <div className="flex flex-col gap-2 rounded-2xl bg-warning-soft p-4">
+        <div className="flex flex-col gap-2 rounded-lg bg-warning-soft p-4">
           <p className="text-body-sm font-semibold text-text">Antes de enviar, falta:</p>
           <ul className="flex flex-col gap-1.5">
             {pendencias.map((p, i) => (
@@ -147,7 +147,7 @@ export function Revisao({
         {form.sections.map((secao) => {
           const linhas = resumo(form, secao);
           return (
-            <section key={secao} className="rounded-2xl bg-surface p-5 shadow-sm">
+            <section key={secao} className="rounded-lg bg-surface p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-label font-semibold text-text">
                   {FINANCING_SECTION_LABELS[secao]}
@@ -178,7 +178,7 @@ export function Revisao({
 
       {aviso && <Banner variant="danger">{aviso}</Banner>}
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm">
+      <div className="flex flex-col gap-4 rounded-lg bg-surface p-5 shadow-sm">
         <Checkbox
           label={`Autorizo ${form.brokerName} a usar estas informações somente para preparar a minha simulação de financiamento. Sei que posso pedir a correção ou a exclusão delas quando quiser.`}
           checked={consentiu}

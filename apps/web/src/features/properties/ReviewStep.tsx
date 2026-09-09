@@ -221,7 +221,7 @@ function IssueSummary({
     return (
       <div
         role="status"
-        className="flex items-center gap-3 rounded-xl border border-[var(--success)]/30 bg-[var(--success-soft)] px-4 py-4"
+        className="flex items-center gap-3 rounded-lg border border-[var(--success)]/30 bg-[var(--success-soft)] px-4 py-4"
       >
         <CheckCircle2 size={20} className="shrink-0 text-[var(--success-fg)]" aria-hidden="true" />
         <p className="text-body-sm font-semibold text-[var(--success-fg)]">
@@ -236,7 +236,7 @@ function IssueSummary({
     <div
       role="status"
       className={
-        "rounded-xl border px-4 py-4 " +
+        "rounded-lg border px-4 py-4 " +
         (critico
           ? "border-[var(--warning)]/40 bg-[var(--warning-soft)]"
           : "border-border bg-surface-sunken")
@@ -295,7 +295,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-border bg-surface px-4 py-4 sm:px-5">
+    <section className="rounded-lg border border-border bg-surface px-4 py-4 sm:px-5">
       <div className="mb-4 flex items-center justify-between gap-4">
         <h3 className="text-h3 text-text">{title}</h3>
         <button

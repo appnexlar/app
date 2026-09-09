@@ -67,7 +67,7 @@ export function NextActionCard({ lead, onShare }: { lead: LeadRef; onShare: () =
   if (!rec) return null;
 
   return (
-    <section className="animate-rise rounded-2xl border border-border bg-surface p-4 shadow-md sm:p-6">
+    <section className="animate-rise rounded-lg border border-border bg-surface p-4 shadow-md sm:p-6">
       <p className="flex items-center gap-2 text-label font-semibold text-accent">
         <Sparkles size={16} aria-hidden="true" />
         Próxima ação
@@ -115,7 +115,7 @@ function TileImovel({ share }: { share: LeadShareSummary }) {
   return (
     <Link
       to={`/imoveis/${share.propertyCode}`}
-      className="mt-4 flex items-center gap-4 rounded-xl border border-border bg-surface-sunken/40 p-2 transition-colors hover:bg-surface-sunken"
+      className="mt-4 flex items-center gap-4 rounded-lg border border-border bg-surface-sunken/40 p-2 transition-colors hover:bg-surface-sunken"
     >
       <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-sunken">
         {share.coverUrl ? (

@@ -43,7 +43,7 @@ export function DeletionDialog({
   return (
     <Modal open onClose={onClose} title="Solicitar exclusão de dados">
       <div className="flex flex-col gap-4">
-        <div className="rounded-xl border border-[var(--danger)] bg-[var(--danger-soft)] p-3.5">
+        <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] p-3.5">
           <p className="text-body-sm font-semibold text-[var(--danger-fg)]">O que acontece</p>
           <ul className="mt-1.5 flex list-disc flex-col gap-1 pl-4 text-caption text-text-muted">
             <li>Registra a solicitação de exclusão de {clientName}.</li>

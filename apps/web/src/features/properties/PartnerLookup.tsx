@@ -92,7 +92,7 @@ export function PartnerLookup({
       </div>
 
       {open && results.length > 0 && (
-        <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-border bg-surface py-1.5 shadow-md">
+        <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1.5 shadow-md">
           {results.map((partner, i) => (
             <li key={`${partner.name}-${i}`}>
               <button

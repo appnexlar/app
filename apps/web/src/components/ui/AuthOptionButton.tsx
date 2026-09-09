@@ -37,7 +37,7 @@ export function AuthOptionButton({
       onClick={onClick}
       disabled={disabled || loading}
       className={
-        "inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-xl border px-6 " +
+        "inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-lg border px-6 " +
         "text-[16px] font-semibold transition-[background-color,box-shadow,transform,border-color] " +
         "duration-fast ease-standard active:scale-[0.99] focus-visible:shadow-focus " +
         "disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 " +

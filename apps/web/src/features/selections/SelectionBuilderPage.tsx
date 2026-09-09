@@ -227,7 +227,7 @@ export function SelectionBuilderPage() {
       )}
 
       {/* Resumo da lead: o que ela procura, sempre à vista e editável. */}
-      <section className="animate-rise rounded-2xl border border-border bg-surface p-4 shadow-sm">
+      <section className="animate-rise rounded-lg border border-border bg-surface p-4 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-label uppercase tracking-wide text-text-subtle">
@@ -259,7 +259,7 @@ export function SelectionBuilderPage() {
 
       {/* Perfil incompleto orienta, nunca bloqueia. */}
       {semPerfilUtil && !prefsDismissed && (
-        <div className="animate-rise rounded-2xl border border-border bg-accent-soft p-4">
+        <div className="animate-rise rounded-lg border border-border bg-accent-soft p-4">
           <p className="text-body-sm text-text">
             As preferências desta pessoa ainda estão incompletas. Você pode continuar manualmente ou
             completar o perfil para melhorar a pesquisa.
@@ -277,7 +277,7 @@ export function SelectionBuilderPage() {
 
       {/* Etapas da montagem. Segmented control de verdade: uma linha sempre.
           No celular o rótulo encurta e a contagem vira badge, nunca quebra. */}
-      <div className="grid grid-cols-2 gap-1 rounded-xl bg-surface-sunken p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-lg bg-surface-sunken p-1">
         {(
           [
             { key: "escolher", curto: "Escolher", longo: "Escolher imóveis", n: 1 },
@@ -513,11 +513,11 @@ function ChoosePhase(props: ChoosePhaseProps) {
       {loading ? (
         <div className="flex flex-col gap-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-2xl bg-surface-sunken" />
+            <div key={i} className="h-28 animate-pulse rounded-lg bg-surface-sunken" />
           ))}
         </div>
       ) : !result || result.total === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center">
+        <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
           <p className="text-body font-semibold text-text">Nenhum imóvel encontrado</p>
           <p className="mt-1 text-body-sm text-text-muted">
             {chips.length > 0 || q
@@ -575,13 +575,13 @@ function CandidateCard({
 
   return (
     <li
-      className={`animate-rise overflow-hidden rounded-2xl border bg-surface shadow-sm transition-colors duration-fast ${
+      className={`animate-rise overflow-hidden rounded-lg border bg-surface shadow-sm transition-colors duration-fast ${
         inSelection ? "border-[var(--success)]" : "border-border"
       }`}
     >
       <div className="p-3">
         <div className="flex gap-3">
-          <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-surface-sunken">
+          <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
             {c.coverUrl ? (
               <AuthImage src={c.coverUrl} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -697,7 +697,7 @@ function OrganizePhase({
 
   if (sel.items.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center">
+      <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
         <p className="text-body font-semibold text-text">A seleção ainda está vazia</p>
         <p className="mt-1 text-body-sm text-text-muted">Volte à etapa 1 e escolha os imóveis para este cliente.</p>
       </div>
@@ -706,7 +706,7 @@ function OrganizePhase({
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+      <section className="rounded-lg border border-border bg-surface p-4 shadow-sm">
         <h3 className="text-label uppercase tracking-wide text-text-subtle">
           Ordem e destaques
           <span className="ml-2 font-normal normal-case text-text-muted">
@@ -729,7 +729,7 @@ function OrganizePhase({
         </ul>
       </section>
 
-      <section className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+      <section className="rounded-lg border border-border bg-surface p-4 shadow-sm">
         <label className="text-label uppercase tracking-wide text-text-subtle" htmlFor="sel-mensagem">
           Mensagem para o cliente
         </label>
@@ -741,17 +741,17 @@ function OrganizePhase({
           rows={3}
           maxLength={1000}
           placeholder="Ex.: Separei estas opções pensando no que conversamos. Me diga o que achou!"
-          className="mt-2 w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-body text-text placeholder:text-text-subtle focus:border-accent focus:outline-none"
+          className="mt-2 w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-body text-text placeholder:text-text-subtle focus:border-accent focus:outline-none"
         />
         <p className="mt-1 text-right text-caption tabular-nums text-text-subtle">{message.length}/1000</p>
       </section>
 
-      <section className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+      <section className="rounded-lg border border-border bg-surface p-4 shadow-sm">
         <h3 className="text-label uppercase tracking-wide text-text-subtle">Prazo de acesso</h3>
         <p className="mt-1 text-body-sm text-text-muted">
           Depois desse prazo o link expira e o cliente precisa pedir uma seleção nova.
         </p>
-        <div className="mt-3 grid grid-cols-3 gap-1 rounded-xl bg-surface-sunken p-1">
+        <div className="mt-3 grid grid-cols-3 gap-1 rounded-lg bg-surface-sunken p-1">
           {SELECTION_EXPIRY_OPTIONS.map((dias) => (
             <button
               key={dias}
@@ -792,7 +792,7 @@ function ItemRow({
   const [note, setNote] = useState(item.brokerNote ?? "");
 
   return (
-    <li className="rounded-xl border border-border bg-surface p-3">
+    <li className="rounded-lg border border-border bg-surface p-3">
       {/* Identidade em cima, controles embaixo: no celular os dois juntos
           esmagavam o título até sobrar meia palavra. */}
       <div className="flex gap-3">
@@ -950,7 +950,7 @@ function ActiveView({
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       {erro && <Banner variant="danger">{erro}</Banner>}
 
-      <section className="animate-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="animate-rise rounded-lg border border-border bg-surface p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-h2 text-text">Seleção para {primeiroNome}</h2>
           <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-caption font-semibold ${SELECTION_STATUS_TONE_CLASS[sel.status]}`}>
@@ -965,7 +965,7 @@ function ActiveView({
 
         {sel.status === "ativa" && (
           <>
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-border bg-surface-sunken px-3 py-2.5">
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-surface-sunken px-3 py-2.5">
               <span className="min-w-0 flex-1 truncate text-body-sm tabular-nums text-text">{url}</span>
               {/* Fundo branco de propósito: o ghost é transparente e, em cima
                   da faixa recuada do link, o botão sumia dentro dela. */}
@@ -987,13 +987,13 @@ function ActiveView({
               value={waMessage}
               onChange={(e) => setWaMessage(e.target.value)}
               rows={4}
-              className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-body-sm text-text focus:border-accent focus:outline-none"
+              className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-body-sm text-text focus:border-accent focus:outline-none"
             />
             <a
               href={`https://wa.me/${whatsappDigits(leadWhatsapp)}?text=${encodeURIComponent(waMessage)}`}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--success-fg)] font-semibold text-white transition-transform duration-fast hover:-translate-y-0.5 active:translate-y-0"
+              className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[var(--success-fg)] font-semibold text-white transition-transform duration-fast hover:-translate-y-0.5 active:translate-y-0"
             >
               Enviar pelo WhatsApp
             </a>
@@ -1012,7 +1012,7 @@ function ActiveView({
       </section>
 
       {/* Respostas da lead, imóvel a imóvel. */}
-      <section className="animate-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="animate-rise rounded-lg border border-border bg-surface p-5 shadow-sm">
         <h3 className="text-label uppercase tracking-wide text-text-subtle">Imóveis e respostas</h3>
         <ul className="mt-3 flex flex-col divide-y divide-border">
           {sel.items.map((item) => (
@@ -1079,10 +1079,10 @@ function ResponseBadge({ item }: { item: SelectionItemView }) {
 function BuilderSkeleton() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4" role="status" aria-label="Carregando seleção">
-      <div className="h-24 animate-pulse rounded-2xl bg-surface-sunken" />
-      <div className="h-12 animate-pulse rounded-xl bg-surface-sunken" />
-      <div className="h-28 animate-pulse rounded-2xl bg-surface-sunken" />
-      <div className="h-28 animate-pulse rounded-2xl bg-surface-sunken" />
+      <div className="h-24 animate-pulse rounded-lg bg-surface-sunken" />
+      <div className="h-12 animate-pulse rounded-lg bg-surface-sunken" />
+      <div className="h-28 animate-pulse rounded-lg bg-surface-sunken" />
+      <div className="h-28 animate-pulse rounded-lg bg-surface-sunken" />
     </div>
   );
 }

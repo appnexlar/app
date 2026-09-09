@@ -67,6 +67,7 @@ describe("Dashboard: resumo real do corretor", () => {
       "atendimento",
       "imoveis_enviados",
       "visitas",
+      "negociacao",
     ]);
   });
 

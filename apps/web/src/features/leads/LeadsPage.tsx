@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { LeadSummary } from "@nexlar/shared";
 import { Button } from "../../components/ui/Button";
@@ -58,7 +58,12 @@ export function LeadsPage() {
   usePageAction("Novo cliente", openNewLead);
   const query = useQuery({ queryKey: ["leads"], queryFn: fetchLeads });
   const [termo, setTermo] = useState("");
-  const [faixa, setFaixa] = useState<Faixa>("todos");
+  // O funil e o dashboard chegam aqui com a faixa na URL ("?faixa=encerrado").
+  const [params] = useSearchParams();
+  const faixaInicial = params.get("faixa");
+  const [faixa, setFaixa] = useState<Faixa>(
+    FAIXA_ORDEM.includes(faixaInicial as Faixa) ? (faixaInicial as Faixa) : "todos",
+  );
 
   const leads = query.data;
 
@@ -129,7 +134,7 @@ export function LeadsPage() {
           }}
         />
       ) : (
-        <section className="animate-rise overflow-hidden rounded-2xl border border-border bg-surface">
+        <section className="animate-rise overflow-hidden rounded-lg border border-border bg-surface">
           {/* A contagem encosta na lista, como cabeçalho dela, em vez de flutuar
               solta acima. Sem "toque para ver", que só valia no celular. */}
           <header className="flex items-baseline justify-between border-b border-border px-4 py-3">
@@ -260,7 +265,7 @@ function CarteiraVazia({ onNew }: { onNew: () => void }) {
 /** Vazio de busca é diferente de carteira vazia: aqui o próximo passo é limpar. */
 function SemResultado({ onClear }: { onClear: () => void }) {
   return (
-    <section className="flex flex-col items-center rounded-2xl border border-dashed border-border px-6 py-10 text-center">
+    <section className="flex flex-col items-center rounded-lg border border-dashed border-border px-6 py-10 text-center">
       <p className="text-body text-text">Nenhum cliente encontrado</p>
       <p className="mt-1 max-w-sm text-body-sm text-text-muted">
         Tente outro nome, número ou bairro, ou volte para a lista completa.
@@ -275,13 +280,13 @@ function SemResultado({ onClear }: { onClear: () => void }) {
 function LeadsSkeleton() {
   return (
     <div className="flex flex-col gap-4" role="status" aria-label="Carregando clientes">
-      <div className="h-11 animate-pulse rounded-xl bg-surface-sunken" />
+      <div className="h-11 animate-pulse rounded-lg bg-surface-sunken" />
       <div className="flex gap-2">
         {Array.from({ length: 4 }, (_, i) => (
           <div key={i} className="h-9 w-24 animate-pulse rounded-full bg-surface-sunken" />
         ))}
       </div>
-      <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+      <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface">
         {Array.from({ length: 4 }, (_, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-4">
             <div className="flex-1">

@@ -245,13 +245,13 @@ Os status representam a evolução geral da jornada da lead, do primeiro contato
 | visita_solicitada | Visita solicitada | Visitas |
 | visita_agendada | Visita agendada | Visitas |
 | visitando_imoveis | Visitando imóveis | Visitas |
-| imovel_prioritario | Imóvel prioritário | Visitas |
-| aguardando_decisao | Aguardando decisão | Visitas |
+| imovel_prioritario | Imóvel prioritário | Negociação |
+| aguardando_decisao | Aguardando decisão | Negociação |
 | convertida_em_cliente | Convertida em cliente | Clientes |
 | perdida | Perdida | Encerradas (fora do quadro) |
 | reativar_futuro | Reativar no futuro | Encerradas (fora do quadro) |
 
-O quadro tem cinco colunas, na ordem: Novos, Atendimento, Imóveis enviados, Visitas, Clientes. O funil mostra só o pipeline vivo: perdida e reativar não são colunas, são ações com regra (motivo/data) acessíveis pelo seletor de etapa; as leads encerradas aparecem num atalho discreto abaixo do quadro. Os identificadores no código (`FunnelGroup` em `packages/shared`) são `novos`, `atendimento`, `imoveis_enviados`, `visitas`, `clientes` e `encerradas`. Ao soltar um card num grupo com mais de um status, a lead aterrissa no status de entrada do grupo (ex.: soltar em Visitas marca `visita_solicitada`). O card mantém a etiqueta do status específico.
+O quadro tem seis colunas, na ordem: Novos, Atendimento, Imóveis enviados, Visitas, Negociação, Fechados (Negociação separada de Visitas em 9 set 2026, para quem está decidindo não parecer quem está visitando). O funil mostra só o pipeline vivo: perdida e reativar não são colunas, são ações com regra (motivo/data) acessíveis pelo seletor de etapa; as leads encerradas aparecem num atalho discreto abaixo do quadro. Os identificadores no código (`FunnelGroup` em `packages/shared`) são `novos`, `atendimento`, `imoveis_enviados`, `visitas`, `negociacao`, `clientes` e `encerradas`. Ao soltar um card num grupo com mais de um status, a lead aterrissa no status de entrada do grupo (ex.: soltar em Visitas marca `visita_solicitada`). O card mantém a etiqueta do status específico.
 
 Transições: o corretor pode mover uma lead entre os status manualmente (arrastar no kanban ou trocar na ficha). Além disso, eventos comerciais movem a lead automaticamente, sempre registrando na timeline como mudança automática: enviar um imóvel move para `imoveis_enviados`; a lead abrir o link público move para `avaliando_imoveis`; registrar resposta move para `avaliando_imoveis` (ou `visita_solicitada` quando a resposta é "quero visitar"); marcar um imóvel como prioritário move para `imovel_prioritario`. A automação só anda para a frente na jornada (nunca rebaixa uma lead que já está adiante) e nunca mexe em lead perdida, a reativar ou convertida em cliente: sair dessas etapas é sempre decisão do corretor. Toda mudança de status gera uma `lead_activity` do tipo `mudanca_status`.
 

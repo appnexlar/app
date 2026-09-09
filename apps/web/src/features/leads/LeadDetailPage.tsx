@@ -119,7 +119,7 @@ export function LeadDetailPage() {
           com o menu aberto evita que as seções seguintes (animate-rise cria
           stacking context) cubram o dropdown. */}
       <header
-        className={`animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6 ${moreOpen ? "relative z-20" : ""}`}
+        className={`animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6 ${moreOpen ? "relative z-20" : ""}`}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -153,7 +153,7 @@ export function LeadDetailPage() {
               target="_blank"
               rel="noreferrer"
               aria-label="Conversar no WhatsApp"
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--success-soft)] text-[var(--success-fg)] transition-colors hover:brightness-95 focus-visible:shadow-focus"
+              className="flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--success-soft)] text-[var(--success-fg)] transition-colors hover:brightness-95 focus-visible:shadow-focus"
             >
               <WhatsAppIcon />
             </a>
@@ -163,12 +163,12 @@ export function LeadDetailPage() {
                 aria-label="Mais ações"
                 aria-expanded={moreOpen}
                 onClick={() => setMoreOpen((v) => !v)}
-                className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-sunken text-text transition-colors hover:bg-[var(--neutral-200)] focus-visible:shadow-focus"
+                className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-sunken text-text transition-colors hover:bg-[var(--neutral-200)] focus-visible:shadow-focus"
               >
                 <MoreHorizontal size={ICON.action} aria-hidden="true" />
               </button>
               {moreOpen && (
-                <div className="absolute right-0 top-full z-20 mt-2 w-60 overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-md">
+                <div className="absolute right-0 top-full z-20 mt-2 w-60 overflow-hidden rounded-lg border border-border bg-surface py-1 shadow-md">
                   <MenuItem
                     onClick={() => {
                       setMoreOpen(false);
@@ -365,7 +365,7 @@ function Timeline({ lead }: { lead: LeadDetail }) {
   }, [visiveis]);
 
   return (
-    <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+    <section className="animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6">
       <h2 className="text-label font-semibold text-text">Histórico</h2>
 
       {lead.activities.length === 0 ? (
@@ -421,7 +421,7 @@ function Timeline({ lead }: { lead: LeadDetail }) {
             <button
               type="button"
               onClick={() => setCompleta(true)}
-              className="mt-4 flex min-h-[var(--tap-target-min)] w-full items-center justify-center rounded-xl border border-border text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
+              className="mt-4 flex min-h-[var(--tap-target-min)] w-full items-center justify-center rounded-lg border border-border text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
             >
               Ver mais {ocultas} {ocultas === 1 ? "registro" : "registros"}
             </button>
@@ -437,7 +437,7 @@ function Timeline({ lead }: { lead: LeadDetail }) {
             <button
               type="button"
               onClick={() => setCompleta(false)}
-              className="mt-4 flex min-h-[var(--tap-target-min)] w-full items-center justify-center rounded-xl border border-border text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
+              className="mt-4 flex min-h-[var(--tap-target-min)] w-full items-center justify-center rounded-lg border border-border text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
             >
               Mostrar menos
             </button>
@@ -455,7 +455,7 @@ function hora(iso: string): string {
 function DetailSkeleton() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4" role="status" aria-label="Carregando ficha">
-      <div className="rounded-2xl border border-border bg-surface p-4 sm:p-6">
+      <div className="rounded-lg border border-border bg-surface p-4 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="h-6 w-40 animate-pulse rounded-full bg-surface-sunken" />
@@ -463,13 +463,13 @@ function DetailSkeleton() {
             <div className="mt-2 h-4 w-32 animate-pulse rounded bg-surface-sunken" />
           </div>
           <div className="flex gap-2">
-            <div className="h-11 w-11 animate-pulse rounded-xl bg-surface-sunken" />
-            <div className="h-11 w-11 animate-pulse rounded-xl bg-surface-sunken" />
+            <div className="h-11 w-11 animate-pulse rounded-lg bg-surface-sunken" />
+            <div className="h-11 w-11 animate-pulse rounded-lg bg-surface-sunken" />
           </div>
         </div>
       </div>
-      <div className="h-40 animate-pulse rounded-2xl bg-surface-sunken" />
-      <div className="h-48 animate-pulse rounded-2xl bg-surface-sunken" />
+      <div className="h-40 animate-pulse rounded-lg bg-surface-sunken" />
+      <div className="h-48 animate-pulse rounded-lg bg-surface-sunken" />
     </div>
   );
 }

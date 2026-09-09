@@ -56,10 +56,10 @@ export function PublicPropertyPage() {
         {/* O corretor, fechando o anúncio. A ação vive aqui no desktop e na
             barra fixa no celular: nunca nos dois, senão são dois botões
             idênticos a um dedo de distância. */}
-        <section className="mt-10 flex flex-col items-start gap-4 rounded-2xl bg-primary p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+        <section className="mt-10 flex flex-col items-start gap-4 rounded-lg bg-primary p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div className="flex items-center gap-4">
             {broker.photoUrl ? (
-              <img src={broker.photoUrl} alt="" className="h-14 w-14 rounded-xl object-cover ring-1 ring-white/25" />
+              <img src={broker.photoUrl} alt="" className="h-14 w-14 rounded-lg object-cover ring-1 ring-white/25" />
             ) : null}
             <div>
               <p className="text-body-lg font-bold text-primary-on">{broker.name}</p>
@@ -76,7 +76,7 @@ export function PublicPropertyPage() {
           <button
             type="button"
             onClick={() => setShowInterestModal(true)}
-            className="hidden min-h-12 w-full items-center justify-center gap-2 rounded-xl px-6 text-body font-bold text-white sm:flex sm:w-auto"
+            className="hidden min-h-12 w-full items-center justify-center gap-2 rounded-lg px-6 text-body font-bold text-white sm:flex sm:w-auto"
             style={{ backgroundColor: WHATSAPP }}
           >
             Tenho interesse
@@ -89,7 +89,7 @@ export function PublicPropertyPage() {
         <button
           type="button"
           onClick={() => setShowInterestModal(true)}
-          className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-xl text-body-lg font-bold text-white shadow-sm"
+          className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-lg text-body-lg font-bold text-white shadow-sm"
           style={{ backgroundColor: WHATSAPP }}
         >
           Tenho interesse neste imóvel
@@ -117,7 +117,7 @@ function Esqueleto() {
   return (
     <div className="min-h-dvh bg-bg px-5 pt-16 sm:px-8" aria-busy="true">
       <div className="mx-auto flex max-w-4xl flex-col gap-5">
-        <div className="aspect-[16/10] animate-pulse rounded-2xl bg-surface-sunken" />
+        <div className="aspect-[16/10] animate-pulse rounded-lg bg-surface-sunken" />
         <div className="h-8 w-64 animate-pulse rounded-md bg-surface-sunken" />
         <div className="h-4 w-80 animate-pulse rounded-sm bg-surface-sunken" />
       </div>

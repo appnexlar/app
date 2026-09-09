@@ -104,12 +104,12 @@ export function PublicSelectionPage() {
 
       <main className="mx-auto -mt-4 max-w-3xl px-4 sm:px-6">
         {aviso && (
-          <p className="mb-3 rounded-2xl bg-[var(--success-soft)] px-4 py-3 text-body-sm font-semibold text-[var(--success-fg)]">
+          <p className="mb-3 rounded-lg bg-[var(--success-soft)] px-4 py-3 text-body-sm font-semibold text-[var(--success-fg)]">
             {aviso}
           </p>
         )}
         {/* Como funciona, em uma linha: a página pede reação, não só olhar. */}
-        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+        <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
           <p className="text-body-sm text-text-muted">
             Toque em <span className="font-semibold text-text">Gostei</span> nos que agradarem e em{" "}
             <span className="font-semibold text-text">Não combina</span> nos que não. Suas respostas
@@ -194,7 +194,7 @@ export function PublicSelectionPage() {
             role="dialog"
             aria-modal="true"
             aria-label="Cancelar visita"
-            className="animate-rise relative w-full max-w-md rounded-t-2xl bg-surface p-5 shadow-lg sm:rounded-2xl"
+            className="animate-rise relative w-full max-w-md rounded-t-2xl bg-surface p-5 shadow-lg sm:rounded-lg"
           >
             <h2 className="text-h3 text-text">Cancelar esta visita?</h2>
             <p className="mt-1 text-body-sm text-text-muted">
@@ -205,7 +205,7 @@ export function PublicSelectionPage() {
               <button
                 type="button"
                 onClick={() => setCanceling(null)}
-                className="min-h-11 flex-1 rounded-xl bg-surface-sunken text-body-sm font-bold text-text"
+                className="min-h-11 flex-1 rounded-lg bg-surface-sunken text-body-sm font-bold text-text"
               >
                 Manter visita
               </button>
@@ -213,7 +213,7 @@ export function PublicSelectionPage() {
                 type="button"
                 disabled={cancelarVisita.isPending}
                 onClick={() => cancelarVisita.mutate(canceling.itemId)}
-                className="min-h-11 flex-1 rounded-xl bg-[var(--danger-soft)] text-body-sm font-bold text-[var(--danger-fg)]"
+                className="min-h-11 flex-1 rounded-lg bg-[var(--danger-soft)] text-body-sm font-bold text-[var(--danger-fg)]"
               >
                 {cancelarVisita.isPending ? "Cancelando..." : "Cancelar visita"}
               </button>
@@ -284,7 +284,7 @@ export function ItemCard({
 
   return (
     <article
-      className={`overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-opacity ${apagado ? "opacity-60" : ""}`}
+      className={`overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition-opacity ${apagado ? "opacity-60" : ""}`}
     >
       <CardWrapper
         readOnly={readOnly}
@@ -332,7 +332,7 @@ export function ItemCard({
             <p className="mt-2 text-body-sm text-text-muted">{atributos.join(" · ")}</p>
           )}
           {item.brokerNote && (
-            <p className="mt-3 rounded-xl bg-accent-soft px-3 py-2 text-body-sm text-text">
+            <p className="mt-3 rounded-lg bg-accent-soft px-3 py-2 text-body-sm text-text">
               <span className="font-semibold text-accent">Nota do corretor: </span>
               {item.brokerNote}
             </p>
@@ -355,7 +355,7 @@ export function ItemCard({
                 type="button"
                 disabled={busy}
                 onClick={() => onCancelVisit?.()}
-                className="ml-auto min-h-10 shrink-0 rounded-xl px-3 text-body-sm font-semibold text-text-subtle hover:text-text"
+                className="ml-auto min-h-10 shrink-0 rounded-lg px-3 text-body-sm font-semibold text-text-subtle hover:text-text"
               >
                 Cancelar
               </button>
@@ -373,7 +373,7 @@ export function ItemCard({
                 type="button"
                 disabled={busy}
                 onClick={() => onVisit?.()}
-                className="ml-auto flex min-h-10 items-center justify-center rounded-xl px-4 text-body-sm font-bold text-white"
+                className="ml-auto flex min-h-10 items-center justify-center rounded-lg px-4 text-body-sm font-bold text-white"
                 style={{ backgroundColor: WHATSAPP }}
               >
                 Quero visitar
@@ -382,7 +382,7 @@ export function ItemCard({
                 type="button"
                 disabled={busy}
                 onClick={() => onUndo?.()}
-                className="min-h-10 rounded-xl px-3 text-body-sm font-semibold text-text-subtle hover:text-text"
+                className="min-h-10 rounded-lg px-3 text-body-sm font-semibold text-text-subtle hover:text-text"
               >
                 Desfazer
               </button>
@@ -396,7 +396,7 @@ export function ItemCard({
                 type="button"
                 disabled={busy}
                 onClick={() => onUndo?.()}
-                className="ml-auto min-h-10 rounded-xl px-3 text-body-sm font-semibold text-accent"
+                className="ml-auto min-h-10 rounded-lg px-3 text-body-sm font-semibold text-accent"
               >
                 Desfazer
               </button>
@@ -407,7 +407,7 @@ export function ItemCard({
                 type="button"
                 disabled={busy}
                 onClick={() => onLike?.()}
-                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--success-soft)] text-body-sm font-bold text-[var(--success-fg)] transition-transform duration-fast active:scale-[0.98]"
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--success-soft)] text-body-sm font-bold text-[var(--success-fg)] transition-transform duration-fast active:scale-[0.98]"
               >
                 <HeartIcon /> Gostei
               </button>
@@ -415,7 +415,7 @@ export function ItemCard({
                 type="button"
                 disabled={busy}
                 onClick={() => onDismiss?.()}
-                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-surface-sunken text-body-sm font-bold text-text-muted transition-transform duration-fast active:scale-[0.98]"
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-surface-sunken text-body-sm font-bold text-text-muted transition-transform duration-fast active:scale-[0.98]"
               >
                 Não combina
               </button>
@@ -451,7 +451,7 @@ function DismissSheet({
         role="dialog"
         aria-modal="true"
         aria-label="O que não combinou?"
-        className="animate-rise relative w-full max-w-md rounded-t-2xl bg-surface p-5 shadow-lg sm:rounded-2xl"
+        className="animate-rise relative w-full max-w-md rounded-t-2xl bg-surface p-5 shadow-lg sm:rounded-lg"
       >
         <h2 className="text-h3 text-text">O que não combinou?</h2>
         <p className="mt-1 text-body-sm text-text-muted">
@@ -478,7 +478,7 @@ function DismissSheet({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-11 flex-1 rounded-xl bg-surface-sunken text-body-sm font-bold text-text"
+            className="min-h-11 flex-1 rounded-lg bg-surface-sunken text-body-sm font-bold text-text"
           >
             Cancelar
           </button>
@@ -486,7 +486,7 @@ function DismissSheet({
             type="button"
             disabled={busy}
             onClick={() => onConfirm(reason)}
-            className="min-h-11 flex-1 rounded-xl bg-primary text-body-sm font-bold text-primary-on"
+            className="min-h-11 flex-1 rounded-lg bg-primary text-body-sm font-bold text-primary-on"
           >
             {busy ? "Enviando..." : "Confirmar"}
           </button>
@@ -503,7 +503,7 @@ function DismissSheet({
 
 export function BrokerFooter({ broker }: { broker: PublicSelectionBroker }) {
   return (
-    <section className="mt-10 flex flex-col items-start gap-4 rounded-2xl bg-primary p-6 sm:flex-row sm:items-center sm:justify-between">
+    <section className="mt-10 flex flex-col items-start gap-4 rounded-lg bg-primary p-6 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-body-lg font-bold text-primary-on">{broker.name}</p>
         <p className="mt-0.5 text-body-sm text-white/70">
@@ -525,7 +525,7 @@ export function BrokerFooter({ broker }: { broker: PublicSelectionBroker }) {
           href={`https://wa.me/${broker.whatsapp.replace(/\D/g, "").length <= 11 ? "55" : ""}${broker.whatsapp.replace(/\D/g, "")}`}
           target="_blank"
           rel="noreferrer"
-          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-6 text-body font-bold text-white sm:w-auto"
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg px-6 text-body font-bold text-white sm:w-auto"
           style={{ backgroundColor: WHATSAPP }}
         >
           Falar com {broker.name.split(" ")[0]}
@@ -540,9 +540,9 @@ function Esqueleto() {
     <div className="min-h-dvh bg-bg" aria-busy="true">
       <div className="h-52 animate-pulse bg-primary/80" />
       <div className="mx-auto -mt-4 flex max-w-3xl flex-col gap-4 px-4">
-        <div className="h-16 animate-pulse rounded-2xl bg-surface-sunken" />
-        <div className="h-72 animate-pulse rounded-2xl bg-surface-sunken" />
-        <div className="h-72 animate-pulse rounded-2xl bg-surface-sunken" />
+        <div className="h-16 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-72 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-72 animate-pulse rounded-lg bg-surface-sunken" />
       </div>
     </div>
   );
@@ -572,7 +572,7 @@ export function Encerrada({
           href={`https://wa.me/${broker.whatsapp.replace(/\D/g, "").length <= 11 ? "55" : ""}${broker.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent("Olá! Recebi uma seleção de imóveis sua que expirou. Pode me enviar opções atualizadas?")}`}
           target="_blank"
           rel="noreferrer"
-          className="mt-6 flex min-h-12 items-center justify-center rounded-xl px-6 text-body font-bold text-white"
+          className="mt-6 flex min-h-12 items-center justify-center rounded-lg px-6 text-body font-bold text-white"
           style={{ backgroundColor: WHATSAPP }}
         >
           Pedir uma nova seleção

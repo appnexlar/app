@@ -41,7 +41,7 @@ export function ProfilePage() {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       {/* Cartão de identidade. */}
-      <section className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+      <section className="flex items-center gap-4 rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
         {/* AvatarPhoto sabe carregar a foto enviada (rota autenticada) e a
             externa; sem foto, caem as iniciais. */}
         <AvatarPhoto src={broker.avatarUrl} name={broker.fullName} className="h-16 w-16" />
@@ -121,7 +121,7 @@ function ContactCard() {
 
   if (!editando) {
     return (
-      <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+      <section className="rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-h3 text-text">Dados de contato</h3>
           <button
@@ -145,7 +145,7 @@ function ContactCard() {
   }
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+    <section className="rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
       <h3 className="mb-4 text-h3 text-text">Dados de contato</h3>
       <form
         onSubmit={handleSubmit((data) => mutation.mutate(data))}
@@ -201,7 +201,7 @@ function ContactCard() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+    <section className="rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
       <h3 className="mb-4 text-h3 text-text">{title}</h3>
       <dl className="flex flex-col divide-y divide-border">{children}</dl>
     </section>

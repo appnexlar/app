@@ -6,6 +6,7 @@ export const FUNNEL_LABELS: Record<FunnelGroup, string> = {
   atendimento: "Atendimento",
   imoveis_enviados: "Imóveis enviados",
   visitas: "Visitas",
+  negociacao: "Negociação",
   clientes: "Fechados",
   encerradas: "Encerradas",
 };

@@ -28,7 +28,7 @@ export function StatCard({ label, value, previous, hint, emphasis }: StatCardPro
   return (
     <div
       className={
-        "rounded-xl border p-4 " +
+        "rounded-lg border p-4 " +
         (emphasis ? "border-border-strong bg-surface" : "border-border bg-surface")
       }
     >

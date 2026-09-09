@@ -508,7 +508,7 @@ export function PropertyWizard() {
       )}
 
       {duplicates.length > 0 && (
-        <div className="mb-5 rounded-xl border border-border bg-surface p-4 shadow-sm">
+        <div className="mb-5 rounded-lg border border-border bg-surface p-4 shadow-sm">
           <p className="text-body font-semibold text-text">
             Encontramos um imóvel que pode ser o mesmo
           </p>
@@ -1109,7 +1109,7 @@ function StepValues({
   return (
     <>
       {isSale && (
-        <section className="flex flex-col gap-5 rounded-xl border border-border bg-surface p-5 shadow-sm">
+        <section className="flex flex-col gap-5 rounded-lg border border-border bg-surface p-5 shadow-sm">
           <h3 className="text-h3 text-text">Venda</h3>
           <TextField
             label="Valor de venda"
@@ -1152,7 +1152,7 @@ function StepValues({
       )}
 
       {isRent && (
-        <section className="flex flex-col gap-5 rounded-xl border border-border bg-surface p-5 shadow-sm">
+        <section className="flex flex-col gap-5 rounded-lg border border-border bg-surface p-5 shadow-sm">
           <h3 className="text-h3 text-text">{form.purpose === "temporada" ? "Temporada" : "Locação"}</h3>
           <div className="grid gap-5 sm:grid-cols-3">
             <TextField
@@ -1245,7 +1245,7 @@ function StepOrigin({
         Estes dados são internos, para o seu dia a dia. Eles não aparecem para o cliente.
       </Banner>
       {form.origin && (
-        <section className="flex flex-col gap-5 rounded-xl border border-border bg-surface p-5 shadow-sm">
+        <section className="flex flex-col gap-5 rounded-lg border border-border bg-surface p-5 shadow-sm">
           <h3 className="text-h3 text-text">{ORIGIN_LABELS[form.origin]}</h3>
           {isPartner && (
             <PartnerLookup

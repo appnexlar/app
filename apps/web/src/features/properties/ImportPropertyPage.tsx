@@ -170,7 +170,7 @@ function LoadingCard() {
   return (
     <div
       role="status"
-      className="flex flex-col items-center gap-4 rounded-xl border border-border bg-surface px-6 py-12 text-center"
+      className="flex flex-col items-center gap-4 rounded-lg border border-border bg-surface px-6 py-12 text-center"
     >
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-accent">
         <Search size={22} className="animate-pulse" aria-hidden="true" />
@@ -219,7 +219,7 @@ function ResultCard({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-surface">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface">
         <FieldGroup
           title="Encontrados"
           icon={<CheckCircle2 size={16} className="text-[var(--success-fg)]" aria-hidden="true" />}
@@ -316,7 +316,7 @@ function DuplicateCard({
       </Banner>
 
       {first && (
-        <div className="rounded-xl border border-border bg-surface px-4 py-4">
+        <div className="rounded-lg border border-border bg-surface px-4 py-4">
           <p className="text-body font-semibold text-text">{first.title}</p>
           <p className="mt-1 text-body-sm text-text-muted">
             Código {first.code}

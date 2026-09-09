@@ -32,7 +32,7 @@ export function PreferencesCard({ lead }: PreferencesCardProps) {
   const primeiroNome = lead.fullName.split(" ")[0];
 
   return (
-    <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+    <section className="animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-label font-semibold text-text">O que {primeiroNome} procura</h2>

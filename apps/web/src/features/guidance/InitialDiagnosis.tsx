@@ -134,7 +134,7 @@ function Segmentos<T extends string | boolean>({
             aria-pressed={ativo}
             onClick={() => onEscolher(ativo ? undefined : opt.valor)}
             className={
-              "rounded-xl border px-3.5 py-2 text-body-sm font-semibold transition-colors focus-visible:shadow-focus " +
+              "rounded-lg border px-3.5 py-2 text-body-sm font-semibold transition-colors focus-visible:shadow-focus " +
               (ativo
                 ? "border-accent bg-accent text-accent-on"
                 : "border-border bg-surface text-text hover:border-border-strong")

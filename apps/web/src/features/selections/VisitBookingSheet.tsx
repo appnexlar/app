@@ -60,21 +60,21 @@ export function VisitBookingSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Agendar visita"
-        className="animate-rise relative flex max-h-[85dvh] w-full max-w-md flex-col rounded-t-2xl bg-surface p-5 shadow-lg sm:rounded-2xl"
+        className="animate-rise relative flex max-h-[85dvh] w-full max-w-md flex-col rounded-t-2xl bg-surface p-5 shadow-lg sm:rounded-lg"
       >
         <h2 className="text-h3 text-text">Agendar visita</h2>
         <p className="mt-0.5 truncate text-body-sm text-text-muted">{propertyTitle}</p>
 
         {erro && (
-          <p className="mt-3 rounded-xl bg-[var(--danger-soft)] px-3 py-2 text-body-sm font-semibold text-[var(--danger-fg)]">
+          <p className="mt-3 rounded-lg bg-[var(--danger-soft)] px-3 py-2 text-body-sm font-semibold text-[var(--danger-fg)]">
             {erro}
           </p>
         )}
 
         {slots.isPending ? (
           <div className="mt-4 flex flex-col gap-3" aria-busy="true">
-            <div className="h-10 animate-pulse rounded-xl bg-surface-sunken" />
-            <div className="h-24 animate-pulse rounded-xl bg-surface-sunken" />
+            <div className="h-10 animate-pulse rounded-lg bg-surface-sunken" />
+            <div className="h-24 animate-pulse rounded-lg bg-surface-sunken" />
           </div>
         ) : slots.isError ? (
           <p className="mt-4 text-body-sm text-text-muted">
@@ -95,7 +95,7 @@ export function VisitBookingSheet({
               type="button"
               disabled={solicitar.isPending}
               onClick={() => solicitar.mutate()}
-              className="mt-4 flex min-h-12 w-full items-center justify-center rounded-xl text-body font-bold text-white"
+              className="mt-4 flex min-h-12 w-full items-center justify-center rounded-lg text-body font-bold text-white"
               style={{ backgroundColor: WHATSAPP }}
             >
               {solicitar.isPending ? "Enviando..." : "Solicitar visita"}
@@ -116,7 +116,7 @@ export function VisitBookingSheet({
                       setDia(d.date);
                       setHora(null);
                     }}
-                    className={`shrink-0 rounded-xl border px-3.5 py-2 text-body-sm font-semibold transition-colors duration-fast ${
+                    className={`shrink-0 rounded-lg border px-3.5 py-2 text-body-sm font-semibold transition-colors duration-fast ${
                       ativo ? "border-primary bg-primary text-primary-on" : "border-border bg-surface text-text"
                     }`}
                   >
@@ -134,7 +134,7 @@ export function VisitBookingSheet({
                   type="button"
                   aria-pressed={hora === h}
                   onClick={() => setHora(h)}
-                  className={`min-h-11 rounded-xl border text-body-sm font-bold tabular-nums transition-colors duration-fast ${
+                  className={`min-h-11 rounded-lg border text-body-sm font-bold tabular-nums transition-colors duration-fast ${
                     hora === h ? "border-accent bg-accent text-accent-on" : "border-border bg-surface text-text"
                   }`}
                 >
@@ -151,7 +151,7 @@ export function VisitBookingSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="min-h-12 flex-1 rounded-xl bg-surface-sunken text-body-sm font-bold text-text"
+                className="min-h-12 flex-1 rounded-lg bg-surface-sunken text-body-sm font-bold text-text"
               >
                 Cancelar
               </button>
@@ -161,7 +161,7 @@ export function VisitBookingSheet({
                 onClick={() => {
                   if (diaAtivo && hora) agendar.mutate({ date: diaAtivo.date, time: hora });
                 }}
-                className="min-h-12 flex-1 rounded-xl text-body-sm font-bold text-white disabled:opacity-50"
+                className="min-h-12 flex-1 rounded-lg text-body-sm font-bold text-white disabled:opacity-50"
                 style={{ backgroundColor: WHATSAPP }}
               >
                 {agendar.isPending ? "Agendando..." : "Confirmar visita"}

@@ -25,7 +25,7 @@ export function GuidanceInline({ prefixos }: { prefixos: string[] }) {
   }
 
   return (
-    <div className="animate-rise flex flex-col gap-3 rounded-xl border border-highlight-border bg-highlight-soft px-4 py-3 sm:flex-row sm:items-center">
+    <div className="animate-rise flex flex-col gap-3 rounded-lg border border-highlight-border bg-highlight-soft px-4 py-3 sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 items-start gap-3">
         <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-highlight-strong text-highlight-fg" aria-hidden="true">
           <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none">

@@ -248,9 +248,9 @@ function chaveDoMes(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-/** Leads vivas por coluna do funil, sempre com as quatro colunas do quadro. */
+/** Pessoas vivas por coluna do funil, sempre com as cinco colunas do quadro. */
 function porEtapa(leads: { status: string }[]): { group: FunnelGroup; count: number }[] {
-  const colunas: FunnelGroup[] = ["novos", "atendimento", "imoveis_enviados", "visitas"];
+  const colunas: FunnelGroup[] = ["novos", "atendimento", "imoveis_enviados", "visitas", "negociacao"];
   const contagem = new Map<FunnelGroup, number>(colunas.map((c) => [c, 0]));
   for (const lead of leads) {
     const grupo = FUNNEL_GROUP_BY_STATUS[lead.status as keyof typeof FUNNEL_GROUP_BY_STATUS];

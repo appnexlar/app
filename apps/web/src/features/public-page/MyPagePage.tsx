@@ -216,9 +216,9 @@ export function MyPagePage() {
   if (consulta.isLoading || !form) {
     return (
       <div className="flex flex-col gap-4" aria-busy="true">
-        <div className="h-36 animate-pulse rounded-2xl bg-surface-sunken" />
-        <div className="h-64 animate-pulse rounded-2xl bg-surface-sunken" />
-        <div className="h-64 animate-pulse rounded-2xl bg-surface-sunken" />
+        <div className="h-36 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-64 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-64 animate-pulse rounded-lg bg-surface-sunken" />
       </div>
     );
   }
@@ -337,7 +337,7 @@ function StatusCard({
   };
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+    <section className="rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-h2 text-text">Sua vitrine</h2>
         <span className={`rounded-full px-2.5 py-1 text-caption font-bold ${meta.chip}`}>
@@ -426,7 +426,7 @@ function StatusCard({
 function SetupChecklist({ requirements }: { requirements: MyPublicPageState["requirements"] }) {
   if (requirements.canPublish) return null;
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+    <section className="rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
       <h3 className="text-h3 text-text">Primeiros passos da página</h3>
       <p className="mt-0.5 text-body-sm text-text-muted">
         A lista se atualiza sozinha conforme você completa cada parte.
@@ -492,9 +492,9 @@ function PropertiesShortcut() {
   return (
     <Link
       to="/minha-pagina/imoveis"
-      className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm transition-colors hover:border-accent sm:p-6"
+      className="flex items-center gap-4 rounded-lg border border-border bg-surface p-5 shadow-sm transition-colors hover:border-accent sm:p-6"
     >
-      <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-accent-soft text-accent">
+      <span className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-accent-soft text-accent">
         <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 10.5L12 4l8 6.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M5.5 9.5V20h13V9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -534,7 +534,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+    <section className="rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
       <h3 className="text-h3 text-text">{title}</h3>
       {hint && <p className="mt-0.5 text-body-sm text-text-muted">{hint}</p>}
       <div className="mt-4 flex flex-col gap-4">{children}</div>

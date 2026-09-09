@@ -138,7 +138,7 @@ export function MapPicker({ latitude, longitude, searchHint, onChange }: MapPick
           por cima do rodapé fixo do cadastro, escondendo o botão Continuar. */}
       <div
         ref={containerRef}
-        className="relative z-0 h-64 w-full overflow-hidden rounded-xl border border-border sm:h-72"
+        className="relative z-0 h-64 w-full overflow-hidden rounded-lg border border-border sm:h-72"
         aria-label="Mapa para posicionar o imóvel"
       />
       <p className="text-caption text-text-subtle">

@@ -27,8 +27,8 @@ export function ModulePlaceholder({ content }: { content: ModuleContent }) {
       </div>
       <p className="text-body text-text-muted">{content.description}</p>
 
-      <section className="animate-rise mt-6 flex flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent shadow-xs">
+      <section className="animate-rise mt-6 flex flex-col items-center rounded-lg border border-border bg-surface px-6 py-12 text-center shadow-sm">
+        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-accent-soft text-accent shadow-xs">
           {Icone && <Icone size={32} aria-hidden="true" />}
         </div>
         <h2 className="mt-5 text-h2 text-text">{content.emptyTitle}</h2>

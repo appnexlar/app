@@ -90,10 +90,10 @@ export function BrokerStorefront({
               src={page.photoUrl}
               alt={`Foto de ${page.name}`}
               doDono={!interactive}
-              className="h-[4.5rem] w-[4.5rem] flex-none rounded-2xl object-cover shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40"
+              className="h-[4.5rem] w-[4.5rem] flex-none rounded-lg object-cover shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40"
             />
           ) : (
-            <span className="flex h-[4.5rem] w-[4.5rem] flex-none items-center justify-center rounded-2xl bg-accent text-h1 font-extrabold text-accent-on shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40">
+            <span className="flex h-[4.5rem] w-[4.5rem] flex-none items-center justify-center rounded-lg bg-accent text-h1 font-extrabold text-accent-on shadow-lg ring-1 ring-white/25 sm:h-40 sm:w-40">
               {iniciais(page.name)}
             </span>
           )}
@@ -217,7 +217,7 @@ export function BrokerStorefront({
             precisa tocar nele. */}
         <section className="mt-12 sm:mt-16">
           <Eyebrow>Contato</Eyebrow>
-          <div className="mt-3 rounded-2xl bg-surface p-6 shadow-md sm:p-8">
+          <div className="mt-3 rounded-lg bg-surface p-6 shadow-md sm:p-8">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
               <h2 className="text-h1 text-text">Fale com {primeiroNome(page.name)}</h2>
               {(page.serviceHours || page.languages.length > 0) && (
@@ -534,7 +534,7 @@ function CartaoDeCalcada({
   );
 
   const classe =
-    "group block w-[15rem] flex-none snap-start overflow-hidden rounded-xl bg-white/[0.07] ring-1 ring-white/15 transition-colors duration-fast hover:bg-white/[0.12]";
+    "group block w-[15rem] flex-none snap-start overflow-hidden rounded-lg bg-white/[0.07] ring-1 ring-white/15 transition-colors duration-fast hover:bg-white/[0.12]";
 
   return (
     <li className="flex-none">
@@ -671,7 +671,7 @@ export function CartaoPublico({
   );
 
   const moldura =
-    "group block overflow-hidden rounded-xl bg-surface shadow-sm transition-shadow duration-base ease-standard hover:shadow-lg";
+    "group block overflow-hidden rounded-lg bg-surface shadow-sm transition-shadow duration-base ease-standard hover:shadow-lg";
 
   return (
     <li>

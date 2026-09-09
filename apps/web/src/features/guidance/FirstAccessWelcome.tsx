@@ -20,7 +20,7 @@ export function FirstAccessWelcome({
   return (
     <Modal open={open} onClose={onExplore} title="Vamos começar">
       <div className="flex flex-col items-center text-center">
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+        <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-accent-soft text-accent">
           <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
               d="M12 2.5l1.9 5.4a2 2 0 001.2 1.2l5.4 1.9-5.4 1.9a2 2 0 00-1.2 1.2L12 19.5l-1.9-5.4a2 2 0 00-1.2-1.2L3.5 11l5.4-1.9a2 2 0 001.2-1.2L12 2.5z"

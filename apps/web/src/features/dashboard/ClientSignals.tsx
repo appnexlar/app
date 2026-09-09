@@ -84,7 +84,7 @@ export function ClientSignals() {
         <span className="text-body-sm text-text-subtle">responda enquanto está quente</span>
       </div>
 
-      <ul className="mt-4 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+      <ul className="mt-4 overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
         {sinais.map((sinal) => (
           <SinalRow key={sinal.id} sinal={sinal} onAbrir={() => marcarLida.mutate(sinal.id)} />
         ))}
@@ -116,7 +116,7 @@ function SinalRow({ sinal, onAbrir }: { sinal: NotificationDTO; onAbrir: () => v
       >
         <span
           className={
-            "flex h-10 w-10 flex-none items-center justify-center rounded-2xl " +
+            "flex h-10 w-10 flex-none items-center justify-center rounded-lg " +
             (novo && def.urgente
               ? "bg-accent-soft text-accent"
               : "bg-surface-sunken text-text-muted")

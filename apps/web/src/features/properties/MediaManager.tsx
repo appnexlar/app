@@ -124,7 +124,7 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-sm">
+      <section className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-5 shadow-sm">
         <h3 className="text-h3 text-text">Enviar mídia</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <Select
@@ -232,7 +232,7 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
           <h3 className="text-h3 text-text">Fotos ({photos.length})</h3>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {photos.map((photo) => (
-              <li key={photo.id} className="group relative overflow-hidden rounded-xl border border-border">
+              <li key={photo.id} className="group relative overflow-hidden rounded-lg border border-border">
                 {photo.url && (
                   <AuthImage src={photo.url} alt={photo.caption ?? "Foto do imóvel"} className="aspect-[4/3] w-full object-cover" />
                 )}
@@ -314,7 +314,7 @@ export function MediaManager({ propertyId }: { propertyId: string }) {
         </section>
       )}
 
-      <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-sm">
+      <section className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-5 shadow-sm">
         <h3 className="text-h3 text-text">Link externo</h3>
         <p className="text-body-sm text-text-muted">
           Vídeo no YouTube, tour virtual ou tour 360°: cole o link autorizado.

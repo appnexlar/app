@@ -53,7 +53,7 @@ export function AuditTimeline({
   ocultarAlvo?: boolean;
 }) {
   return (
-    <ol className="overflow-hidden rounded-xl border border-border bg-surface">
+    <ol className="overflow-hidden rounded-lg border border-border bg-surface">
       {items.map((item) => (
         <LinhaDaTrilha key={item.id} item={item} ocultarAlvo={ocultarAlvo} />
       ))}

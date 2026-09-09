@@ -259,7 +259,7 @@ export function DatePicker({
       </div>
 
       {open && (
-        <div className="w-full max-w-[320px] rounded-xl border border-border bg-surface p-4 shadow-md">
+        <div className="w-full max-w-[320px] rounded-lg border border-border bg-surface p-4 shadow-md">
           {/* Navegação: mês e ano com troca rápida */}
           <div className="flex items-center gap-2">
             <button

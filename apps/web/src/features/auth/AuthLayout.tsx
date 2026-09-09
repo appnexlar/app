@@ -27,7 +27,7 @@ export function AuthLayout({ children, legal = false }: AuthLayoutProps) {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-bg px-6 py-10 lg:bg-surface-sunken">
       <div className="w-full max-w-[440px] lg:max-w-[920px]">
-        <div className="lg:grid lg:grid-cols-[1.05fr_1fr] lg:overflow-hidden lg:rounded-2xl lg:border lg:border-border lg:bg-surface lg:shadow-md">
+        <div className="lg:grid lg:grid-cols-[1.05fr_1fr] lg:overflow-hidden lg:rounded-lg lg:border lg:border-border lg:bg-surface lg:shadow-md">
           <ShowcasePanel />
 
           <div className="lg:flex lg:flex-col lg:justify-center lg:p-10">
@@ -129,7 +129,7 @@ function ShowcasePanel() {
 
       {/* aria-live anuncia a troca para leitores de tela sem roubar o foco. */}
       <div className="relative" aria-live="polite">
-        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10">
+        <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10">
           <Icone className="h-6 w-6 text-text-on-brand" aria-hidden="true" />
         </span>
         <h2 className="mt-6 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-text-on-brand">

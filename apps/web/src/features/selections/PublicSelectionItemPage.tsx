@@ -62,7 +62,7 @@ export function PublicSelectionItemPage() {
     return (
       <div className="min-h-dvh bg-bg px-5 pt-16" aria-busy="true">
         <div className="mx-auto flex max-w-4xl flex-col gap-5">
-          <div className="aspect-[16/10] animate-pulse rounded-2xl bg-surface-sunken" />
+          <div className="aspect-[16/10] animate-pulse rounded-lg bg-surface-sunken" />
           <div className="h-8 w-64 animate-pulse rounded-md bg-surface-sunken" />
         </div>
       </div>
@@ -79,7 +79,7 @@ export function PublicSelectionItemPage() {
         </p>
         <Link
           to={`/s/${token}`}
-          className="mt-6 flex min-h-12 items-center justify-center rounded-xl bg-accent px-6 text-body font-bold text-accent-on"
+          className="mt-6 flex min-h-12 items-center justify-center rounded-lg bg-accent px-6 text-body font-bold text-accent-on"
         >
           Voltar à seleção
         </Link>
@@ -109,7 +109,7 @@ export function PublicSelectionItemPage() {
 
       <main className="mx-auto max-w-4xl px-5 sm:px-8">
         {feito && (
-          <p className="mb-4 rounded-xl bg-[var(--success-soft)] px-4 py-3 text-body-sm font-semibold text-[var(--success-fg)]">
+          <p className="mb-4 rounded-lg bg-[var(--success-soft)] px-4 py-3 text-body-sm font-semibold text-[var(--success-fg)]">
             {feito}
           </p>
         )}
@@ -117,7 +117,7 @@ export function PublicSelectionItemPage() {
         <PropertyDetailBody property={item.property} extraBadge={item.highlight ? "Escolhido para você" : null} />
 
         {item.brokerNote && (
-          <p className="mt-6 rounded-xl bg-accent-soft px-4 py-3 text-body text-text">
+          <p className="mt-6 rounded-lg bg-accent-soft px-4 py-3 text-body text-text">
             <span className="font-semibold text-accent">Nota do corretor: </span>
             {item.brokerNote}
           </p>
@@ -170,7 +170,7 @@ export function PublicSelectionItemPage() {
             role="dialog"
             aria-modal="true"
             aria-label="Mais informações"
-            className="animate-rise relative w-full max-w-md rounded-t-2xl bg-surface p-5 shadow-lg sm:rounded-2xl"
+            className="animate-rise relative w-full max-w-md rounded-t-2xl bg-surface p-5 shadow-lg sm:rounded-lg"
           >
             <h2 className="text-h3 text-text">Como podemos ajudar?</h2>
             <div className="mt-4 flex flex-col gap-2">
@@ -180,7 +180,7 @@ export function PublicSelectionItemPage() {
                   type="button"
                   disabled={pedirInfo.isPending}
                   onClick={() => pedirInfo.mutate({ kind: o.kind })}
-                  className="min-h-12 rounded-xl border border-border bg-surface px-4 text-left text-body-sm font-semibold text-text transition-colors hover:border-accent hover:text-accent"
+                  className="min-h-12 rounded-lg border border-border bg-surface px-4 text-left text-body-sm font-semibold text-text transition-colors hover:border-accent hover:text-accent"
                 >
                   {o.label}
                 </button>
@@ -189,7 +189,7 @@ export function PublicSelectionItemPage() {
             <button
               type="button"
               onClick={() => setInfoOpen(false)}
-              className="mt-4 min-h-11 w-full rounded-xl bg-surface-sunken text-body-sm font-bold text-text"
+              className="mt-4 min-h-11 w-full rounded-lg bg-surface-sunken text-body-sm font-bold text-text"
             >
               Cancelar
             </button>
@@ -222,7 +222,7 @@ function Acoes({
           type="button"
           disabled={busy}
           onClick={onLike}
-          className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--success-soft)] text-body font-bold text-[var(--success-fg)]"
+          className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--success-soft)] text-body font-bold text-[var(--success-fg)]"
         >
           Gostei
         </button>
@@ -232,14 +232,14 @@ function Acoes({
           type="button"
           disabled={busy}
           onClick={onVisit}
-          className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl text-body font-bold text-white"
+          className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg text-body font-bold text-white"
           style={{ backgroundColor: WHATSAPP }}
         >
           Quero visitar
         </button>
       )}
       {querVisitar && (
-        <p className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-[var(--success-soft)] px-3 text-center text-body-sm font-bold text-[var(--success-fg)]">
+        <p className="flex min-h-12 flex-1 items-center justify-center rounded-lg bg-[var(--success-soft)] px-3 text-center text-body-sm font-bold text-[var(--success-fg)]">
           Visita solicitada!
         </p>
       )}
@@ -247,7 +247,7 @@ function Acoes({
         type="button"
         disabled={busy}
         onClick={onInfo}
-        className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-surface-sunken text-body font-bold text-text"
+        className="flex min-h-12 flex-1 items-center justify-center rounded-lg bg-surface-sunken text-body font-bold text-text"
       >
         Mais informações
       </button>

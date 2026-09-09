@@ -65,11 +65,11 @@ export function LeadSelectionsSection({ leadId, leadCode }: LeadSelectionsSectio
   if (!query.isPending && !query.isError && selections.length === 0) return null;
 
   return (
-    <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+    <section className="animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6">
       <h2 className="text-label font-semibold text-text">Seleções de imóveis</h2>
 
       {query.isPending ? (
-        <div className="mt-4 h-16 animate-pulse rounded-xl bg-surface-sunken" />
+        <div className="mt-4 h-16 animate-pulse rounded-lg bg-surface-sunken" />
       ) : query.isError ? (
         <p className="mt-4 text-body-sm text-text-muted">
           Não foi possível carregar as seleções.{" "}

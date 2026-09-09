@@ -66,7 +66,7 @@ export function AdminLoginPage() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-[var(--brand-navy-950)] px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-surface p-8 shadow-lg">
+      <div className="w-full max-w-sm rounded-lg bg-surface p-8 shadow-lg">
         <header className="mb-6">
           <span className="text-[22px] font-bold tracking-tight text-[var(--brand-navy-900)]">
             ne<span className="text-accent">x</span>tlar

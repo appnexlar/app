@@ -43,7 +43,7 @@ export function AccountMenu() {
       {open && (
         <div
           role="menu"
-          className="animate-rise absolute right-0 top-full z-[var(--z-modal)] mt-2 w-60 overflow-hidden rounded-xl border border-border bg-surface shadow-lg"
+          className="animate-rise absolute right-0 top-full z-[var(--z-modal)] mt-2 w-60 overflow-hidden rounded-lg border border-border bg-surface shadow-lg"
         >
           <div className="border-b border-border px-4 py-3">
             <p className="truncate text-body-sm font-semibold text-text">{broker?.fullName}</p>
