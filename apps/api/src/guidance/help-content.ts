@@ -22,28 +22,28 @@ const CONTEUDO: Record<string, HelpContent> = {
       {
         question: "Por que uma orientação some?",
         answer:
-          "Quando você conclui a ação de verdade (cadastra o lead, envia o imóvel), a orientação correspondente é marcada como feita e dá lugar à próxima.",
+          "Quando você conclui a ação de verdade (cadastra o cliente, envia o imóvel), a orientação correspondente é marcada como feita e dá lugar à próxima.",
       },
     ],
   },
   leads: {
     route: "leads",
-    title: "Ajuda sobre leads",
+    title: "Ajuda sobre clientes",
     topics: [
       {
-        question: "O que é um lead?",
+        question: "O que é um cliente?",
         answer:
           "Uma pessoa que demonstrou interesse nos seus imóveis ou serviços. É o ponto de partida de todo atendimento na Nextlar.",
       },
       {
         question: "Como cadastrar rápido?",
         answer:
-          "No botão Novo lead. Só o nome e o WhatsApp são obrigatórios; região, intenção e faixa de preço podem entrar depois.",
+          "No botão Novo cliente. Só o nome e o WhatsApp são obrigatórios; região, intenção e faixa de preço podem entrar depois.",
       },
       {
         question: "Para que servem as preferências?",
         answer:
-          "Com região, intenção e faixa de preço, fica mais fácil encontrar imóveis compatíveis e enviar seleções certeiras para cada lead.",
+          "Com região, intenção e faixa de preço, fica mais fácil encontrar imóveis compatíveis e enviar seleções certeiras para cado cliente.",
       },
     ],
   },
@@ -62,9 +62,9 @@ const CONTEUDO: Record<string, HelpContent> = {
           "O mínimo para identificar o imóvel: título, finalidade e categoria. O resto é opcional e você completa quando tiver.",
       },
       {
-        question: "Como compartilhar com um lead?",
+        question: "Como compartilhar com um cliente?",
         answer:
-          "Na página do imóvel ou da lead, use Enviar imóvel. A Nextlar cria um link exclusivo, e você acompanha visualizações e manifestações de interesse.",
+          "Na página do imóvel ou do cliente, use Enviar imóvel. A Nextlar cria um link exclusivo, e você acompanha visualizações e manifestações de interesse.",
       },
     ],
   },
@@ -80,7 +80,7 @@ const CONTEUDO: Record<string, HelpContent> = {
       {
         question: "Como agendar uma visita?",
         answer:
-          "Crie um evento do tipo visita e relacione a lead e o imóvel. Assim a visita fica ligada ao atendimento e à timeline da lead.",
+          "Crie um evento do tipo visita e relacione o cliente e o imóvel. Assim a visita fica ligada ao atendimento e à timeline do cliente.",
       },
     ],
   },
@@ -89,9 +89,9 @@ const CONTEUDO: Record<string, HelpContent> = {
     title: "Ajuda sobre clientes",
     topics: [
       {
-        question: "Qual a diferença entre lead e cliente?",
+        question: "Qual a diferença entre cliente e cliente?",
         answer:
-          "É a mesma pessoa em momentos diferentes: o lead vira cliente quando você faz a conversão consciente, sem duplicar o cadastro nem perder o histórico.",
+          "É a mesma pessoa em momentos diferentes: o cliente vira cliente quando você faz a conversão consciente, sem duplicar o cadastro nem perder o histórico.",
       },
       {
         question: "Quando converter?",
@@ -107,7 +107,7 @@ const CONTEUDO: Record<string, HelpContent> = {
       {
         question: "Como o funil funciona?",
         answer:
-          "Cada lead ocupa uma etapa da jornada comercial. Muitas etapas avançam sozinhas conforme você age (envia imóvel, registra resposta), e você também pode mover manualmente.",
+          "Cado cliente ocupa uma etapa da jornada comercial. Muitas etapas avançam sozinhas conforme você age (envia imóvel, registra resposta), e você também pode mover manualmente.",
       },
     ],
   },

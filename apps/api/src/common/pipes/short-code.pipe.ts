@@ -38,7 +38,7 @@ export class LeadRefPipe implements PipeTransform<string, Promise<string>> {
       where: { code: ref },
       select: { id: true },
     });
-    if (!lead) throw new NotFoundException("Lead não encontrado.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
     return lead.id;
   }
 }

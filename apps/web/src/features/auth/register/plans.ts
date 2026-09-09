@@ -29,7 +29,7 @@ export const PLANS: Plan[] = [
     priceTotal: 49.9,
     cycleLabel: "por mês",
     features: [
-      "Leads e funil ilimitados",
+      "Clientes e funil ilimitados",
       "Tarefas e follow-up",
       "Documentos com checklist",
       "Dashboard de métricas",

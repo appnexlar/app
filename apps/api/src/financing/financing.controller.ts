@@ -30,7 +30,7 @@ export class FinancingController {
   constructor(private readonly requests: FinancingRequestsService) {}
 
   @Post()
-  @ApiOperation({ summary: "Cria a solicitação (rascunho) para uma lead" })
+  @ApiOperation({ summary: "Cria a solicitação (rascunho) para um cliente" })
   create(
     @CurrentBroker("brokerId") brokerId: string,
     @Body(new ZodValidationPipe(createFinancingRequestSchema)) dto: CreateFinancingRequestDto,
@@ -39,7 +39,7 @@ export class FinancingController {
   }
 
   @Get()
-  @ApiOperation({ summary: "Lista as solicitações, opcionalmente de uma lead" })
+  @ApiOperation({ summary: "Lista as solicitações, opcionalmente de um cliente" })
   list(
     @CurrentBroker("brokerId") brokerId: string,
     @Query("leadId") leadId?: string,

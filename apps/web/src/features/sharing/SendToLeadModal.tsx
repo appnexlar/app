@@ -103,7 +103,7 @@ export function SendToLeadModal({
   };
 
   const title =
-    step === "lead" ? "Enviar para uma lead" : step === "review" ? "Revisar o envio" : "Imóvel enviado";
+    step === "lead" ? "Enviar para um cliente" : step === "review" ? "Revisar o envio" : "Imóvel enviado";
 
   return (
     <Modal open onClose={onClose} title={title}>
@@ -113,19 +113,19 @@ export function SendToLeadModal({
             autoFocus
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar lead por nome ou WhatsApp"
+            placeholder="Buscar cliente por nome ou WhatsApp"
             className="w-full min-h-[var(--tap-target-min)] rounded-md border border-border bg-surface px-3.5 text-body text-text placeholder:text-text-subtle focus-visible:border-[var(--border-focus)] focus-visible:shadow-focus"
           />
           <div className="mt-3 max-h-[min(50dvh,26rem)] overflow-y-auto">
             {leadsQuery.isPending ? (
-              <p className="py-8 text-center text-body-sm text-text-subtle">Carregando leads...</p>
+              <p className="py-8 text-center text-body-sm text-text-subtle">Carregando clientes...</p>
             ) : leadsQuery.isError ? (
-              <Banner variant="danger">Não foi possível carregar suas leads.</Banner>
+              <Banner variant="danger">Não foi possível carregar seus clientes.</Banner>
             ) : filtered.length === 0 ? (
               <p className="py-8 text-center text-body-sm text-text-muted">
                 {leadsQuery.data?.length === 0
-                  ? "Você ainda não tem leads. Cadastre uma lead para enviar imóveis."
-                  : "Nenhuma lead encontrada com essa busca."}
+                  ? "Você ainda não tem clientes. Cadastre um cliente para enviar imóveis."
+                  : "Nenhum cliente encontrada com essa busca."}
               </p>
             ) : (
               <ul className="flex flex-col gap-1">
@@ -212,7 +212,7 @@ export function SendToLeadModal({
 
           <div className="flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-between">
             <Button type="button" variant="ghost" onClick={() => setStep("lead")} disabled={mutation.isPending}>
-              Trocar lead
+              Trocar cliente
             </Button>
             <Button type="button" variant="accent" loading={mutation.isPending} onClick={confirm}>
               {mutation.isPending ? "Preparando..." : "Gerar link e abrir WhatsApp"}
@@ -230,7 +230,7 @@ export function SendToLeadModal({
           </div>
           <p className="mt-4 text-body font-semibold text-text">Imóvel preparado para envio</p>
           <p className="mt-1 text-body-sm text-text-muted">
-            O WhatsApp foi aberto com a mensagem pronta. O envio ficou registrado na ficha da lead e do imóvel.
+            O WhatsApp foi aberto com a mensagem pronta. O envio ficou registrado na ficha do cliente e do imóvel.
           </p>
           <div className="mt-4 flex w-full items-center gap-2 rounded-lg border border-border bg-surface-sunken/50 px-3 py-2">
             <span className="min-w-0 flex-1 truncate text-caption text-text-muted">{sharedUrl}</span>

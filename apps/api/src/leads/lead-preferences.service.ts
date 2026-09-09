@@ -67,7 +67,7 @@ export class LeadPreferencesService {
 
   private async assertLead(brokerId: string, leadId: string): Promise<void> {
     const lead = await this.prisma.lead.findFirst({ where: { id: leadId, brokerId }, select: { id: true } });
-    if (!lead) throw new NotFoundException("Lead não encontrada.");
+    if (!lead) throw new NotFoundException("Cliente não encontrado.");
   }
 
   private toView(p: LeadPreference): LeadPreferenceView {

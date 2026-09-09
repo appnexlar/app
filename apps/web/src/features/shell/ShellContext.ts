@@ -42,7 +42,7 @@ export function usePageEntityLabel(label: string | null | undefined): void {
  * Publica a ação de criar da seção, que o cabeçalho mostra ao lado do título.
  *
  * A barra do topo tinha UM botão que mudava de significado conforme a rota
- * ("Novo lead" aqui, "Novo imóvel" ali). Mesmo lugar, mesma cor, resultado
+ * ("Novo cliente" aqui, "Novo imóvel" ali). Mesmo lugar, mesma cor, resultado
  * diferente: quem clicava não sabia o que ia abrir. Agora cada seção declara
  * a sua ação, ela aparece dentro da página, junto do título que a explica, e
  * a barra fica só com o que não muda.

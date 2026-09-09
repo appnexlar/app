@@ -40,7 +40,7 @@ export class LeadsController {
   ) {}
 
   @Get(":id/preferences")
-  @ApiOperation({ summary: "Preferências de busca da lead (nulo se nunca preenchidas)" })
+  @ApiOperation({ summary: "Preferências de busca do cliente (nulo se nunca preenchidas)" })
   getPreferences(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", LeadRefPipe) leadId: string,
@@ -60,7 +60,7 @@ export class LeadsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Cadastro rápido de lead (só nome e WhatsApp obrigatórios)" })
+  @ApiOperation({ summary: "Cadastro rápido de cliente (só nome e WhatsApp obrigatórios)" })
   create(
     @CurrentBroker("brokerId") brokerId: string,
     @Body(new ZodValidationPipe(createLeadSchema)) dto: CreateLeadDto,
@@ -77,7 +77,7 @@ export class LeadsController {
   }
 
   @Get(":id")
-  @ApiOperation({ summary: "Ficha completa do lead: dados + linha do tempo" })
+  @ApiOperation({ summary: "Ficha completa do cliente: dados + linha do tempo" })
   findOne(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", LeadRefPipe) id: string,
@@ -86,7 +86,7 @@ export class LeadsController {
   }
 
   @Patch(":id/status")
-  @ApiOperation({ summary: "Muda o status do lead (ex.: converter em cliente)" })
+  @ApiOperation({ summary: "Muda o status do cliente (ex.: converter em cliente)" })
   changeStatus(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", LeadRefPipe) id: string,
@@ -96,7 +96,7 @@ export class LeadsController {
   }
 
   @Post(":id/convert")
-  @ApiOperation({ summary: "Converte a lead em cliente (ação consciente, LEAD-13)" })
+  @ApiOperation({ summary: "Converte o cliente em cliente (ação consciente, LEAD-13)" })
   convert(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", LeadRefPipe) id: string,
@@ -107,7 +107,7 @@ export class LeadsController {
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: "Exclui um lead do corretor autenticado" })
+  @ApiOperation({ summary: "Exclui um cliente do corretor autenticado" })
   remove(
     @CurrentBroker("brokerId") brokerId: string,
     @Param("id", LeadRefPipe) id: string,

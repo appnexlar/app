@@ -56,7 +56,7 @@ export function InitialDiagnosis({
           />
         </Pergunta>
 
-        <Pergunta titulo="Você já tem uma carteira de leads?">
+        <Pergunta titulo="Você já tem uma carteira de clientes?">
           <Segmentos
             valor={hasLeads}
             onEscolher={setHasLeads}

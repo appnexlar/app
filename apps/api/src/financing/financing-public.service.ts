@@ -170,7 +170,7 @@ export class FinancingPublicService {
         "financiamento_aberto",
         "Cliente abriu o formulário",
         `${request.lead.fullName} abriu o link dos dados para simulação.`,
-        `/leads/${request.lead.code}`,
+        `/clientes/${request.lead.code}`,
       );
     }
 
@@ -394,7 +394,7 @@ export class FinancingPublicService {
       version === 1
         ? `${solicitacao.lead.fullName} enviou as informações do financiamento.`
         : `${solicitacao.lead.fullName} reenviou as informações do financiamento (versão ${version}).`,
-      `/leads/${solicitacao.lead.code}`,
+      `/clientes/${solicitacao.lead.code}`,
     );
 
     return {

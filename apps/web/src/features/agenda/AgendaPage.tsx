@@ -535,7 +535,7 @@ function CreateChooser({
   const items: { type: FormType | null; label: string; desc: string; soon?: boolean }[] = [
     { type: "tarefa", label: "Tarefa", desc: "Um retorno, contato ou lembrete." },
     { type: "compromisso", label: "Compromisso geral", desc: "Reunião ou evento seu." },
-    { type: null, label: "Visita", desc: "Ligada a lead e imóvel.", soon: true },
+    { type: null, label: "Visita", desc: "Ligado a cliente e imóvel.", soon: true },
     { type: null, label: "Bloqueio de horário", desc: "Período indisponível.", soon: true },
   ];
   return (
@@ -620,7 +620,7 @@ function EventActionSheet({
           ) : (
             <SheetItem label="Duplicar" onClick={onDuplicate} />
           )}
-          {event.leadId && <SheetItem label="Abrir lead" onClick={onOpenLead} />}
+          {event.leadId && <SheetItem label="Abrir cliente" onClick={onOpenLead} />}
           <SheetItem label="Excluir" onClick={onDelete} danger />
         </div>
       </div>

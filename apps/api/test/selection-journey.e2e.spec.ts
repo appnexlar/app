@@ -229,6 +229,6 @@ describe("Seleção personalizada: jornada integrada", () => {
     expect(descricoes).toContain("ativada");
     expect(descricoes).toContain("Gostou do imóvel");
     expect(descricoes).toContain("Não combina");
-    expect(descricoes).toContain("Visita agendada pela lead");
+    expect(descricoes).toContain("Visita agendada pelo cliente");
   });
 });

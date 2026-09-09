@@ -33,7 +33,7 @@ export class SelectionPublicController {
   @Get(":token")
   @Public()
   @RateLimit({ name: "selecao", limit: 120, windowMs: 5 * MINUTO })
-  @ApiOperation({ summary: "Página da seleção para a lead" })
+  @ApiOperation({ summary: "Página da seleção para o cliente" })
   getPage(@Param("token") token: string): Promise<PublicSelectionPageResponse> {
     return this.selecoes.getPage(token);
   }

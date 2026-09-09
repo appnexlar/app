@@ -84,7 +84,7 @@ export interface LeadPreferenceView {
 
 /** Cria a seleção em rascunho para uma lead. */
 export const createSelectionSchema = z.object({
-  leadId: z.string().uuid("Selecione uma lead"),
+  leadId: z.string().uuid("Selecione um cliente"),
   /**
    * Fluxo que nasce na carteira: o corretor marca imóveis em /imoveis e envia
    * para uma lead. A seleção nasce rascunho já com esses itens, na ordem em

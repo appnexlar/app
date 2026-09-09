@@ -112,11 +112,11 @@ export function FunnelPage() {
       <section className="animate-rise mx-auto mt-4 flex max-w-xl flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
         <h2 className="text-h2 text-text">Seu funil aparece aqui</h2>
         <p className="mt-2 max-w-sm text-body text-text-muted">
-          Cadastre sua primeira lead para acompanhar cada etapa da jornada, do primeiro contato à
+          Cadastre seu primeiro cliente para acompanhar cada etapa da jornada, do primeiro contato à
           conversão.
         </p>
         <Button type="button" variant="accent" className="mt-6" onClick={openNewLead}>
-          Cadastrar lead
+          Cadastrar cliente
         </Button>
       </section>
     );
@@ -143,7 +143,7 @@ export function FunnelPage() {
           to="/clientes"
           className="inline-flex items-center gap-1.5 self-start px-1 py-1 text-body-sm text-text-muted transition-colors hover:text-text"
         >
-          {closedCount === 1 ? "1 lead encerrada" : `${closedCount} leads encerradas`} (perdidas ou
+          {closedCount === 1 ? "1 cliente encerrado" : `${closedCount} clientes encerrados`} (perdidos ou
           a reativar)
           <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -212,7 +212,7 @@ function StageLane({
 
       {leads.length === 0 ? (
         <p className="px-4 py-3 text-body-sm text-text-subtle">
-          {group === "clientes" ? "Nenhum cliente ainda." : "Nenhuma lead nesta etapa."}
+          {group === "clientes" ? "Nenhum cliente ainda." : "Nenhum cliente nesta etapa."}
         </p>
       ) : (
         <>
@@ -317,7 +317,7 @@ function LeadActionSheet({
           {STATUS_LABELS[lead.status]}
         </p>
         <div className="flex flex-col divide-y divide-border overflow-hidden rounded-xl border border-border">
-          <SheetItem label="Abrir ficha da lead" onClick={onOpenFicha} />
+          <SheetItem label="Abrir ficha do cliente" onClick={onOpenFicha} />
           <a
             href={whatsappLink(lead.whatsapp)}
             target="_blank"

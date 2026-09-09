@@ -29,7 +29,7 @@ const FAIXA_LABELS: Record<Faixa, string> = {
   todos: "Todos",
   novo: "Novos",
   ativo: "Em atendimento",
-  ganho: "Clientes",
+  ganho: "Fechados",
   encerrado: "Encerrados",
 };
 
@@ -55,7 +55,7 @@ function matches(lead: LeadSummary, termo: string): boolean {
 /** Lista de leads do corretor, mais recentes primeiro, com busca e filtro. */
 export function LeadsPage() {
   const { openNewLead } = useShell();
-  usePageAction("Novo lead", openNewLead);
+  usePageAction("Novo cliente", openNewLead);
   const query = useQuery({ queryKey: ["leads"], queryFn: fetchLeads });
   const [termo, setTermo] = useState("");
   const [faixa, setFaixa] = useState<Faixa>("todos");
@@ -89,7 +89,7 @@ export function LeadsPage() {
     return (
       <div className="flex max-w-xl flex-col gap-4">
         <Banner variant="danger">
-          Não foi possível carregar seus leads. Verifique a conexão e tente novamente.
+          Não foi possível carregar seus clientes. Verifique a conexão e tente novamente.
         </Banner>
         <Button type="button" variant="ghost" className="self-start" onClick={() => query.refetch()}>
           Tentar novamente
@@ -112,7 +112,7 @@ export function LeadsPage() {
       <div className="flex flex-col gap-3">
         <div className="flex gap-2">
           <SearchField
-            label="Buscar lead por nome, WhatsApp ou bairro"
+            label="Buscar cliente por nome, WhatsApp ou bairro"
             placeholder="Buscar por nome, WhatsApp ou bairro"
             value={termo}
             onChange={setTermo}
@@ -134,7 +134,7 @@ export function LeadsPage() {
               solta acima. Sem "toque para ver", que só valia no celular. */}
           <header className="flex items-baseline justify-between border-b border-border px-4 py-3">
             <h2 className="text-body font-semibold text-text">
-              {visiveis.length === 1 ? "1 lead" : `${visiveis.length} leads`}
+              {visiveis.length === 1 ? "1 cliente" : `${visiveis.length} clientes`}
             </h2>
             {!filtrando && (
               <span className="text-caption text-text-subtle">Mais recentes primeiro</span>
@@ -249,9 +249,9 @@ function CarteiraVazia({ onNew }: { onNew: () => void }) {
           />
         </svg>
       }
-      title="Seus leads começam aqui"
-      description="Cada lead é uma pessoa interessada nos seus imóveis. Cadastre o primeiro para acompanhar o atendimento até o fechamento."
-      action={{ label: "Cadastrar primeiro lead", onClick: onNew }}
+      title="Seus clientes começam aqui"
+      description="Cado cliente é uma pessoa interessada nos seus imóveis. Cadastre o primeiro para acompanhar o atendimento até o fechamento."
+      action={{ label: "Cadastrar primeiro cliente", onClick: onNew }}
       hint="Só o nome e o WhatsApp são obrigatórios."
     />
   );
@@ -261,7 +261,7 @@ function CarteiraVazia({ onNew }: { onNew: () => void }) {
 function SemResultado({ onClear }: { onClear: () => void }) {
   return (
     <section className="flex flex-col items-center rounded-2xl border border-dashed border-border px-6 py-10 text-center">
-      <p className="text-body text-text">Nenhum lead encontrado</p>
+      <p className="text-body text-text">Nenhum cliente encontrado</p>
       <p className="mt-1 max-w-sm text-body-sm text-text-muted">
         Tente outro nome, número ou bairro, ou volte para a lista completa.
       </p>
@@ -274,7 +274,7 @@ function SemResultado({ onClear }: { onClear: () => void }) {
 
 function LeadsSkeleton() {
   return (
-    <div className="flex flex-col gap-4" role="status" aria-label="Carregando leads">
+    <div className="flex flex-col gap-4" role="status" aria-label="Carregando clientes">
       <div className="h-11 animate-pulse rounded-xl bg-surface-sunken" />
       <div className="flex gap-2">
         {Array.from({ length: 4 }, (_, i) => (

@@ -200,7 +200,7 @@ export function StepReview({
       <p className="flex items-start gap-2 text-body-sm text-text-muted">
         <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
         Ao tornar disponível, o imóvel passa a poder entrar nas seleções que você envia às suas
-        leads. Você pode voltar para rascunho quando quiser.
+        clientes. Você pode voltar para rascunho quando quiser.
       </p>
     </div>
   );

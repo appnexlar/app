@@ -55,9 +55,9 @@ const DESTAQUES = [
   {
     icone: Users,
     chave: "leads",
-    titulo: "Cada lead no lugar certo",
+    titulo: "Cada cliente no lugar certo",
     texto:
-      "Cadastre um lead em segundos, só com nome e WhatsApp, e acompanhe cada um no funil até o fechamento.",
+      "Cadastre um cliente em segundos, só com nome e WhatsApp, e acompanhe cada um no funil até o fechamento.",
   },
   {
     icone: LayoutGrid,

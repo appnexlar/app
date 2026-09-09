@@ -210,7 +210,7 @@ export function SendFromLeadModal({ lead, onClose }: { lead: LeadRef | null; onC
           </div>
           <p className="mt-4 text-body font-semibold text-text">Imóvel preparado para envio</p>
           <p className="mt-1 text-body-sm text-text-muted">
-            O WhatsApp foi aberto com a mensagem pronta. O envio já aparece nos imóveis desta lead.
+            O WhatsApp foi aberto com a mensagem pronta. O envio já aparece nos imóveis deste cliente.
           </p>
           <div className="mt-4 flex w-full items-center gap-2 rounded-lg border border-border bg-surface-sunken/50 px-3 py-2">
             <span className="min-w-0 flex-1 truncate text-caption text-text-muted">{sharedUrl}</span>

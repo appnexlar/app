@@ -42,7 +42,7 @@ export function LeadSharesPage() {
         <div>
           <h1 className="hidden text-h2 text-text sm:block">Imóveis enviados</h1>
           <p className="text-body-sm text-text-subtle sm:mt-0.5">
-            {lead ? `${shares.length} para ${lead.fullName}` : "o que a lead recebeu e como respondeu"}
+            {lead ? `${shares.length} para ${lead.fullName}` : "o que o cliente recebeu e como respondeu"}
           </p>
         </div>
         {lead && (
@@ -60,7 +60,7 @@ export function LeadSharesPage() {
         <div className="flex flex-col items-center rounded-2xl border border-dashed border-border-strong bg-surface-sunken/40 px-6 py-14 text-center">
           <p className="text-body font-semibold text-text">Nenhum imóvel enviado</p>
           <p className="mt-1 max-w-sm text-body-sm text-text-muted">
-            Envie imóveis da sua carteira que combinem com o perfil desta lead.
+            Envie imóveis da sua carteira que combinem com o perfil deste cliente.
           </p>
           {lead && (
             <Button type="button" variant="accent" className="mt-5" onClick={() => setSendOpen(true)}>

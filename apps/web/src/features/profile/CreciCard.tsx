@@ -71,7 +71,7 @@ export function CreciCard({ broker }: { broker: BrokerProfile }) {
       ) : (
         <p className="mt-1 text-body-sm text-text-muted">
           É opcional, mas vale a pena: quem envia o CRECI e passa pela conferência
-          ganha um selo que aparece para a lead na página dos imóveis enviados. É o
+          ganha um selo que aparece para o cliente na página dos imóveis enviados. É o
           que mostra, para quem não te conhece, que do outro lado tem um corretor
           de verdade.
         </p>

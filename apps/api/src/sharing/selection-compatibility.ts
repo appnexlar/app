@@ -104,7 +104,7 @@ export function avaliarCompatibilidade(
     return {
       level: "fora_do_perfil",
       atende: [],
-      ressalvas: [pref.purpose === "venda" ? "A lead procura compra, e este imóvel é só locação" : "A finalidade do imóvel não é a que a lead procura"],
+      ressalvas: [pref.purpose === "venda" ? "O cliente procura compra, e este imóvel é só locação" : "A finalidade do imóvel não é a que o cliente procura"],
     };
   }
 
@@ -130,7 +130,7 @@ export function avaliarCompatibilidade(
   if (temFaixa) {
     if (preco == null) {
       criterios += 1;
-      ressalvas.push("Imóvel sem preço para comparar com a faixa da lead");
+      ressalvas.push("Imóvel sem preço para comparar com a faixa do cliente");
     } else if (teto != null && preco > teto * FOLGA_DE_PRECO) {
       return {
         level: "fora_do_perfil",

@@ -20,7 +20,7 @@ export interface AlertDef {
 export const ALERT_DEFS: AlertDef[] = [
   { key: "newLeadsAwaitingContact", label: "Aguardando 1º contato", to: "/clientes?filtro=aguardando-contato", tone: "attention" },
   { key: "leadsWithoutFollowUp", label: "Sem follow-up", to: "/clientes?filtro=sem-follow-up", tone: "attention" },
-  { key: "stalledLeads", label: "Leads parados", to: "/clientes?filtro=parados", tone: "attention" },
+  { key: "stalledLeads", label: "Clientes parados", to: "/clientes?filtro=parados", tone: "attention" },
   { key: "pendingDocuments", label: "Documentos pendentes", to: "/clientes?filtro=documentacao-pendente", tone: "neutral" },
   { key: "pendingSimulations", label: "Simulações pendentes", to: "/clientes?filtro=simulacao-pendente", tone: "neutral" },
 ];

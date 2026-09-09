@@ -188,7 +188,7 @@ export function LeadDetailPage() {
                       setConfirmDelete(true);
                     }}
                   >
-                    Excluir lead
+                    Excluir cliente
                   </MenuItem>
                 </div>
               )}
@@ -229,9 +229,9 @@ export function LeadDetailPage() {
 
       <ConfirmDialog
         open={confirmDelete}
-        title="Excluir lead"
+        title="Excluir cliente"
         description={`Excluir ${lead.fullName} apaga a lead e todo o histórico dela. Essa ação não pode ser desfeita.`}
-        confirmLabel={remove.isPending ? "Excluindo..." : "Excluir lead"}
+        confirmLabel={remove.isPending ? "Excluindo..." : "Excluir cliente"}
         danger
         loading={remove.isPending}
         onConfirm={() => remove.mutate()}

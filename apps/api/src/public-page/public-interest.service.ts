@@ -128,7 +128,7 @@ export class PublicInterestService {
       typeNotif,
       titleNotif,
       bodyNotif,
-      `/leads/${leadId}`,
+      `/clientes/${leadId}`,
     );
 
     return { success: true, message: "Seu interesse foi registrado com sucesso!" };
