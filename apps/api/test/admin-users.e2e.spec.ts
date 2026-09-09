@@ -94,7 +94,7 @@ describe("Nextlar Admin: gestão de usuários", () => {
     const corretora = await registerBroker(app, "Ana Corretora", "ana@example.com");
     await app.inject({
       method: "POST",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: { authorization: `Bearer ${corretora.accessToken}` },
       payload: { fullName: "Lead Sigilosa", whatsapp: "11999998888" },
     });
@@ -162,7 +162,7 @@ describe("Nextlar Admin: gestão de usuários", () => {
     // O access token que a corretora ainda tem na mão morre no guard.
     const usando = await app.inject({
       method: "GET",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: { authorization: `Bearer ${corretora.accessToken}` },
     });
     expect(usando.statusCode).toBe(403);

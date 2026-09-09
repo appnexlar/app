@@ -105,14 +105,14 @@ describe("ProductEvent — fundação da experiência guiada", () => {
 
     const primeira = await requestAs(app, corretor, {
       method: "POST",
-      url: "/api/leads",
+      url: "/api/clients",
       payload: { fullName: "Cliente Um", whatsapp: "11999990001" },
     });
     expect(primeira.statusCode).toBe(201);
 
     const segunda = await requestAs(app, corretor, {
       method: "POST",
-      url: "/api/leads",
+      url: "/api/clients",
       payload: { fullName: "Cliente Dois", whatsapp: "11999990002" },
     });
     expect(segunda.statusCode).toBe(201);
@@ -126,7 +126,7 @@ describe("ProductEvent — fundação da experiência guiada", () => {
 
     const semPref = await requestAs(app, corretor, {
       method: "POST",
-      url: "/api/leads",
+      url: "/api/clients",
       payload: { fullName: "Sem Preferência", whatsapp: "11999990003" },
     });
     expect(semPref.statusCode).toBe(201);
@@ -134,7 +134,7 @@ describe("ProductEvent — fundação da experiência guiada", () => {
 
     const comPref = await requestAs(app, corretor, {
       method: "POST",
-      url: "/api/leads",
+      url: "/api/clients",
       payload: { fullName: "Com Preferência", whatsapp: "11999990004", region: "Centro" },
     });
     expect(comPref.statusCode).toBe(201);

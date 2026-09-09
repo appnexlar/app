@@ -48,7 +48,7 @@ describe("Seleção personalizada: jornada integrada", () => {
     // Preferências estruturadas.
     await requestAs(app, ana, {
       method: "PUT",
-      url: `/api/leads/${lead.id}/preferences`,
+      url: `/api/clients/${lead.id}/preferences`,
       payload: { purpose: "venda", priceMax: 600_000, neighborhoods: ["Moema"], bedroomsMin: 2 },
     });
 
@@ -195,7 +195,7 @@ describe("Seleção personalizada: jornada integrada", () => {
 
     // Histórico na ficha: contadores fiéis.
     const resumo = (
-      await requestAs(app, ana, { method: "GET", url: `/api/leads/${lead.id}/selections` })
+      await requestAs(app, ana, { method: "GET", url: `/api/clients/${lead.id}/selections` })
     ).json() as SelectionSummary[];
     expect(resumo[0]).toMatchObject({ itemCount: 2, likedCount: 0, dismissedCount: 1, visitRequestedCount: 1 });
     // (o destaque saiu de "gostou" para "quer visitar": o contador acompanha)

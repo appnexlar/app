@@ -36,7 +36,7 @@ describe("Guidance — experiência guiada ponta a ponta", () => {
   ): Promise<void> {
     const res = await requestAs(app, broker, {
       method: "POST",
-      url: "/api/leads",
+      url: "/api/clients",
       payload,
     });
     expect(res.statusCode).toBe(201);

@@ -32,7 +32,7 @@ describe("Isolamento por corretor", () => {
   });
 
   it("exige autenticação nas rotas de leads e imóveis", async () => {
-    for (const url of ["/api/leads", "/api/properties"]) {
+    for (const url of ["/api/clients", "/api/properties"]) {
       const response = await app.inject({ method: "GET", url });
       expect(response.statusCode).toBe(401);
     }
@@ -46,12 +46,12 @@ describe("Isolamento por corretor", () => {
       const created = await Promise.all([
         requestAs(app, ana, {
           method: "POST",
-          url: "/api/leads",
+          url: "/api/clients",
           payload: { fullName: "Cliente da Ana", whatsapp: "11999990001" },
         }),
         requestAs(app, bruno, {
           method: "POST",
-          url: "/api/leads",
+          url: "/api/clients",
           payload: { fullName: "Cliente do Bruno", whatsapp: "11999990002" },
         }),
       ]);
@@ -61,8 +61,8 @@ describe("Isolamento por corretor", () => {
     });
 
     it("list devolve só os leads do corretor autenticado", async () => {
-      const listAna = (await requestAs(app, ana, { method: "GET", url: "/api/leads" })).json();
-      const listBruno = (await requestAs(app, bruno, { method: "GET", url: "/api/leads" })).json();
+      const listAna = (await requestAs(app, ana, { method: "GET", url: "/api/clients" })).json();
+      const listBruno = (await requestAs(app, bruno, { method: "GET", url: "/api/clients" })).json();
 
       expect(listAna.map((l: { id: string }) => l.id)).toEqual([leadAna]);
       expect(listBruno.map((l: { id: string }) => l.id)).toEqual([leadBruno]);
@@ -71,13 +71,13 @@ describe("Isolamento por corretor", () => {
     it("findOne de lead alheio responde 404", async () => {
       const cruzado = await requestAs(app, ana, {
         method: "GET",
-        url: `/api/leads/${leadBruno}`,
+        url: `/api/clients/${leadBruno}`,
       });
       expect(cruzado.statusCode).toBe(404);
 
       const proprio = await requestAs(app, bruno, {
         method: "GET",
-        url: `/api/leads/${leadBruno}`,
+        url: `/api/clients/${leadBruno}`,
       });
       expect(proprio.statusCode).toBe(200);
     });
@@ -85,14 +85,14 @@ describe("Isolamento por corretor", () => {
     it("changeStatus em lead alheio responde 404 e não altera nada", async () => {
       const cruzado = await requestAs(app, ana, {
         method: "PATCH",
-        url: `/api/leads/${leadBruno}/status`,
+        url: `/api/clients/${leadBruno}/status`,
         payload: { status: "em_atendimento" },
       });
       expect(cruzado.statusCode).toBe(404);
 
       const ficha = await requestAs(app, bruno, {
         method: "GET",
-        url: `/api/leads/${leadBruno}`,
+        url: `/api/clients/${leadBruno}`,
       });
       expect(ficha.json().status).toBe("novo");
     });
@@ -102,7 +102,7 @@ describe("Isolamento por corretor", () => {
       // não pode vazar a existência do lead alheio).
       const response = await requestAs(app, ana, {
         method: "POST",
-        url: "/api/leads",
+        url: "/api/clients",
         payload: { fullName: "Outro Cliente", whatsapp: "11999990002" },
       });
       expect(response.statusCode).toBe(201);
@@ -111,13 +111,13 @@ describe("Isolamento por corretor", () => {
     it("delete de lead alheio responde 404 e o lead continua existindo", async () => {
       const cruzado = await requestAs(app, ana, {
         method: "DELETE",
-        url: `/api/leads/${leadBruno}`,
+        url: `/api/clients/${leadBruno}`,
       });
       expect(cruzado.statusCode).toBe(404);
 
       const aindaExiste = await requestAs(app, bruno, {
         method: "GET",
-        url: `/api/leads/${leadBruno}`,
+        url: `/api/clients/${leadBruno}`,
       });
       expect(aindaExiste.statusCode).toBe(200);
     });
@@ -298,21 +298,21 @@ describe("Isolamento por corretor", () => {
         [ana, bruno].map((corretor, i) =>
           requestAs(app, corretor, {
             method: "POST",
-            url: "/api/leads",
+            url: "/api/clients",
             payload: { fullName: `Convertida ${i}`, whatsapp: `1198888000${i}` },
           }),
         ),
       );
-      const convertidos = await Promise.all(
+      const fechados = await Promise.all(
         [ana, bruno].map((corretor, i) =>
           requestAs(app, corretor, {
-            method: "POST",
-            url: `/api/leads/${leads[i].json().id}/convert`,
-            payload: conversao,
+            method: "PATCH",
+            url: `/api/clients/${leads[i].json().id}/status`,
+            payload: { status: "fechado", purpose: conversao.purpose },
           }),
         ),
       );
-      for (const r of convertidos) expect([200, 201]).toContain(r.statusCode);
+      for (const r of fechados) expect([200, 201]).toContain(r.statusCode);
       clienteAna = leads[0].json().id;
       clienteBruno = leads[1].json().id;
     });
@@ -451,7 +451,7 @@ describe("Isolamento por corretor", () => {
     beforeAll(async () => {
       const lead = await requestAs(app, bruno, {
         method: "POST",
-        url: "/api/leads",
+        url: "/api/clients",
         payload: { fullName: "Lead do envio", whatsapp: "11977770001" },
       });
       const imovel = await requestAs(app, bruno, {
@@ -476,7 +476,7 @@ describe("Isolamento por corretor", () => {
 
       const enviados = await requestAs(app, bruno, {
         method: "GET",
-        url: `/api/leads/${lead.json().id}/shares`,
+        url: `/api/clients/${lead.json().id}/shares`,
       });
       itemBruno = enviados.json()[0].itemId;
     });

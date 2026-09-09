@@ -455,13 +455,12 @@ model Lead {
   fullName      String        @map("full_name")
   whatsapp      String
   email         String?
-  cpf           String?
   source        LeadSource?
   intent        LeadIntent?
   audience      LeadAudience?
-  region        String?
-  budgetMin     Decimal?      @map("budget_min") @db.Decimal(14, 2)
-  budgetMax     Decimal?      @map("budget_max") @db.Decimal(14, 2)
+  /// Região, faixa de valor e CPF saíram daqui na etapa 7 da unificação
+  /// (set 2026): o que a pessoa procura vive em lead_preference e o CPF em
+  /// client_profile. Backups em *_backup_20260904.
   status        LeadStatus    @default(novo)
   isClient      Boolean       @default(false) @map("is_client")
   convertedAt   DateTime?     @map("converted_at") @db.Timestamptz(6)

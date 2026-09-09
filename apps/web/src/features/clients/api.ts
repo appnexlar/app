@@ -5,10 +5,8 @@ import type {
   ClientProfileData,
   ClientSummary,
   ConsentSummary,
-  ConvertLeadDto,
   CreateClientDto,
   DeletionRequestSummary,
-  LeadSummary,
   ListClientsQuery,
   ParticipantSummary,
   RequestDeletionDto,
@@ -38,10 +36,6 @@ export function fetchClients(query: ListClientsQuery): Promise<ClientSummary[]> 
 
 export function fetchClient(id: string): Promise<ClientDetail> {
   return http.get<ClientDetail>(`/clients/${id}`);
-}
-
-export function convertLead(leadId: string, dto: ConvertLeadDto): Promise<LeadSummary> {
-  return http.post<LeadSummary>(`/leads/${leadId}/convert`, dto);
 }
 
 export function updateClientProfile(

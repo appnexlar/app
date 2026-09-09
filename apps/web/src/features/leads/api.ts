@@ -37,7 +37,7 @@ export function changeLeadStatus(
 }
 
 export function deleteLead(id: string): Promise<void> {
-  return http.delete<void>(`/leads/${id}`);
+  return http.delete<void>(`/clients/${id}`);
 }
 
 /** Extrai o lead existente de um 409 de WhatsApp duplicado. */

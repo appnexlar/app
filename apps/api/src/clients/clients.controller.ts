@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
@@ -20,6 +21,7 @@ import {
   updateClientFinancialSchema,
   updateClientNegotiationSchema,
   updateClientProfileSchema,
+  upsertLeadPreferenceSchema,
   upsertParticipantSchema,
   type ClientDetail,
   type ClientFinancialData,
@@ -31,6 +33,8 @@ import {
   type CreateClientDto,
   type LeadSummary,
   type ListClientsQuery,
+  type LeadPreferenceView,
+  type UpsertLeadPreferenceDto,
   type ConsentSummary,
   type ParticipantSummary,
   type RequestDeletionDto,
@@ -44,6 +48,7 @@ import { LeadRefPipe } from "../common/pipes/short-code.pipe";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe";
 import { ClientsService } from "./clients.service";
 import { LeadsService } from "../leads/leads.service";
+import { LeadPreferencesService } from "../leads/lead-preferences.service";
 
 @ApiTags("clients")
 @ApiBearerAuth()
@@ -52,7 +57,37 @@ export class ClientsController {
   constructor(
     private readonly clients: ClientsService,
     private readonly leads: LeadsService,
+    private readonly preferences: LeadPreferencesService,
   ) {}
+
+  @Get(":id/preferences")
+  @ApiOperation({ summary: "Preferências de busca do cliente (nulo se nunca preenchidas)" })
+  getPreferences(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("id", LeadRefPipe) id: string,
+  ): Promise<LeadPreferenceView | null> {
+    return this.preferences.get(brokerId, id);
+  }
+
+  @Put(":id/preferences")
+  @ApiOperation({ summary: "Salvar as preferências de busca (substitui o conjunto)" })
+  upsertPreferences(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("id", LeadRefPipe) id: string,
+    @Body(new ZodValidationPipe(upsertLeadPreferenceSchema)) dto: UpsertLeadPreferenceDto,
+  ): Promise<LeadPreferenceView> {
+    return this.preferences.upsert(brokerId, id, dto);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Exclui um cliente do corretor autenticado" })
+  remove(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("id", LeadRefPipe) id: string,
+  ): Promise<void> {
+    return this.leads.remove(brokerId, id);
+  }
 
   @Post()
   @ApiOperation({

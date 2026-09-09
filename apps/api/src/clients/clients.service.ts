@@ -30,6 +30,9 @@ import { LeadsService } from "../leads/leads.service";
 
 const CLIENT_INCLUDE = {
   conversion: { include: { property: { select: { title: true } } } },
+  // Região e faixa de valor vêm daqui desde a etapa 7 (set 2026); as colunas
+  // antigas de lead saem numa migration depois deste deploy.
+  preference: true,
 } as const;
 
 type LeadWithConversion = Prisma.LeadGetPayload<{ include: typeof CLIENT_INCLUDE }>;
@@ -111,7 +114,8 @@ export class ClientsService {
         { fullName: { contains: query.q, mode: "insensitive" } },
         { whatsapp: { contains: query.q } },
         { email: { contains: query.q, mode: "insensitive" } },
-        { cpf: { contains: query.q } },
+        // O CPF vive em client_profile desde a etapa 7 (set 2026).
+        { clientProfile: { cpf: { contains: query.q } } },
       ];
     }
     if (query.purpose) where.conversion = { purpose: query.purpose };
@@ -139,6 +143,7 @@ export class ClientsService {
       where: { id, brokerId },
       include: {
         conversion: { include: { property: { select: { title: true } } } },
+        preference: true,
         consents: { orderBy: { acceptedAt: "desc" } },
         activities: { orderBy: { createdAt: "desc" }, take: 50 },
         clientProfile: true,
@@ -159,9 +164,9 @@ export class ClientsService {
       isClient: lead.isClient,
       source: lead.source,
       intent: lead.intent,
-      region: lead.region,
-      budgetMin: lead.budgetMin != null ? Number(lead.budgetMin) : null,
-      budgetMax: lead.budgetMax != null ? Number(lead.budgetMax) : null,
+      region: lead.preference?.region ?? null,
+      budgetMin: lead.preference?.priceMin != null ? Number(lead.preference.priceMin) : null,
+      budgetMax: lead.preference?.priceMax != null ? Number(lead.preference.priceMax) : null,
       nextActionAt: lead.nextActionAt?.toISOString() ?? null,
       lastContactAt: lead.lastContactAt?.toISOString() ?? null,
       createdAt: lead.createdAt.toISOString(),
@@ -577,9 +582,9 @@ export class ClientsService {
       convertedAt: lead.convertedAt?.toISOString() ?? null,
       source: lead.source,
       intent: lead.intent,
-      region: lead.region,
-      budgetMin: lead.budgetMin != null ? Number(lead.budgetMin) : null,
-      budgetMax: lead.budgetMax != null ? Number(lead.budgetMax) : null,
+      region: lead.preference?.region ?? null,
+      budgetMin: lead.preference?.priceMin != null ? Number(lead.preference.priceMin) : null,
+      budgetMax: lead.preference?.priceMax != null ? Number(lead.preference.priceMax) : null,
       createdAt: lead.createdAt.toISOString(),
       purpose: lead.conversion?.purpose ?? null,
       reason: lead.conversion?.reason ?? null,

@@ -16,7 +16,7 @@ export function fetchPropertyShares(propertyId: string): Promise<PropertyShareSu
 }
 
 export function fetchLeadShares(leadId: string): Promise<LeadShareSummary[]> {
-  return http.get<LeadShareSummary[]>(`/leads/${leadId}/shares`);
+  return http.get<LeadShareSummary[]>(`/clients/${leadId}/shares`);
 }
 
 export function resendShare(shareId: string): Promise<PropertyShareSummary> {

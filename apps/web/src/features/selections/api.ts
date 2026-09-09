@@ -25,7 +25,7 @@ export function fetchSelection(id: string): Promise<SelectionView> {
 }
 
 export function fetchLeadSelections(leadId: string): Promise<SelectionSummary[]> {
-  return http.get<SelectionSummary[]>(`/leads/${leadId}/selections`);
+  return http.get<SelectionSummary[]>(`/clients/${leadId}/selections`);
 }
 
 export function updateSelection(id: string, dto: UpdateSelectionDto): Promise<SelectionView> {
@@ -87,14 +87,14 @@ export function fetchCandidates(
 }
 
 export function fetchLeadPreferences(leadId: string): Promise<LeadPreferenceView | null> {
-  return http.get<LeadPreferenceView | null>(`/leads/${leadId}/preferences`);
+  return http.get<LeadPreferenceView | null>(`/clients/${leadId}/preferences`);
 }
 
 export function saveLeadPreferences(
   leadId: string,
   dto: UpsertLeadPreferenceDto,
 ): Promise<LeadPreferenceView> {
-  return http.put<LeadPreferenceView>(`/leads/${leadId}/preferences`, dto);
+  return http.put<LeadPreferenceView>(`/clients/${leadId}/preferences`, dto);
 }
 
 /** URL pública da seleção, montada no cliente. */
