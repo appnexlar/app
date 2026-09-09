@@ -87,7 +87,7 @@ export function NotificationBell() {
           // lados: preso ao botão do sino ele nasceria fora da borda esquerda,
           // porque é mais largo do que a distância do sino até a direita. No
           // desktop cai sob o sino, como todo menu.
-          className="animate-rise fixed inset-x-4 top-[4.5rem] z-[var(--z-modal)] overflow-hidden rounded-xl border border-border bg-surface shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem]"
+          className="animate-rise fixed inset-x-4 top-[4.5rem] z-[var(--z-modal)] overflow-hidden rounded-lg border border-border bg-surface shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem]"
         >
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <p className="text-body-sm font-semibold text-text">Notificações</p>

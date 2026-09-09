@@ -59,7 +59,7 @@ export function PreviewPage() {
   if (consulta.isLoading) {
     return (
       <div className="mx-auto max-w-3xl" aria-busy="true">
-        <div className="h-[70vh] animate-pulse rounded-2xl bg-surface-sunken" />
+        <div className="h-[70vh] animate-pulse rounded-lg bg-surface-sunken" />
       </div>
     );
   }
@@ -80,7 +80,7 @@ export function PreviewPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-4">
       {/* Faixa que deixa claro: isto é um ensaio, não a página no ar. */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm">
         <div className="min-w-0">
           <h2 className="text-h3 text-text">Prévia da sua página</h2>
           <p className="text-body-sm text-text-muted">
@@ -125,7 +125,7 @@ export function PreviewPage() {
           layout largo espremido, com o nome do corretor estourando a borda. No
           iframe a janela tem a largura do aparelho de verdade. */}
       <div
-        className={`overflow-hidden rounded-2xl border border-border bg-bg shadow-sm ${
+        className={`overflow-hidden rounded-lg border border-border bg-bg shadow-sm ${
           modo === "celular" ? "mx-auto w-full max-w-[390px]" : "w-full"
         }`}
       >

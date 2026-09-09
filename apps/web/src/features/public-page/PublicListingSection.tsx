@@ -196,18 +196,18 @@ export function PublicListingSection({
       {/* Resultado, nos quatro estados. */}
       {consulta.isLoading ? (
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2" aria-busy="true">
-          <div className="h-72 animate-pulse rounded-xl bg-surface-sunken" />
-          <div className="hidden h-72 animate-pulse rounded-xl bg-surface-sunken sm:block" />
+          <div className="h-72 animate-pulse rounded-lg bg-surface-sunken" />
+          <div className="hidden h-72 animate-pulse rounded-lg bg-surface-sunken sm:block" />
         </div>
       ) : consulta.isError ? (
-        <p className="mt-6 rounded-xl bg-surface px-5 py-8 text-center text-body-sm text-text-muted shadow-sm">
+        <p className="mt-6 rounded-lg bg-surface px-5 py-8 text-center text-body-sm text-text-muted shadow-sm">
           Não foi possível carregar os imóveis.{" "}
           <button type="button" className="font-semibold text-accent underline" onClick={() => consulta.refetch()}>
             Tentar de novo
           </button>
         </p>
       ) : items.length === 0 ? (
-        <div className="mt-6 rounded-xl bg-surface px-5 py-10 text-center shadow-sm">
+        <div className="mt-6 rounded-lg bg-surface px-5 py-10 text-center shadow-sm">
           <p className="text-body font-semibold text-text">Nenhum imóvel com esses filtros.</p>
           {temFiltroAtivo && (
             <button

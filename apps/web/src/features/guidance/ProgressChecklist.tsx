@@ -28,7 +28,7 @@ export function ProgressChecklist({ checklist }: { checklist: GuidanceChecklist 
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
       <button
         type="button"
         onClick={() => setAberto((v) => !v)}

@@ -22,7 +22,7 @@ export function PublicSharePage() {
     return (
       <Shell>
         <div className="mx-auto max-w-2xl animate-pulse">
-          <div className="aspect-[16/10] w-full rounded-2xl bg-black/10" />
+          <div className="aspect-[16/10] w-full rounded-lg bg-black/10" />
           <div className="mt-4 h-6 w-2/3 rounded bg-black/10" />
           <div className="mt-2 h-4 w-1/3 rounded bg-black/10" />
         </div>
@@ -60,7 +60,7 @@ export function PublicSharePage() {
         : null;
       return (
         <Shell>
-          <div className="mx-auto flex max-w-md flex-col items-center rounded-2xl border border-black/10 bg-white px-6 py-10 text-center shadow-sm">
+          <div className="mx-auto flex max-w-md flex-col items-center rounded-lg border border-black/10 bg-white px-6 py-10 text-center shadow-sm">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/5 text-black/40">
               <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M3 11l9-7 9 7M5 9.5V20a1 1 0 001 1h12a1 1 0 001-1V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -74,7 +74,7 @@ export function PublicSharePage() {
               você procura.
             </p>
             {data.broker && (
-              <div className="mt-6 w-full rounded-2xl border border-black/10 bg-[#f9f8f6] p-4 text-left">
+              <div className="mt-6 w-full rounded-lg border border-black/10 bg-[#f9f8f6] p-4 text-left">
                 <p className="text-sm text-black/45">Fale com o corretor</p>
                 <div className="mt-0.5 flex flex-wrap items-center gap-2">
                   <p className="font-semibold text-[#1a1a1a]">{data.broker.name}</p>
@@ -88,7 +88,7 @@ export function PublicSharePage() {
                     href={waLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 font-semibold text-white transition-transform active:scale-[0.99]"
+                    className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-5 font-semibold text-white transition-transform active:scale-[0.99]"
                   >
                     Pedir opções parecidas
                   </a>
@@ -127,7 +127,7 @@ export function PublicSharePage() {
             <img
               src={photos[active]?.url}
               alt={photos[active]?.caption ?? p.title}
-              className="aspect-[16/10] w-full rounded-2xl border border-black/5 object-cover"
+              className="aspect-[16/10] w-full rounded-lg border border-black/5 object-cover"
             />
             {photos.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
@@ -145,7 +145,7 @@ export function PublicSharePage() {
             )}
           </div>
         ) : (
-          <div className="flex aspect-[16/10] w-full items-center justify-center rounded-2xl bg-black/5 text-black/30">
+          <div className="flex aspect-[16/10] w-full items-center justify-center rounded-lg bg-black/5 text-black/30">
             <svg className="h-12 w-12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M3 11l9-7 9 7M5 9.5V20a1 1 0 001 1h12a1 1 0 001-1V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -179,7 +179,7 @@ export function PublicSharePage() {
           </section>
         )}
 
-        <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+        <section className="mt-6 rounded-lg border border-black/10 bg-white p-5 shadow-sm">
           <p className="text-sm text-black/45">Fale com o corretor</p>
           <div className="mt-0.5 flex flex-wrap items-center gap-2">
             <p className="text-lg font-semibold text-[#1a1a1a]">{broker.name}</p>
@@ -197,7 +197,7 @@ export function PublicSharePage() {
               href={waLink}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 font-semibold text-white transition-transform active:scale-[0.99]"
+              className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-5 font-semibold text-white transition-transform active:scale-[0.99]"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.611-.916-2.206-.242-.58-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885" />
@@ -221,7 +221,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 function Unavailable({ text }: { text: string }) {
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center rounded-2xl border border-black/10 bg-white px-6 py-12 text-center shadow-sm">
+    <div className="mx-auto flex max-w-md flex-col items-center rounded-lg border border-black/10 bg-white px-6 py-12 text-center shadow-sm">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/5 text-black/40">
         <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />

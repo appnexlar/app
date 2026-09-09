@@ -96,7 +96,7 @@ export function AdminUsersPage() {
       )}
 
       {isError && (
-        <div className="rounded-xl border border-border bg-surface p-8 text-center">
+        <div className="rounded-lg border border-border bg-surface p-8 text-center">
           <p className="text-body text-text">Não foi possível carregar as contas.</p>
           <div className="mt-4 flex justify-center">
             <Button type="button" variant="ghost" onClick={() => void refetch()}>
@@ -107,7 +107,7 @@ export function AdminUsersPage() {
       )}
 
       {data && data.items.length === 0 && (
-        <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center">
+        <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center">
           <p className="text-body text-text">Nenhuma conta com esse recorte.</p>
           <p className="mt-1 text-caption text-text-subtle">
             Ajuste a busca ou o filtro de status.
@@ -118,7 +118,7 @@ export function AdminUsersPage() {
       {data && data.items.length > 0 && (
         <>
           <div
-            className={`overflow-x-auto rounded-xl border border-border bg-surface ${
+            className={`overflow-x-auto rounded-lg border border-border bg-surface ${
               isFetching ? "opacity-70" : ""
             }`}
           >

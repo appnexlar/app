@@ -457,7 +457,7 @@ function GoogleAccountStep({
       {/* Quem está entrando. Mostrar isso não é enfeite: a pessoa pode ter
           escolhido a conta errada entre a pessoal e a da imobiliária, e este é
           o último momento barato para perceber. */}
-      <div className="flex items-center gap-4 rounded-xl border border-border bg-surface p-4">
+      <div className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4">
         <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-primary-soft text-body-sm font-bold text-primary">
           {iniciais(identidade.fullName)}
         </span>
@@ -578,7 +578,7 @@ function Aceites({
   register: (name: never) => Record<string, unknown>;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4">
+    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4">
       <Checkbox
         label={
           <>
@@ -775,7 +775,7 @@ function PlanStep({
             onClick={() => onSelect(plan.id)}
             aria-pressed={active}
             className={
-              "hover-lift relative rounded-xl border-2 bg-surface p-5 text-left shadow-xs focus-visible:shadow-focus " +
+              "hover-lift relative rounded-lg border-2 bg-surface p-5 text-left shadow-xs focus-visible:shadow-focus " +
               (active ? "border-accent" : "border-border")
             }
           >
@@ -865,7 +865,7 @@ function PaymentStep({
   return (
     <div className="flex flex-col gap-5">
       {/* Resumo do plano. */}
-      <div className="flex items-center justify-between rounded-xl border border-border bg-surface-sunken px-4 py-3.5">
+      <div className="flex items-center justify-between rounded-lg border border-border bg-surface-sunken px-4 py-3.5">
         <div>
           <p className="text-body-sm font-semibold text-text">Plano {plan.name}</p>
           <p className="text-caption text-text-muted">{formatBRL(plan.priceMonthly)} {plan.cycleLabel}</p>

@@ -35,8 +35,8 @@ export function SmartEmptyState({
   hint?: string;
 }) {
   return (
-    <section className="animate-rise mx-auto mt-4 flex max-w-xl flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+    <section className="animate-rise mx-auto mt-4 flex max-w-xl flex-col items-center rounded-lg border border-border bg-surface px-6 py-12 text-center shadow-sm">
+      <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-accent-soft text-accent">
         {icon}
       </div>
       <h2 className="mt-6 text-h2 text-text text-balance">{title}</h2>

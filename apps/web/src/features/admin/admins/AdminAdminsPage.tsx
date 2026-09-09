@@ -62,7 +62,7 @@ export function AdminAdminsPage() {
       )}
 
       {isError && (
-        <div className="rounded-xl border border-border bg-surface p-8 text-center">
+        <div className="rounded-lg border border-border bg-surface p-8 text-center">
           <p className="text-body text-text">Não foi possível carregar a lista.</p>
           <div className="mt-4 flex justify-center">
             <Button type="button" variant="ghost" onClick={() => void refetch()}>
@@ -73,7 +73,7 @@ export function AdminAdminsPage() {
       )}
 
       {data && (
-        <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
           <table className="w-full min-w-[640px] text-left text-[14px]">
             <thead>
               <tr className="border-b border-border text-caption text-text-subtle">

@@ -53,11 +53,11 @@ export function LeadSharesPage() {
       </div>
 
       {sharesQuery.isPending ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-surface-sunken" />
+        <div className="h-40 animate-pulse rounded-lg bg-surface-sunken" />
       ) : sharesQuery.isError ? (
         <Banner variant="danger">Não foi possível carregar os imóveis enviados.</Banner>
       ) : shares.length === 0 ? (
-        <div className="flex flex-col items-center rounded-2xl border border-dashed border-border-strong bg-surface-sunken/40 px-6 py-14 text-center">
+        <div className="flex flex-col items-center rounded-lg border border-dashed border-border-strong bg-surface-sunken/40 px-6 py-14 text-center">
           <p className="text-body font-semibold text-text">Nenhum imóvel enviado</p>
           <p className="mt-1 max-w-sm text-body-sm text-text-muted">
             Envie imóveis da sua carteira que combinem com o perfil deste cliente.

@@ -198,7 +198,7 @@ export function PropertyDetailPage() {
               Alterar status
             </Button>
             {statusMenuOpen && (
-              <div className="absolute left-0 top-full z-20 mt-1.5 w-60 overflow-hidden rounded-xl border border-border bg-surface py-1.5 shadow-md">
+              <div className="absolute left-0 top-full z-20 mt-1.5 w-60 overflow-hidden rounded-lg border border-border bg-surface py-1.5 shadow-md">
                 {AVAILABLE_STATUS_ACTIONS.filter((a) => a.status !== p.status).map((action) => (
                   <button
                     key={action.status}
@@ -229,7 +229,7 @@ export function PropertyDetailPage() {
               </svg>
             </Button>
             {moreMenuOpen && (
-              <div className="absolute right-0 top-full z-20 mt-1.5 w-56 overflow-hidden rounded-xl border border-border bg-surface py-1.5 shadow-md">
+              <div className="absolute right-0 top-full z-20 mt-1.5 w-56 overflow-hidden rounded-lg border border-border bg-surface py-1.5 shadow-md">
                 <button
                   type="button"
                   onClick={() => {
@@ -262,7 +262,7 @@ export function PropertyDetailPage() {
             <AuthImage
               src={cover.url}
               alt={cover.caption ?? p.title}
-              className="aspect-[16/10] w-full rounded-2xl border border-border object-cover"
+              className="aspect-[16/10] w-full rounded-lg border border-border object-cover"
             />
           )}
           {others.length > 0 && (
@@ -272,7 +272,7 @@ export function PropertyDetailPage() {
                   key={photo.id}
                   src={photo.url as string}
                   alt={photo.caption ?? (photo.room ? PHOTO_ROOM_LABELS[photo.room] : p.title)}
-                  className="aspect-square w-full rounded-xl border border-border object-cover"
+                  className="aspect-square w-full rounded-lg border border-border object-cover"
                 />
               ))}
             </div>
@@ -281,7 +281,7 @@ export function PropertyDetailPage() {
       )}
 
       <section
-        className={`rounded-2xl border p-5 shadow-sm transition-colors ${
+        className={`rounded-lg border p-5 shadow-sm transition-colors ${
           p.availabilityConfirmed
             ? "border-[color-mix(in_srgb,var(--success)_40%,transparent)] bg-[var(--success-soft)]"
             : "border-border bg-surface"
@@ -531,7 +531,7 @@ export function PropertyDetailPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <section className="rounded-lg border border-border bg-surface p-5 shadow-sm">
       <h3 className="mb-2 text-h3 text-text">{title}</h3>
       {children}
     </section>

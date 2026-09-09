@@ -88,7 +88,7 @@ export function SelectLeadForSelectionModal({
       {leadsQuery.isPending ? (
         <div className="mt-3 flex flex-col gap-2" aria-busy="true">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-14 animate-pulse rounded-xl bg-surface-sunken" />
+            <div key={i} className="h-14 animate-pulse rounded-lg bg-surface-sunken" />
           ))}
         </div>
       ) : leadsQuery.isError ? (
@@ -99,7 +99,7 @@ export function SelectLeadForSelectionModal({
           </button>
         </p>
       ) : filtered.length === 0 ? (
-        <p className="mt-4 rounded-xl border border-dashed border-border p-4 text-center text-body-sm text-text-muted">
+        <p className="mt-4 rounded-lg border border-dashed border-border p-4 text-center text-body-sm text-text-muted">
           {search ? "Nenhum cliente com esse nome ou WhatsApp." : "Cadastre um cliente para enviar seleções."}
         </p>
       ) : (

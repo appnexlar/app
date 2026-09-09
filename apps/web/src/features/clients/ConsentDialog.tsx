@@ -41,7 +41,7 @@ export function ConsentDialog({ clientId, clientName, onClose, onRegistered }: C
           endereço, renda, documentos. Pela LGPD, a pessoa precisa saber que isso está sendo
           guardado e para quê.
         </p>
-        <div className="rounded-xl bg-surface-sunken p-3.5">
+        <div className="rounded-lg bg-surface-sunken p-3.5">
           <p className="text-caption font-semibold uppercase tracking-wide text-text-subtle">
             O que você diz para a pessoa
           </p>

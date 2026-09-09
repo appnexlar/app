@@ -337,7 +337,7 @@ export function FinancialFormModal({
           mutation.mutate();
         }}
       >
-        <div className="rounded-xl bg-surface-sunken p-3 text-caption text-text-muted">
+        <div className="rounded-lg bg-surface-sunken p-3 text-caption text-text-muted">
           Área sensível (LGPD). Estes dados não aparecem em listagens nem no Dashboard.
         </div>
         {error && <Banner variant="danger">{error}</Banner>}

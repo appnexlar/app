@@ -130,14 +130,14 @@ export function LeadSharesSection({ lead, onShare }: { lead: LeadRef; onShare: (
       {/* Resumo dos imóveis: só a partir de um volume que justifique o apanhado.
           Com poucos imóveis a lista logo abaixo já comunica tudo sem repetir. */}
       {shares.length >= 4 && (
-        <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <section className="animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6">
           <h2 className="text-label font-semibold text-text">Resumo dos imóveis</h2>
           <ResumoStrip summary={summary} />
         </section>
       )}
 
       {/* Índice na ficha: prévia dos mais relevantes + atalho para a página. */}
-      <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+      <section className="animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2 className="text-label font-semibold text-text">
@@ -159,14 +159,14 @@ export function LeadSharesSection({ lead, onShare }: { lead: LeadRef; onShare: (
         </div>
 
         {query.isPending ? (
-          <div className="mt-4 h-24 animate-pulse rounded-xl bg-surface-sunken" />
+          <div className="mt-4 h-24 animate-pulse rounded-lg bg-surface-sunken" />
         ) : query.isError ? (
           <div className="mt-4">
             <Banner variant="danger">Não foi possível carregar os imóveis enviados.</Banner>
           </div>
         ) : shares.length === 0 ? (
-          <div className="mt-4 flex flex-col items-center rounded-xl border border-dashed border-border-strong bg-surface-sunken/40 px-6 py-10 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+          <div className="mt-4 flex flex-col items-center rounded-lg border border-dashed border-border-strong bg-surface-sunken/40 px-6 py-10 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-accent-soft text-accent">
               <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M3 11l9-7 9 7M5 9.5V20a1 1 0 001 1h12a1 1 0 001-1V9.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -181,7 +181,7 @@ export function LeadSharesSection({ lead, onShare }: { lead: LeadRef; onShare: (
           </div>
         ) : (
           <>
-            <ul className="mt-4 overflow-hidden rounded-xl border border-border divide-y divide-border">
+            <ul className="mt-4 overflow-hidden rounded-lg border border-border divide-y divide-border">
               {preview.map((share) => (
                 <ShareRow
                   key={share.itemId}
@@ -198,7 +198,7 @@ export function LeadSharesSection({ lead, onShare }: { lead: LeadRef; onShare: (
               <button
                 type="button"
                 onClick={() => navigate(leadSharesPath(lead.code))}
-                className="mt-4 flex min-h-[var(--tap-target-min)] w-full items-center justify-center gap-2 rounded-xl border border-border text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
+                className="mt-4 flex min-h-[var(--tap-target-min)] w-full items-center justify-center gap-2 rounded-lg border border-border text-body-sm font-semibold text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
               >
                 Ver todos os {shares.length} imóveis enviados
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -304,7 +304,7 @@ export function ShareActionSheet({
                   </span>
                 )}
               </div>
-              <div className="overflow-hidden rounded-xl border border-border">
+              <div className="overflow-hidden rounded-lg border border-border">
                 <SheetItem
                   label="Abrir imóvel"
                   onClick={() => {
@@ -357,7 +357,7 @@ export function ShareActionSheet({
                       onClose();
                     }}
                     className={
-                      "flex min-h-[var(--tap-target-min)] items-center justify-between rounded-xl border px-4 text-left text-body font-medium transition-colors " +
+                      "flex min-h-[var(--tap-target-min)] items-center justify-between rounded-lg border px-4 text-left text-body font-medium transition-colors " +
                       (share.response === r
                         ? "border-accent bg-accent-soft text-accent"
                         : "border-border bg-surface text-text hover:bg-surface-sunken")
@@ -438,7 +438,7 @@ export function SharesExplorer({
     : [];
 
   const list = (items: LeadShareSummary[]) => (
-    <ul className="overflow-hidden rounded-xl border border-border divide-y divide-border">
+    <ul className="overflow-hidden rounded-lg border border-border divide-y divide-border">
       {items.map((s) => (
         <ShareRow
           key={s.itemId}
@@ -467,7 +467,7 @@ export function SharesExplorer({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por título ou bairro"
-            className="w-full rounded-xl border border-border bg-surface py-2 pl-10 pr-10 text-body text-text placeholder:text-text-subtle"
+            className="w-full rounded-lg border border-border bg-surface py-2 pl-10 pr-10 text-body text-text placeholder:text-text-subtle"
           />
           {search && (
             <button

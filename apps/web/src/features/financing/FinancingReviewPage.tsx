@@ -79,9 +79,9 @@ export function FinancingReviewPage() {
   if (consulta.isPending) {
     return (
       <div className="mx-auto flex max-w-3xl flex-col gap-4" aria-busy="true">
-        <div className="h-20 animate-pulse rounded-2xl bg-surface-sunken" />
-        <div className="h-48 animate-pulse rounded-2xl bg-surface-sunken" />
-        <div className="h-48 animate-pulse rounded-2xl bg-surface-sunken" />
+        <div className="h-20 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-48 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-48 animate-pulse rounded-lg bg-surface-sunken" />
       </div>
     );
   }
@@ -106,7 +106,7 @@ export function FinancingReviewPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <header className="animate-rise flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4 sm:p-6">
+      <header className="animate-rise flex flex-col gap-2 rounded-lg border border-border bg-surface p-4 sm:p-6">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className={`rounded-full px-2 py-1 text-caption font-semibold ${STATUS_TONES[request.status]}`}>
             {FINANCING_STATUS_LABELS[request.status]}
@@ -141,7 +141,7 @@ export function FinancingReviewPage() {
       )}
 
       {(request.sections as FinancingSection[]).map((secao) => (
-        <section key={secao} className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <section key={secao} className="animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6">
           <h2 className="text-label font-semibold text-text">
             {FINANCING_SECTION_LABELS[secao]}
           </h2>
@@ -224,7 +224,7 @@ function DetalheSecao({ secao, payload }: { secao: FinancingSection; payload: Fi
     return (
       <div className="mt-4 flex flex-col gap-4">
         {lista.map((p, i) => (
-          <div key={i} className="rounded-xl bg-surface-sunken p-4">
+          <div key={i} className="rounded-lg bg-surface-sunken p-4">
             <p className="text-body-sm font-semibold text-text">
               {p.fullName}{" "}
               <span className="font-normal text-text-muted">· {RELATION_LABELS[p.relation]}</span>
@@ -249,7 +249,7 @@ function DetalheSecao({ secao, payload }: { secao: FinancingSection; payload: Fi
     return (
       <div className="mt-4 flex flex-col gap-4">
         {lista.map((c, i) => (
-          <div key={i} className="rounded-xl bg-surface-sunken p-4">
+          <div key={i} className="rounded-lg bg-surface-sunken p-4">
             <p className="text-body-sm font-semibold text-text">{COMMITMENT_TYPE_LABELS[c.type]}</p>
             <Linhas
               pares={[

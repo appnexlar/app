@@ -53,7 +53,7 @@ export function PropertySharesSection({ propertyId }: { propertyId: string }) {
   };
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <section className="rounded-lg border border-border bg-surface p-5 shadow-sm">
       <h2 className="text-label text-text-subtle">Clientes que receberam este imóvel</h2>
 
       {query.isPending ? (
@@ -160,7 +160,7 @@ function ShareRowMenu({
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-border bg-surface py-1.5 shadow-md">
+        <div className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-lg border border-border bg-surface py-1.5 shadow-md">
           <button type="button" className={item} onMouseDown={onOpenLead}>
             Abrir cliente
           </button>

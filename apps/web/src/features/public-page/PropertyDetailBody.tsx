@@ -234,7 +234,7 @@ export function PropertyDetailBody({
                 src={v.url}
                 controls
                 preload="metadata"
-                className="w-full rounded-2xl bg-surface-sunken"
+                className="w-full rounded-lg bg-surface-sunken"
               >
                 <track kind="captions" />
               </video>
@@ -349,7 +349,7 @@ export function Galeria({ detail }: { detail: PublicPropertyDetail }) {
 
   if (fotos.length === 0) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-surface-sunken text-text-subtle sm:aspect-[16/10]">
+      <div className="flex aspect-[4/3] items-center justify-center rounded-lg bg-surface-sunken text-text-subtle sm:aspect-[16/10]">
         <svg className="h-12 w-12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 10.5L12 4l8 6.5M5.5 9.5V20h13V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
         </svg>
@@ -374,7 +374,7 @@ export function Galeria({ detail }: { detail: PublicPropertyDetail }) {
             if (e.key === "ArrowRight") irPara(indice + 1);
             if (e.key === "ArrowLeft") irPara(indice - 1);
           }}
-          className="scrollbar-none flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-2xl bg-surface-sunken"
+          className="scrollbar-none flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-lg bg-surface-sunken"
         >
           {fotos.map((foto, i) => (
             <img

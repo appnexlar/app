@@ -41,7 +41,7 @@ export function DashboardPage() {
     <div className="pb-4">
       {/* Hero: painel navy com o gradiente da marca e o resumo do dia. */}
       <section
-        className="animate-rise relative overflow-hidden rounded-2xl bg-primary p-6 text-text-on-brand shadow-md sm:p-8"
+        className="animate-rise relative overflow-hidden rounded-lg bg-primary p-6 text-text-on-brand shadow-md sm:p-8"
         style={{ animationDelay: "0ms" }}
       >
         <div
@@ -184,7 +184,7 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
 
       {/* Os números do mês vêm depois do trabalho do dia. */}
       <Section title="Este mês" caption="comparado ao período anterior" delay={180}>
-        <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+        <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
           <div className="grid grid-cols-2 gap-px bg-border lg:grid-cols-5">
             <KpiCell
               label="Clientes no mês"
@@ -232,7 +232,7 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
 
       {/* Funil: retrato atual da carteira ativa. */}
       <Section title="Funil" caption="clientes ativos por etapa" delay={240}>
-        <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-6">
+        <div className="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-6">
           <div className="flex items-baseline justify-between gap-4">
             <span className="text-body-sm text-text-muted">Onde estão seus atendimentos</span>
             <span className="text-body-sm tabular-nums text-text-subtle">
@@ -249,13 +249,13 @@ function DashboardContent({ summary }: { summary: DashboardSummary }) {
 
       {/* Conversões: um bloco só, três medidas. */}
       <Section title="Conversões" delay={300}>
-        <div className="grid overflow-hidden rounded-2xl border border-border bg-surface shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-border">
+        <div className="grid overflow-hidden rounded-lg border border-border bg-surface shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-border">
           <RingCell fraction={conversions.leadToVisit} label="Cliente → visita" />
           <div className="border-t border-border sm:border-t-0">
             <RingCell fraction={conversions.visitToNegotiation} label="Visita → negociação" />
           </div>
           <div className="flex items-center gap-4 border-t border-border p-6 sm:border-t-0">
-            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-2xl bg-highlight-strong">
+            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-highlight-strong">
               <svg className="h-6 w-6 text-highlight-fg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.8" />
                 <path d="M12 8v4.2l2.8 1.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -305,7 +305,7 @@ function Section({
 /** Cartão agrupado: uma moldura, linhas divididas. Base das listas da Home. */
 function GroupCard({ children }: { children: ReactNode }) {
   return (
-    <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+    <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
       {children}
     </div>
   );
@@ -378,7 +378,7 @@ function AlertRow({
     >
       <span
         className={
-          "flex h-11 w-11 flex-none items-center justify-center rounded-xl " +
+          "flex h-11 w-11 flex-none items-center justify-center rounded-lg " +
           (attention ? "bg-highlight-strong text-highlight-fg" : "bg-surface-sunken text-text-muted")
         }
       >
@@ -613,7 +613,7 @@ function EmptyDashboard() {
   const { openNewLead } = useShell();
   return (
     <section
-      className="animate-rise relative mt-8 overflow-hidden rounded-2xl border border-border bg-surface px-6 py-14 text-center shadow-sm"
+      className="animate-rise relative mt-8 overflow-hidden rounded-lg border border-border bg-surface px-6 py-14 text-center shadow-sm"
       style={{ animationDelay: "80ms" }}
     >
       <div
@@ -624,7 +624,7 @@ function EmptyDashboard() {
         }}
       />
       <div className="relative flex flex-col items-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft shadow-xs">
+        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-accent-soft shadow-xs">
           <svg className="h-8 w-8 text-accent" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M16 19c0-2.8-2.2-5-5-5s-5 2.2-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             <circle cx="11" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.8" />
@@ -656,17 +656,17 @@ function DashboardSkeleton() {
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-8">
         <div className="flex flex-col gap-4">
           <div className="h-6 w-20 rounded bg-surface-sunken" />
-          <div className="h-52 rounded-2xl bg-surface-sunken" />
+          <div className="h-52 rounded-lg bg-surface-sunken" />
         </div>
         <div className="flex flex-col gap-4">
           <div className="h-6 w-24 rounded bg-surface-sunken" />
-          <div className="h-52 rounded-2xl bg-surface-sunken" />
+          <div className="h-52 rounded-lg bg-surface-sunken" />
         </div>
       </div>
       <div className="flex flex-col gap-4">
         <div className="h-6 w-24 rounded bg-surface-sunken" />
-        <div className="h-28 rounded-2xl bg-surface-sunken" />
-        <div className="h-56 rounded-2xl bg-surface-sunken" />
+        <div className="h-28 rounded-lg bg-surface-sunken" />
+        <div className="h-56 rounded-lg bg-surface-sunken" />
       </div>
     </div>
   );

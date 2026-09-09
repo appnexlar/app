@@ -170,7 +170,7 @@ export function SendToLeadModal({
 
       {step === "review" && lead && (
         <div className="flex flex-col gap-4">
-          <div className="flex gap-3 rounded-xl border border-border bg-surface-sunken/50 p-3">
+          <div className="flex gap-3 rounded-lg border border-border bg-surface-sunken/50 p-3">
             <div className="h-16 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-sunken">
               {property.coverUrl ? (
                 <AuthImage src={property.coverUrl} alt={property.title} className="h-full w-full object-cover" />
@@ -186,7 +186,7 @@ export function SendToLeadModal({
             </div>
           </div>
 
-          <div className="rounded-xl border border-border p-3">
+          <div className="rounded-lg border border-border p-3">
             <p className="text-caption text-text-subtle">Enviando para</p>
             <p className="text-body font-semibold text-text">{lead.fullName}</p>
             <p className="text-body-sm text-text-muted">{displayWhatsapp(lead.whatsapp)}</p>

@@ -391,7 +391,7 @@ export function NewLeadModal({ open, onClose }: { open: boolean; onClose: () => 
                 options={LEAD_STATUSES.map((st) => ({ value: st, label: STATUS_LABELS[st] }))}
               />
               {status === "fechado" && (
-                <div className="rounded-xl bg-surface-sunken p-3.5">
+                <div className="rounded-lg bg-surface-sunken p-3.5">
                   <p className="text-caption text-text-muted">
                     Cadastrar já como fechado guarda dados sensíveis na ficha, então a pessoa
                     precisa ter ciência da coleta.

@@ -50,7 +50,7 @@ function Option({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[var(--tap-target-min)] items-center gap-4 rounded-xl border border-border bg-surface px-4 py-4 text-left transition-colors duration-fast hover:border-border-strong hover:bg-surface-sunken active:scale-[0.99] focus-visible:shadow-focus"
+      className="flex min-h-[var(--tap-target-min)] items-center gap-4 rounded-lg border border-border bg-surface px-4 py-4 text-left transition-colors duration-fast hover:border-border-strong hover:bg-surface-sunken active:scale-[0.99] focus-visible:shadow-focus"
     >
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
         <Icon size={20} aria-hidden="true" />

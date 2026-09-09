@@ -69,7 +69,7 @@ export function GuidanceCard({
 
   return (
     <div
-      className={`animate-rise relative overflow-hidden rounded-2xl border p-6 shadow-sm sm:p-6 ${visual.container}`}
+      className={`animate-rise relative overflow-hidden rounded-lg border p-6 shadow-sm sm:p-6 ${visual.container}`}
     >
       {rec.dismissible && onDismiss && (
         <button
@@ -87,7 +87,7 @@ export function GuidanceCard({
 
       <div className="flex items-start gap-4">
         <span
-          className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl ${visual.selo}`}
+          className={`flex h-11 w-11 flex-none items-center justify-center rounded-lg ${visual.selo}`}
           aria-hidden="true"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">

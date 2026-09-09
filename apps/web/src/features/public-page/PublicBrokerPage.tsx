@@ -39,7 +39,7 @@ function Esqueleto() {
     <div className="min-h-dvh bg-bg" aria-busy="true">
       <div className="bg-primary px-5 pb-14 pt-16 sm:px-8">
         <div className="mx-auto flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-center sm:gap-10">
-          <div className="h-28 w-28 flex-none animate-pulse rounded-2xl bg-white/10 sm:h-40 sm:w-40" />
+          <div className="h-28 w-28 flex-none animate-pulse rounded-lg bg-white/10 sm:h-40 sm:w-40" />
           <div className="flex flex-col gap-3">
             <div className="h-10 w-56 animate-pulse rounded-md bg-white/10" />
             <div className="h-4 w-72 animate-pulse rounded-sm bg-white/10" />
@@ -47,8 +47,8 @@ function Esqueleto() {
         </div>
       </div>
       <div className="mx-auto mt-10 grid max-w-4xl grid-cols-1 gap-6 px-5 sm:grid-cols-2 sm:px-8">
-        <div className="h-72 animate-pulse rounded-xl bg-surface-sunken" />
-        <div className="hidden h-72 animate-pulse rounded-xl bg-surface-sunken sm:block" />
+        <div className="h-72 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="hidden h-72 animate-pulse rounded-lg bg-surface-sunken sm:block" />
       </div>
     </div>
   );

@@ -215,7 +215,7 @@ export function EventFormModal({ type, event, prefill, lockedLead, onClose }: Pr
         {error && <Banner variant="danger">{error}</Banner>}
 
         {conflicts && (
-          <div className="flex flex-col gap-2 rounded-xl border border-[var(--danger)] bg-[var(--danger-soft)] p-3">
+          <div className="flex flex-col gap-2 rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] p-3">
             <p className="text-body-sm font-semibold text-[var(--danger-fg)]">
               Este horário parece estar ocupado
             </p>
@@ -320,7 +320,7 @@ export function EventFormModal({ type, event, prefill, lockedLead, onClose }: Pr
           options={REMINDER_OPTIONS}
         />
 
-        <div className="flex items-start gap-2 rounded-xl bg-surface-sunken p-3">
+        <div className="flex items-start gap-2 rounded-lg bg-surface-sunken p-3">
           <Checkbox label="Sincronizar com Google Calendar" checked={false} disabled onChange={() => {}} />
           <span className="mt-0.5 text-caption text-text-subtle">em breve</span>
         </div>

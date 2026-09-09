@@ -40,7 +40,7 @@ export function AdminUserProfilePage() {
 
   if (isError || !data) {
     return (
-      <div className="mx-auto max-w-3xl rounded-xl border border-border bg-surface p-8 text-center">
+      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-surface p-8 text-center">
         <p className="text-body text-text">Não foi possível carregar esta conta.</p>
         <div className="mt-4 flex justify-center gap-2">
           <Button type="button" variant="ghost" onClick={() => void refetch()}>
@@ -84,7 +84,7 @@ export function AdminUserProfilePage() {
       </header>
 
       {data.suspendedReason && (
-        <div className="mb-6 rounded-xl border border-[var(--danger-soft)] bg-[var(--danger-soft)] p-4">
+        <div className="mb-6 rounded-lg border border-[var(--danger-soft)] bg-[var(--danger-soft)] p-4">
           <p className="text-caption font-medium text-[var(--danger-fg)]">
             Suspensa em {data.suspendedAt ? dataCurta.format(new Date(data.suspendedAt)) : ""}
           </p>
@@ -205,7 +205,7 @@ function Cartao({
   largura?: string;
 }) {
   return (
-    <section className={`rounded-xl border border-border bg-surface p-6 ${largura}`}>
+    <section className={`rounded-lg border border-border bg-surface p-6 ${largura}`}>
       <h2 className="mb-4 text-caption font-semibold uppercase tracking-wide text-text-subtle">
         {titulo}
       </h2>

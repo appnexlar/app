@@ -136,7 +136,7 @@ function Camada({
       )}
 
       {secondary.length > 0 && (
-        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-6">
+        <div className="rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-6">
           <h3 className="text-caption font-semibold uppercase tracking-wide text-text-subtle">
             Outras ações
           </h3>
@@ -168,8 +168,8 @@ function Camada({
 function Esqueleto() {
   return (
     <div className="mt-4 flex animate-pulse flex-col gap-4" aria-hidden="true">
-      <div className="h-28 rounded-2xl bg-surface-sunken" />
-      <div className="h-20 rounded-2xl bg-surface-sunken" />
+      <div className="h-28 rounded-lg bg-surface-sunken" />
+      <div className="h-20 rounded-lg bg-surface-sunken" />
     </div>
   );
 }

@@ -27,8 +27,8 @@ export function SelectionPreviewPage() {
   if (consulta.isPending) {
     return (
       <div className="mx-auto flex max-w-3xl flex-col gap-4" aria-busy="true">
-        <div className="h-40 animate-pulse rounded-2xl bg-surface-sunken" />
-        <div className="h-72 animate-pulse rounded-2xl bg-surface-sunken" />
+        <div className="h-40 animate-pulse rounded-lg bg-surface-sunken" />
+        <div className="h-72 animate-pulse rounded-lg bg-surface-sunken" />
       </div>
     );
   }
@@ -54,7 +54,7 @@ export function SelectionPreviewPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-accent-soft px-4 py-3">
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-accent-soft px-4 py-3">
         <p className="text-body-sm font-semibold text-accent">
           Prévia: é assim que {sel.leadFirstName} vai ver. As ações ficam ativas só no link real.
         </p>
@@ -64,7 +64,7 @@ export function SelectionPreviewPage() {
       </div>
 
       {/* A página da lead, emoldurada. */}
-      <div className="overflow-hidden rounded-2xl border border-border shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-border shadow-sm">
         <header className="bg-primary px-5 pb-10 pt-8 text-primary-on">
           <p className="text-caption font-bold uppercase tracking-wide text-white/60">
             Seleção de imóveis

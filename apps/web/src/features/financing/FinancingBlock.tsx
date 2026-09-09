@@ -89,7 +89,7 @@ export function FinancingBlock({ lead }: FinancingBlockProps) {
   const solicitacoes = (consulta.data ?? []).filter((s) => s.status !== "arquivada");
 
   return (
-    <section className="animate-rise rounded-2xl border border-border bg-surface p-4 sm:p-6">
+    <section className="animate-rise rounded-lg border border-border bg-surface p-4 sm:p-6">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-label font-semibold text-text">Simulação de financiamento</h2>
         {solicitacoes.length > 0 && (
@@ -106,7 +106,7 @@ export function FinancingBlock({ lead }: FinancingBlockProps) {
 
       {consulta.isPending ? (
         <div className="mt-4 flex flex-col gap-2" aria-busy="true">
-          <div className="h-14 animate-pulse rounded-xl bg-surface-sunken" />
+          <div className="h-14 animate-pulse rounded-lg bg-surface-sunken" />
         </div>
       ) : consulta.isError ? (
         <div className="mt-4">
@@ -120,7 +120,7 @@ export function FinancingBlock({ lead }: FinancingBlockProps) {
       ) : solicitacoes.length === 0 ? (
         <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
-            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-accent-soft text-accent">
+            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-accent-soft text-accent">
               <Landmark size={ICON.action} aria-hidden="true" />
             </span>
             <p className="text-body-sm text-text-muted">

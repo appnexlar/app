@@ -96,7 +96,7 @@ export function InterestModal({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-bg p-6 sm:p-7 shadow-lg">
+      <div className="w-full max-w-md rounded-t-2xl sm:rounded-lg bg-bg p-6 sm:p-7 shadow-lg">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-h3 font-bold text-text">
             {sobreImovel ? "Tenho interesse" : "Falar com o corretor"}

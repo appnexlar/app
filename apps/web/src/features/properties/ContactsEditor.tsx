@@ -75,7 +75,7 @@ export function ContactsEditor({ propertyId }: { propertyId: string }) {
   const contacts = query.data?.contacts ?? [];
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-sm">
+    <section className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-h3 text-text">Pessoas envolvidas</h3>
         {!showForm && (

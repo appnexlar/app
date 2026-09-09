@@ -230,7 +230,7 @@ export function PropertiesPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-3.5 shadow-sm">
+      <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-3.5 shadow-sm">
         {/* Sem botão "Buscar": a lista responde enquanto digita, igual em Leads
             e Clientes. Imóveis mantém o painel porque filtra por cinco campos,
             o que não cabe em chips. */}
@@ -363,7 +363,7 @@ export function PropertiesPage() {
       {actionError && <Banner variant="danger">{actionError}</Banner>}
 
       {total === 0 ? (
-        <section className="flex flex-col items-center rounded-2xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
+        <section className="flex flex-col items-center rounded-lg border border-border bg-surface px-6 py-12 text-center shadow-sm">
           <h2 className="text-h3 text-text">Nada encontrado com esses filtros</h2>
           <p className="mt-2 max-w-sm text-body-sm text-text-muted">
             Ajuste a busca ou limpe os filtros para ver toda a carteira.
@@ -395,7 +395,7 @@ export function PropertiesPage() {
                 {selectMode ? "Cancelar" : "Selecionar"}
               </button>
             </div>
-            <ul className="animate-rise divide-y divide-border rounded-2xl border border-border bg-surface shadow-sm">
+            <ul className="animate-rise divide-y divide-border rounded-lg border border-border bg-surface shadow-sm">
               {items.map((property) => (
                 <PropertyRow
                   key={property.id}
@@ -713,7 +713,7 @@ function RowMenu({
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-60 overflow-hidden rounded-xl border border-border bg-surface py-1.5 shadow-md">
+        <div className="absolute right-0 top-full z-20 mt-1 w-60 overflow-hidden rounded-lg border border-border bg-surface py-1.5 shadow-md">
           <button type="button" className={`${item} lg:hidden`} onClick={() => navigate(`/imoveis/${property.code}`)}>
             Ver ficha
           </button>
@@ -784,8 +784,8 @@ function PropertiesSkeleton() {
   return (
     <div role="status" aria-label="Carregando imóveis" className="flex flex-col gap-4">
       <div className="h-5 w-56 animate-pulse rounded bg-surface-sunken" />
-      <div className="h-16 animate-pulse rounded-xl bg-surface-sunken" />
-      <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+      <div className="h-16 animate-pulse rounded-lg bg-surface-sunken" />
+      <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
         {Array.from({ length: 6 }, (_, i) => (
           <div key={i} className="flex items-center gap-4 px-4 py-3">
             <div className="h-16 w-24 animate-pulse rounded-lg bg-surface-sunken" />

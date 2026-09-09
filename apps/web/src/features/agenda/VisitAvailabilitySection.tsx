@@ -74,11 +74,11 @@ export function VisitAvailabilitySection() {
   };
 
   if (query.isPending) {
-    return <div className="h-40 animate-pulse rounded-2xl bg-surface-sunken" />;
+    return <div className="h-40 animate-pulse rounded-lg bg-surface-sunken" />;
   }
   if (query.isError) {
     return (
-      <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="rounded-lg border border-border bg-surface p-5 shadow-sm">
         <Banner variant="danger">Não foi possível carregar os horários de visita.</Banner>
       </section>
     );
@@ -87,7 +87,7 @@ export function VisitAvailabilitySection() {
   const algumAtivo = DIAS.some((d) => dias[d.weekday]?.ativo);
 
   return (
-    <section className="animate-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <section className="animate-rise rounded-lg border border-border bg-surface p-5 shadow-sm">
       <h2 className="text-label uppercase tracking-wide text-text-subtle">Horários de visita</h2>
       <p className="mt-1 text-body-sm text-text-muted">
         Nos dias marcados, o cliente agenda a visita sozinho pelo link da seleção, só em horário livre
@@ -142,7 +142,7 @@ export function VisitAvailabilitySection() {
       <div className="mt-4 grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
         <div>
           <span className="text-label text-text">Duração da visita</span>
-          <div className="mt-1.5 grid grid-cols-4 gap-1 rounded-xl bg-surface-sunken p-1">
+          <div className="mt-1.5 grid grid-cols-4 gap-1 rounded-lg bg-surface-sunken p-1">
             {DURACOES.map((min) => (
               <button
                 key={min}
@@ -160,7 +160,7 @@ export function VisitAvailabilitySection() {
         </div>
         <div>
           <span className="text-label text-text">Antecedência mínima</span>
-          <div className="mt-1.5 grid grid-cols-4 gap-1 rounded-xl bg-surface-sunken p-1">
+          <div className="mt-1.5 grid grid-cols-4 gap-1 rounded-lg bg-surface-sunken p-1">
             {[2, 6, 12, 24].map((h) => (
               <button
                 key={h}

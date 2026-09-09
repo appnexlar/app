@@ -243,7 +243,7 @@ export function SecaoDadosPessoais(props: SecaoProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm">
+      <div className="flex flex-col gap-4 rounded-lg bg-surface p-5 shadow-sm">
         <TextField
           label="Nome completo"
           value={valores.fullName ?? ""}
@@ -362,7 +362,7 @@ export function SecaoTrabalhoRenda(props: SecaoProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm">
+      <div className="flex flex-col gap-4 rounded-lg bg-surface p-5 shadow-sm">
         <Select
           label="Situação de trabalho"
           value={valores.situation ?? ""}
@@ -476,13 +476,13 @@ export function SecaoParticipantes(props: SecaoProps) {
     <>
       <div className="flex flex-col gap-4">
         {valores.participants.length === 0 && (
-          <div className="rounded-2xl bg-surface p-5 text-body-sm text-text-muted shadow-sm">
+          <div className="rounded-lg bg-surface p-5 text-body-sm text-text-muted shadow-sm">
             Alguém vai compor a renda com você, como cônjuge ou familiar? Se for financiar
             sozinho(a), é só concluir esta etapa.
           </div>
         )}
         {valores.participants.map((participante, i) => (
-          <div key={i} className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm">
+          <div key={i} className="flex flex-col gap-4 rounded-lg bg-surface p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <p className="text-label font-semibold text-text">Participante {i + 1}</p>
               <button
@@ -594,7 +594,7 @@ export function SecaoEntradaFgts(props: SecaoProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm">
+      <div className="flex flex-col gap-4 rounded-lg bg-surface p-5 shadow-sm">
         <CampoDinheiro
           label="Quanto você tem para dar de entrada"
           valor={valores.downPaymentAmount}
@@ -663,14 +663,14 @@ export function SecaoCompromissos(props: SecaoProps) {
     <>
       <div className="flex flex-col gap-4">
         {valores.commitments.length === 0 && (
-          <div className="rounded-2xl bg-surface p-5 text-body-sm text-text-muted shadow-sm">
+          <div className="rounded-lg bg-surface p-5 text-body-sm text-text-muted shadow-sm">
             Parcelas que você paga todo mês: financiamento de carro, empréstimo, consignado,
             pensão. Sem nada disso, é só concluir a etapa. Responder com sinceridade evita
             surpresa na análise do banco.
           </div>
         )}
         {valores.commitments.map((compromisso, i) => (
-          <div key={i} className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm">
+          <div key={i} className="flex flex-col gap-4 rounded-lg bg-surface p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <p className="text-label font-semibold text-text">Compromisso {i + 1}</p>
               <button
@@ -783,7 +783,7 @@ export function SecaoImovel(props: SecaoProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm">
+      <div className="flex flex-col gap-4 rounded-lg bg-surface p-5 shadow-sm">
         <CampoDinheiro
           label="Valor aproximado do imóvel"
           valor={valores.propertyValue}

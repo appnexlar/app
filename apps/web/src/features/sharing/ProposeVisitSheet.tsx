@@ -50,7 +50,7 @@ export function ProposeVisitSheet({
     <Modal open onClose={onClose} title={titulo}>
       <p className="text-body-sm text-text-muted">Como você quer combinar com o cliente?</p>
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-border">
+      <div className="mt-4 overflow-hidden rounded-lg border border-border">
         <Opcao onClick={abrirWhatsapp} icone={<WhatsAppGlyph className="h-5 w-5 text-[#25D366]" />}>
           Enviar pelo WhatsApp
         </Opcao>
@@ -79,7 +79,7 @@ export function ProposeVisitSheet({
 
       {/* A mensagem à vista: o corretor confere (e edita no destino) antes de
           mandar, em vez de descobrir o texto só dentro do WhatsApp. */}
-      <p className="mt-4 whitespace-pre-line rounded-xl bg-surface-sunken p-4 text-body-sm text-text-muted">
+      <p className="mt-4 whitespace-pre-line rounded-lg bg-surface-sunken p-4 text-body-sm text-text-muted">
         {mensagem}
       </p>
     </Modal>

@@ -104,9 +104,9 @@ export function PublicPropertiesPage() {
   if (consulta.isLoading) {
     return (
       <div className="mx-auto flex max-w-3xl flex-col gap-4" aria-busy="true">
-        <div className="h-24 animate-pulse rounded-2xl bg-surface-sunken" />
+        <div className="h-24 animate-pulse rounded-lg bg-surface-sunken" />
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-28 animate-pulse rounded-2xl bg-surface-sunken" />
+          <div key={i} className="h-28 animate-pulse rounded-lg bg-surface-sunken" />
         ))}
       </div>
     );
@@ -171,7 +171,7 @@ export function PublicPropertiesPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5">
       {/* Resumo: o corretor entende a situação da vitrine antes de agir. */}
-      <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+      <section className="rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
         <h2 className="text-h2 text-text">Imóveis da sua página</h2>
         <p className="mt-1 text-body-sm text-text-muted">
           Todo imóvel que você cadastra já entra aqui. Tire do ar o que não quiser divulgar.
@@ -210,7 +210,7 @@ export function PublicPropertiesPage() {
       {/* Carteira de antes da virada de padrão: os imóveis prontos ficaram
           fora do ar e ninguém vai abrir um por um. */}
       {summary.prontos > 0 && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-accent-soft bg-accent-soft p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <section className="flex flex-col gap-3 rounded-lg border border-accent-soft bg-accent-soft p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <div className="min-w-0">
             <p className="text-body-sm font-bold text-text">
               {summary.prontos === 1
@@ -237,7 +237,7 @@ export function PublicPropertiesPage() {
 
       {/* Destaques: só aparece quando já existe algo publicado. */}
       {(emDestaque.length > 0 || summary.publicados > 0) && (
-        <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+        <section className="rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h3 className="text-h3 text-text">Destaques</h3>
             <span className="text-caption text-text-subtle">
@@ -305,7 +305,7 @@ export function PublicPropertiesPage() {
 
       {/* Lista. */}
       {listados.length === 0 ? (
-        <p className="rounded-2xl border border-border bg-surface px-5 py-8 text-center text-body-sm text-text-muted">
+        <p className="rounded-lg border border-border bg-surface px-5 py-8 text-center text-body-sm text-text-muted">
           Nenhum imóvel encontrado com esse filtro.
         </p>
       ) : (
@@ -414,7 +414,7 @@ function CartaoImovel({
   const local = [item.neighborhood, item.city].filter(Boolean).join(", ");
 
   return (
-    <li className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+    <li className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
       <div className="flex gap-3 p-3 sm:p-4">
         {/* Capa. */}
         <div className="h-20 w-20 flex-none overflow-hidden rounded-md bg-surface-sunken sm:h-24 sm:w-24">
