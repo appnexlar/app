@@ -31,6 +31,7 @@ import {
   type CreateClientDto,
   type LeadSummary,
   type ListClientsQuery,
+  type ConsentSummary,
   type ParticipantSummary,
   type RequestDeletionDto,
   type UpdateClientFinancialDto,
@@ -120,6 +121,18 @@ export class ClientsController {
     @Body(new ZodValidationPipe(updateClientFinancialSchema)) dto: UpdateClientFinancialDto,
   ): Promise<ClientFinancialData> {
     return this.clients.updateFinancial(brokerId, id, dto);
+  }
+
+  @Post(":id/consent")
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: "Registra a ciência da pessoa sobre a coleta de dados adicionais (LGPD). Idempotente.",
+  })
+  registerConsent(
+    @CurrentBroker("brokerId") brokerId: string,
+    @Param("id", LeadRefPipe) id: string,
+  ): Promise<ConsentSummary> {
+    return this.clients.registerConsent(brokerId, id);
   }
 
   @Post(":id/participants")

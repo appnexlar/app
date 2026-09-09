@@ -88,7 +88,8 @@ export function ProfileFormModal({
   const mutation = useMutation({
     mutationFn: () => updateClientProfile(clientId, form as UpdateClientProfileDto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client", clientId] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       onClose();
     },
     onError: (err) =>
@@ -204,7 +205,8 @@ export function NegotiationFormModal({
       return updateClientNegotiation(clientId, dto);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client", clientId] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       onClose();
     },
     onError: (err) =>
@@ -317,7 +319,8 @@ export function FinancialFormModal({
       return updateClientFinancial(clientId, dto);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client", clientId] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       onClose();
     },
     onError: (err) =>

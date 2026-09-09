@@ -18,9 +18,15 @@ import { RELATION_LABELS, maskCpf } from "./labels";
 export function ParticipantsSection({
   clientId,
   participants,
+  onBeforeAdd,
 }: {
   clientId: string;
   participants: ParticipantSummary[];
+  /**
+   * Porta de entrada do primeiro dado pessoal de terceiro: a ficha pode
+   * pedir a ciência da coleta antes de abrir o formulário (etapa 5).
+   */
+  onBeforeAdd?: (abrir: () => void) => void;
 }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<{ mode: "add" | "edit"; participant?: ParticipantSummary } | null>(
@@ -31,7 +37,8 @@ export function ParticipantsSection({
   const remove = useMutation({
     mutationFn: (participantId: string) => removeParticipant(clientId, participantId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client", clientId] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       setRemoveTarget(null);
     },
   });
@@ -40,7 +47,7 @@ export function ParticipantsSection({
     <section id="participantes" className="animate-rise scroll-mt-20 rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-label uppercase tracking-wide text-text-subtle">Participantes</h2>
-        <Button type="button" variant="ghost" className="!min-h-9 !px-3.5 text-body-sm" onClick={() => setForm({ mode: "add" })}>
+        <Button type="button" variant="ghost" className="!min-h-9 !px-3.5 text-body-sm" onClick={() => (onBeforeAdd ? onBeforeAdd(() => setForm({ mode: "add" })) : setForm({ mode: "add" }))}>
           Adicionar
         </Button>
       </div>
@@ -136,7 +143,8 @@ function ParticipantFormModal({
         : addParticipant(clientId, dto);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client", clientId] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       onClose();
     },
     onError: (err) =>

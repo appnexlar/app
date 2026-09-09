@@ -32,7 +32,8 @@ export function DeletionDialog({
       return requestDeletion(clientId, dto);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client", clientId] });
+      // A ficha é consultada por ["lead", código]; o prefixo alcança a chave certa.
+      queryClient.invalidateQueries({ queryKey: ["lead"] });
       onClose();
     },
     onError: (err) =>

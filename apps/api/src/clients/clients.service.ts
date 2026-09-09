@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import type {
   ClientDetail,
+  ConsentSummary,
   CreateClientDto,
   ClientFinancialData,
   ClientNegotiationData,
@@ -211,6 +212,7 @@ export class ClientsService {
     dto: UpdateClientFinancialDto,
   ): Promise<ClientFinancialData> {
     await this.assertClient(brokerId, id);
+    await this.assertConsent(brokerId, id);
     const data = {
       incomeType: dto.incomeType,
       monthlyIncome: dto.monthlyIncome != null ? new Prisma.Decimal(dto.monthlyIncome) : null,
@@ -249,6 +251,7 @@ export class ClientsService {
     dto: UpsertParticipantDto,
   ): Promise<ParticipantSummary> {
     await this.assertClient(brokerId, id);
+    await this.assertConsent(brokerId, id);
     const created = await this.prisma.$transaction(async (tx) => {
       const p = await tx.clientParticipant.create({
         data: {
@@ -283,6 +286,7 @@ export class ClientsService {
     dto: UpsertParticipantDto,
   ): Promise<ParticipantSummary> {
     await this.assertClient(brokerId, id);
+    await this.assertConsent(brokerId, id);
     const existing = await this.prisma.clientParticipant.findFirst({
       where: { id: participantId, leadId: id, brokerId },
     });
@@ -347,6 +351,7 @@ export class ClientsService {
     dto: UpdateClientProfileDto,
   ): Promise<ClientProfileData> {
     await this.assertClient(brokerId, id);
+    await this.assertConsent(brokerId, id);
     const data = {
       cpf: dto.cpf,
       rg: dto.rg,
@@ -418,12 +423,80 @@ export class ClientsService {
     return this.toNegotiationData(negotiation);
   }
 
+  /**
+   * Entidade única (set 2026): os dados complementares valem para qualquer
+   * pessoa do corretor, em qualquer etapa. A etapa nunca bloqueia a coleta.
+   */
   private async assertClient(brokerId: string, id: string): Promise<void> {
     const client = await this.prisma.lead.findFirst({
-      where: { id, brokerId, isClient: true },
+      where: { id, brokerId },
       select: { id: true },
     });
     if (!client) throw new NotFoundException("Cliente não encontrado.");
+  }
+
+  /**
+   * Dado pessoal ou financeiro só entra depois da ciência da pessoa sobre a
+   * coleta (LGPD). A ciência é registrada uma vez, pelo corretor, e vale para
+   * a ficha inteira. Sem ela a API recusa com 409 e um código que o front
+   * entende para abrir o registro antes do formulário.
+   */
+  private async assertConsent(brokerId: string, id: string): Promise<void> {
+    const consent = await this.prisma.consent.findFirst({
+      where: { brokerId, leadId: id, purpose: "coleta_dados_adicionais" },
+      select: { id: true },
+    });
+    if (!consent) {
+      throw new ConflictException({
+        message: "Antes de guardar dados pessoais, registre a ciência da pessoa sobre a coleta.",
+        details: { code: "consent_required" },
+      });
+    }
+  }
+
+  /**
+   * Registra a ciência da coleta de dados adicionais. Idempotente: a segunda
+   * chamada devolve o registro que já existe, sem duplicar nem reescrever a
+   * data. Se a pessoa já tem fechamento, o fechamento passa a refletir isso.
+   */
+  async registerConsent(brokerId: string, id: string): Promise<ConsentSummary> {
+    await this.assertClient(brokerId, id);
+    const existente = await this.prisma.consent.findFirst({
+      where: { brokerId, leadId: id, purpose: "coleta_dados_adicionais" },
+      orderBy: { acceptedAt: "asc" },
+    });
+    if (existente) return this.toConsentSummary(existente);
+
+    const criado = await this.prisma.$transaction(async (tx) => {
+      const consent = await tx.consent.create({
+        data: { brokerId, leadId: id, purpose: "coleta_dados_adicionais", textVersion: CONSENT_VERSION },
+      });
+      await tx.conversion.updateMany({ where: { leadId: id, brokerId }, data: { consentGiven: true } });
+      await tx.leadActivity.create({
+        data: {
+          brokerId,
+          leadId: id,
+          type: "nota",
+          description: "Ciência da coleta de dados registrada",
+          metadata: { kind: "consentimento", textVersion: CONSENT_VERSION },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          brokerId,
+          action: "consentimento_registrado",
+          entityType: "consent",
+          entityId: consent.id,
+          metadata: { leadId: id, purpose: "coleta_dados_adicionais", textVersion: CONSENT_VERSION },
+        },
+      });
+      return consent;
+    });
+    return this.toConsentSummary(criado);
+  }
+
+  private toConsentSummary(c: { id: string; purpose: string; textVersion: string; acceptedAt: Date }): ConsentSummary {
+    return { id: c.id, purpose: c.purpose, textVersion: c.textVersion, acceptedAt: c.acceptedAt.toISOString() };
   }
 
   private toProfileData(p: ClientProfile): ClientProfileData {

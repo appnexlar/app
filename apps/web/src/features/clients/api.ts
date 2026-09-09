@@ -4,6 +4,7 @@ import type {
   ClientNegotiationData,
   ClientProfileData,
   ClientSummary,
+  ConsentSummary,
   ConvertLeadDto,
   CreateClientDto,
   DeletionRequestSummary,
@@ -78,6 +79,11 @@ export function updateParticipant(
 
 export function removeParticipant(id: string, participantId: string): Promise<void> {
   return http.delete<void>(`/clients/${id}/participants/${participantId}`);
+}
+
+/** Registra a ciência da coleta de dados adicionais (LGPD). Idempotente. */
+export function registerConsent(id: string): Promise<ConsentSummary> {
+  return http.post<ConsentSummary>(`/clients/${id}/consent`, {});
 }
 
 export function requestDeletion(id: string, dto: RequestDeletionDto): Promise<DeletionRequestSummary> {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MoreHorizontal } from "lucide-react";
 import type { LeadActivitySummary, LeadDetail } from "@nexlar/shared";
@@ -17,7 +17,7 @@ import { ClientDataSections } from "../clients/ClientDataSections";
 import { FinancingBlock } from "../financing/FinancingBlock";
 import { SendFromLeadModal } from "../sharing/SendFromLeadModal";
 import { StageDialog } from "../funnel/StageDialog";
-import { clientPath, isUuid, leadPath, useCanonicalPath } from "../../lib/routes";
+import { isUuid, leadPath, useCanonicalPath } from "../../lib/routes";
 import { deleteLead, fetchLead } from "./api";
 import {
   ACTIVITY_CATEGORY,
@@ -100,10 +100,6 @@ export function LeadDetailPage() {
   }
 
   const lead = query.data;
-
-  // Pessoa convertida vive na área Clientes: link antigo de lead cai na ficha
-  // do cliente (mesma pessoa, outra fase da jornada).
-  if (lead.isClient) return <Navigate to={clientPath(lead.code)} replace />;
 
   const lastActivity = lead.activities[0]?.createdAt ?? lead.lastContactAt ?? lead.createdAt;
   const meta = [
