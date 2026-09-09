@@ -139,7 +139,7 @@ describe("Nextlar Admin: fundação", () => {
     // Admin batendo em rota do corretor: o guard global recusa igual.
     const voltando = await app.inject({
       method: "GET",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: { authorization: `Bearer ${adminToken}` },
     });
     expect(voltando.statusCode).toBe(401);

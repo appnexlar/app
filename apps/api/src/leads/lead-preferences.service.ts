@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import type { LeadPreferenceView, UpsertLeadPreferenceDto } from "@nexlar/shared";
 import type { LeadPreference } from "@prisma/client";
-import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { ProductEventService } from "../guidance/product-event.service";
 
@@ -11,9 +10,8 @@ import { ProductEventService } from "../guidance/product-event.service";
  * pessoa; salvar substitui o conjunto inteiro (a tela edita tudo junto).
  *
  * Desde a unificação (set 2026) este é o único lugar das preferências: o
- * cadastro rápido grava aqui, a ficha edita aqui. Região e faixa de preço
- * ainda são espelhadas nas colunas antigas de lead até a etapa que as remove,
- * para que lista e funil continuem lendo o que sempre leram.
+ * cadastro rápido grava aqui, a ficha edita aqui, e a lista e o funil leem
+ * daqui. As colunas antigas de lead saíram na etapa 7.
  *
  * Nada aqui é obrigatório: perfil incompleto orienta, nunca bloqueia.
  */
@@ -61,15 +59,6 @@ export class LeadPreferencesService {
         where: { leadId },
         create: { brokerId, leadId, ...data },
         update: data,
-      });
-      // Espelho nas colunas antigas (ver comentário da classe).
-      await tx.lead.update({
-        where: { id: leadId },
-        data: {
-          region: data.region,
-          budgetMin: data.priceMin != null ? new Prisma.Decimal(data.priceMin) : null,
-          budgetMax: data.priceMax != null ? new Prisma.Decimal(data.priceMax) : null,
-        },
       });
       await tx.leadActivity.create({
         data: {

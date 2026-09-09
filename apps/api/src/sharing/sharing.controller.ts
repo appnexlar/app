@@ -44,7 +44,7 @@ export class SharingController {
     return this.sharing.listForProperty(brokerId, propertyId);
   }
 
-  @Get("leads/:id/shares")
+  @Get("clients/:id/shares")
   @ApiBearerAuth()
   @ApiOperation({ summary: "Imóveis enviados para este cliente" })
   listForLead(

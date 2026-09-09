@@ -47,11 +47,11 @@ describe("Cadastro de cliente (entidade única)", () => {
     expect(res.json().status).toBe("novo");
     expect(res.json().isClient).toBe(false);
 
-    // Aparece na lista única e também na rota antiga de leads (apelido).
+    // Aparece na lista única, e o filtro de abertos também a traz.
     const lista = await requestAs(app, ana, { method: "GET", url: "/api/clients" });
     expect(lista.json()).toHaveLength(1);
-    const antiga = await requestAs(app, ana, { method: "GET", url: "/api/leads" });
-    expect(antiga.json()).toHaveLength(1);
+    const abertos = await requestAs(app, ana, { method: "GET", url: "/api/clients?fechados=false" });
+    expect(abertos.json()).toHaveLength(1);
   });
 
   it("aceita o formato do formulário anterior (phone no lugar de whatsapp)", async () => {
@@ -94,9 +94,9 @@ describe("Cadastro de cliente (entidade única)", () => {
     const consentimento = await prisma.consent.findFirst({ where: { brokerId: ana.brokerId } });
     expect(consentimento?.purpose).toBe("coleta_dados_adicionais");
 
-    // Fechado sai da rota antiga de leads e entra no filtro de fechados.
-    const antiga = await requestAs(app, ana, { method: "GET", url: "/api/leads" });
-    expect(antiga.json()).toHaveLength(0);
+    // Fechado sai do filtro de abertos e entra no de fechados.
+    const abertos = await requestAs(app, ana, { method: "GET", url: "/api/clients?fechados=false" });
+    expect(abertos.json()).toHaveLength(0);
     const fechados = await requestAs(app, ana, { method: "GET", url: "/api/clients?fechados=true" });
     expect(fechados.json()).toHaveLength(1);
   });

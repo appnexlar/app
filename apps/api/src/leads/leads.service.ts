@@ -6,17 +6,23 @@ import {
 } from "@nestjs/common";
 import type {
   ChangeLeadStatusDto,
-  ConvertLeadDto,
   CreateLeadDto,
   LeadDetail,
   LeadSummary,
 } from "@nexlar/shared";
 import { CONSENT_VERSION } from "@nexlar/shared";
 import { STATUS_LABELS } from "./status-labels";
-import { Prisma, type Lead, type LeadActivity } from "@prisma/client";
+import { Prisma, type Lead, type LeadActivity, type LeadPreference } from "@prisma/client";
 import type { ClientPurpose, ConversionNextStep, ConversionReason } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { ProductEventService } from "../guidance/product-event.service";
+
+/**
+ * Pessoa com as preferências carregadas. Desde a etapa 7 (set 2026) região e
+ * faixa de valor vêm SÓ de lead_preference: as colunas antigas de lead saem
+ * numa migration depois deste deploy.
+ */
+type LeadComPreferencia = Lead & { preference?: LeadPreference | null };
 
 /** Uma lead "tem preferências" quando traz ao menos um critério de busca. */
 function temPreferencias(dados: {
@@ -50,6 +56,7 @@ export class LeadsService {
     const existing = await this.prisma.lead.findFirst({
       where: { brokerId, whatsapp: dto.whatsapp },
       orderBy: { createdAt: "desc" },
+      include: { preference: true },
     });
     if (existing) {
       throw new ConflictException({
@@ -68,16 +75,11 @@ export class LeadsService {
           source: dto.source,
           intent: dto.intent,
           audience: dto.audience,
-          region: dto.region,
-          budgetMin: dto.budgetMin != null ? new Prisma.Decimal(dto.budgetMin) : undefined,
-          budgetMax: dto.budgetMax != null ? new Prisma.Decimal(dto.budgetMax) : undefined,
           notes: dto.notes,
         },
       });
-      // Região e faixa do cadastro rápido nascem já como preferência
-      // (entidade única, set 2026): é o mesmo registro que a ficha edita e
-      // que a seleção personalizada usa para filtrar. As colunas antigas de
-      // lead continuam recebendo o espelho até a etapa que as remove.
+      // Região e faixa do cadastro rápido viram preferência: é o mesmo
+      // registro que a ficha edita e que a seleção usa para filtrar.
       if (dto.region || dto.budgetMin != null || dto.budgetMax != null) {
         await tx.leadPreference.create({
           data: {
@@ -118,25 +120,10 @@ export class LeadsService {
     return this.toSummary(lead);
   }
 
-  /**
-   * Lista só quem ainda é lead. Quem converteu vive na área Clientes: a pessoa
-   * é a mesma no banco (2.16), mas a experiência separa as duas fases.
-   */
-  async list(brokerId: string, opts: { apenasAbertos?: boolean } = {}): Promise<LeadSummary[]> {
-    // Entidade única (set 2026): a lista é de todo mundo. O recorte
-    // "apenasAbertos" existe para a rota antiga /leads continuar devolvendo
-    // o que sempre devolveu enquanto o front não muda.
-    const leads = await this.prisma.lead.findMany({
-      where: { brokerId, ...(opts.apenasAbertos ? { isClient: false } : {}) },
-      orderBy: { createdAt: "desc" },
-    });
-    return leads.map((lead) => this.toSummary(lead));
-  }
-
   async findOne(brokerId: string, id: string): Promise<LeadDetail> {
     const lead = await this.prisma.lead.findFirst({
       where: { id, brokerId },
-      include: { activities: { orderBy: { createdAt: "desc" }, take: 50 } },
+      include: { activities: { orderBy: { createdAt: "desc" }, take: 50 }, preference: true },
     });
     if (!lead) throw new NotFoundException("Cliente não encontrado.");
     return this.toDetail(lead);
@@ -144,9 +131,8 @@ export class LeadsService {
 
   /**
    * Muda a etapa da lead no funil e registra na timeline. Regras de negócio
-   * (docs/02 §2.9, LEAD-08, LEAD-13) moram aqui, nunca no front:
-   * - "fechado" é recusada: só a ação explícita de conversão
-   *   chega lá (mudar etapa nunca converte).
+   * (docs/02 §2.9, LEAD-08) moram aqui, nunca no front:
+   * - "fechado" grava o registro do fechamento na mesma transação.
    * - "perdida" exige motivo (lostReason).
    * - "reativar_futuro" exige data futura e cria a tarefa de reativação.
    */
@@ -155,7 +141,10 @@ export class LeadsService {
     id: string,
     dto: ChangeLeadStatusDto,
   ): Promise<LeadSummary> {
-    const lead = await this.prisma.lead.findFirst({ where: { id, brokerId } });
+    const lead = await this.prisma.lead.findFirst({
+      where: { id, brokerId },
+      include: { preference: true },
+    });
     if (!lead) throw new NotFoundException("Cliente não encontrado.");
     if (lead.status === dto.status) return this.toSummary(lead);
 
@@ -200,6 +189,7 @@ export class LeadsService {
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const next = await tx.lead.update({
+        include: { preference: true },
         where: { id },
         data: {
           status: dto.status,
@@ -215,7 +205,7 @@ export class LeadsService {
           type: "mudanca_status",
           description:
             dto.status === "perdida"
-              ? `Lead marcada como perdida: ${dto.lostReason}`
+              ? `Cliente marcado como perdido: ${dto.lostReason}`
               : `Etapa alterada de ${STATUS_LABELS[lead.status]} para ${STATUS_LABELS[dto.status]}`,
           metadata: { from: lead.status, to: dto.status },
         },
@@ -250,41 +240,7 @@ export class LeadsService {
     return this.toSummary(updated);
   }
 
-  /**
-   * Conversão consciente de lead em cliente (docs/02 §2.16, LEAD-13). É a MESMA
-   * pessoa: não duplica o cadastro, preserva toda a jornada (timeline, imóveis
-   * enviados, visitas, tarefas). Só esta rota converte; mudar status nunca.
-   * Tudo em uma transação: sem conversão parcial. Registra consentimento LGPD e
-   * trilha de auditoria (sem dados sensíveis).
-   */
-  async convert(brokerId: string, id: string, dto: ConvertLeadDto): Promise<LeadSummary> {
-    const lead = await this.prisma.lead.findFirst({ where: { id, brokerId } });
-    if (!lead) throw new NotFoundException("Cliente não encontrado.");
-    if (lead.isClient) {
-      throw new ConflictException("Esta pessoa já é cliente.");
-    }
-    if (dto.reason === "outro" && !dto.reasonDetail) {
-      throw new BadRequestException("Descreva o motivo da conversão.");
-    }
-    if (dto.propertyId) {
-      const property = await this.prisma.property.findFirst({
-        where: { id: dto.propertyId, brokerId },
-      });
-      if (!property) throw new NotFoundException("Imóvel não encontrado.");
-    }
 
-    const updated = await this.prisma.$transaction((tx) =>
-      this.fecharNegocio(tx, brokerId, lead, {
-        reason: dto.reason,
-        reasonDetail: dto.reason === "outro" ? (dto.reasonDetail ?? null) : null,
-        nextStep: dto.nextStep,
-        purpose: dto.purpose,
-        propertyId: dto.propertyId ?? null,
-        consentGiven: dto.consent,
-      }),
-    );
-    return this.toSummary(updated);
-  }
 
   /**
    * O fechamento do negócio, numa transação só: marca a pessoa, grava o
@@ -304,9 +260,10 @@ export class LeadsService {
       propertyId: string | null;
       consentGiven: boolean;
     },
-  ): Promise<Lead> {
+  ): Promise<LeadComPreferencia> {
     const agora = new Date();
     const next = await tx.lead.update({
+      include: { preference: true },
       where: { id: lead.id },
       data: { isClient: true, convertedAt: agora, status: "fechado", lastContactAt: agora },
     });
@@ -370,7 +327,7 @@ export class LeadsService {
     await this.prisma.lead.delete({ where: { id } });
   }
 
-  private toSummary(lead: Lead): LeadSummary {
+  private toSummary(lead: LeadComPreferencia): LeadSummary {
     return {
       id: lead.id,
       code: lead.code,
@@ -381,22 +338,20 @@ export class LeadsService {
       convertedAt: lead.convertedAt?.toISOString() ?? null,
       source: lead.source,
       intent: lead.intent,
-      region: lead.region,
-      budgetMin: lead.budgetMin != null ? Number(lead.budgetMin) : null,
-      budgetMax: lead.budgetMax != null ? Number(lead.budgetMax) : null,
+      region: lead.preference?.region ?? null,
+      budgetMin: lead.preference?.priceMin != null ? Number(lead.preference.priceMin) : null,
+      budgetMax: lead.preference?.priceMax != null ? Number(lead.preference.priceMax) : null,
       nextActionAt: lead.nextActionAt?.toISOString() ?? null,
       lastContactAt: lead.lastContactAt?.toISOString() ?? null,
       createdAt: lead.createdAt.toISOString(),
     };
   }
 
-  private toDetail(lead: Lead & { activities: LeadActivity[] }): LeadDetail {
+  private toDetail(lead: LeadComPreferencia & { activities: LeadActivity[] }): LeadDetail {
     return {
       ...this.toSummary(lead),
       email: lead.email,
       audience: lead.audience,
-      budgetMin: lead.budgetMin != null ? Number(lead.budgetMin) : null,
-      budgetMax: lead.budgetMax != null ? Number(lead.budgetMax) : null,
       notes: lead.notes,
       lastContactAt: lead.lastContactAt?.toISOString() ?? null,
       updatedAt: lead.updatedAt.toISOString(),

@@ -304,7 +304,7 @@ describe("Seleções personalizadas: fundação", () => {
     });
     expect(renovar.statusCode).toBe(400);
 
-    const historico = await requestAs(app, ana, { method: "GET", url: `/api/leads/${leadId}/selections` });
+    const historico = await requestAs(app, ana, { method: "GET", url: `/api/clients/${leadId}/selections` });
     expect(historico.statusCode).toBe(200);
     const linhas = historico.json() as SelectionSummary[];
     expect(linhas).toHaveLength(1);
@@ -342,7 +342,7 @@ describe("Seleções personalizadas: fundação", () => {
     expect(roubo.statusCode).toBe(404);
 
     // Bruno não lê nem escreve preferências da lead da Ana.
-    const lerPref = await requestAs(app, bruno, { method: "GET", url: `/api/leads/${leadDaAna}/preferences` });
+    const lerPref = await requestAs(app, bruno, { method: "GET", url: `/api/clients/${leadDaAna}/preferences` });
     expect(lerPref.statusCode).toBe(404);
   });
 
@@ -351,21 +351,21 @@ describe("Seleções personalizadas: fundação", () => {
     const leadId = await criarLead(ana);
 
     // Sem preferências ainda: nulo, não erro.
-    const vazio = await requestAs(app, ana, { method: "GET", url: `/api/leads/${leadId}/preferences` });
+    const vazio = await requestAs(app, ana, { method: "GET", url: `/api/clients/${leadId}/preferences` });
     expect(vazio.statusCode).toBe(200);
     expect(vazio.body === "" || vazio.body === "null").toBe(true);
 
     // Faixa invertida: barrada pelo schema.
     const invertida = await requestAs(app, ana, {
       method: "PUT",
-      url: `/api/leads/${leadId}/preferences`,
+      url: `/api/clients/${leadId}/preferences`,
       payload: { priceMin: 500_000, priceMax: 300_000 },
     });
     expect(invertida.statusCode).toBe(400);
 
     const salvar = await requestAs(app, ana, {
       method: "PUT",
-      url: `/api/leads/${leadId}/preferences`,
+      url: `/api/clients/${leadId}/preferences`,
       payload: {
         purpose: "venda",
         cities: ["São Paulo"],
@@ -384,7 +384,7 @@ describe("Seleções personalizadas: fundação", () => {
     // Salvar de novo substitui: o que não veio, zera.
     const substituir = await requestAs(app, ana, {
       method: "PUT",
-      url: `/api/leads/${leadId}/preferences`,
+      url: `/api/clients/${leadId}/preferences`,
       payload: { purpose: "locacao", priceMax: 3_000 },
     });
     const depois = substituir.json() as LeadPreferenceView;
@@ -401,7 +401,7 @@ describe("Seleções personalizadas: fundação", () => {
     const leadId = await criarLead(ana);
     await requestAs(app, ana, {
       method: "PUT",
-      url: `/api/leads/${leadId}/preferences`,
+      url: `/api/clients/${leadId}/preferences`,
       payload: { purpose: "venda", priceMax: 500_000, neighborhoods: ["Moema"], bedroomsMin: 2 },
     });
 
@@ -576,7 +576,7 @@ describe("Seleções personalizadas: fundação", () => {
 
     const leadPorCodigo = await requestAs(app, ana, {
       method: "GET",
-      url: `/api/leads/${lead.code}`,
+      url: `/api/clients/${lead.code}`,
     });
     expect(leadPorCodigo.statusCode).toBe(200);
 
@@ -590,7 +590,7 @@ describe("Seleções personalizadas: fundação", () => {
 
     const invasaoLead = await requestAs(app, bruno, {
       method: "GET",
-      url: `/api/leads/${lead.code}`,
+      url: `/api/clients/${lead.code}`,
     });
     expect(invasaoLead.statusCode).toBe(404);
 

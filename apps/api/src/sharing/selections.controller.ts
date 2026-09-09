@@ -77,7 +77,7 @@ export class SelectionsController {
     return this.selections.get(brokerId, id);
   }
 
-  @Get("leads/:id/selections")
+  @Get("clients/:id/selections")
   @ApiOperation({ summary: "Histórico de seleções do cliente" })
   listForLead(
     @CurrentBroker("brokerId") brokerId: string,

@@ -47,18 +47,10 @@ export class GuidanceContextBuilder {
         select: { phone: true, creci: true, agencyName: true, avatarUrl: true },
       }),
       this.prisma.lead.count({ where: { brokerId } }),
-      // Sem preferências = nada anotado nem no cadastro rápido nem na ficha
-      // (entidade única, set 2026: as preferências vivem em lead_preference).
+      // Sem preferências = nada anotado, nem o registro de preferência nem
+      // os campos soltos do cadastro rápido (entidade única, set 2026).
       this.prisma.lead.count({
-        where: {
-          brokerId,
-          preference: null,
-          intent: null,
-          audience: null,
-          region: null,
-          budgetMin: null,
-          budgetMax: null,
-        },
+        where: { brokerId, preference: null, intent: null, audience: null },
       }),
       this.prisma.property.count({ where: { brokerId } }),
       this.prisma.selectionItem.count({ where: { brokerId } }),

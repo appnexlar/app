@@ -194,7 +194,7 @@ describe("Nextlar Admin: dashboard", () => {
     const corretora = await registerBroker(app, "Ana Corretora", "ana@example.com");
     await app.inject({
       method: "POST",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: { authorization: `Bearer ${corretora.accessToken}` },
       payload: { fullName: "Lead Sigilosa", whatsapp: "11999998888" },
     });

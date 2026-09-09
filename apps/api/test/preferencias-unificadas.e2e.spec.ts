@@ -45,7 +45,7 @@ describe("Preferências unificadas", () => {
       budgetMax: 500000,
     });
 
-    const pref = await requestAs(app, ana, { method: "GET", url: `/api/leads/${c.id}/preferences` });
+    const pref = await requestAs(app, ana, { method: "GET", url: `/api/clients/${c.id}/preferences` });
     expect(pref.statusCode).toBe(200);
     expect(pref.json()).toMatchObject({
       region: "Zona sul, perto do metrô",
@@ -61,7 +61,7 @@ describe("Preferências unificadas", () => {
   it("cadastro sem nenhum critério não cria preferência vazia", async () => {
     const c = await criarCliente(app, ana, { fullName: "Sem Nada" });
     expect(await prisma.leadPreference.count({ where: { leadId: c.id } })).toBe(0);
-    const pref = await requestAs(app, ana, { method: "GET", url: `/api/leads/${c.id}/preferences` });
+    const pref = await requestAs(app, ana, { method: "GET", url: `/api/clients/${c.id}/preferences` });
     expect(pref.json()).toBeNull();
   });
 
@@ -77,7 +77,7 @@ describe("Preferências unificadas", () => {
 
     const salvo = await requestAs(app, ana, {
       method: "PUT",
-      url: `/api/leads/${c.id}/preferences`,
+      url: `/api/clients/${c.id}/preferences`,
       payload: { region: "Moema", priceMin: 500000, priceMax: 800000, bedroomsMin: 2 },
     });
     expect(salvo.statusCode).toBe(200);
@@ -89,7 +89,7 @@ describe("Preferências unificadas", () => {
     // Limpar a região na ficha limpa no resumo também: nunca dois valores.
     await requestAs(app, ana, {
       method: "PUT",
-      url: `/api/leads/${c.id}/preferences`,
+      url: `/api/clients/${c.id}/preferences`,
       payload: { bedroomsMin: 2 },
     });
     const depois = await requestAs(app, ana, { method: "GET", url: `/api/clients/${c.id}` });
@@ -106,7 +106,7 @@ describe("Preferências unificadas", () => {
 
     await requestAs(app, ana, {
       method: "PUT",
-      url: `/api/leads/${c.id}/preferences`,
+      url: `/api/clients/${c.id}/preferences`,
       payload: { cities: ["São Paulo"] },
     });
 
@@ -119,11 +119,11 @@ describe("Preferências unificadas", () => {
   it("outro corretor não lê nem grava as preferências", async () => {
     const bruno = await registerBroker(app, "Bruno", "bruno@teste.com");
     const c = await criarCliente(app, ana, { region: "Centro" });
-    const leitura = await requestAs(app, bruno, { method: "GET", url: `/api/leads/${c.id}/preferences` });
+    const leitura = await requestAs(app, bruno, { method: "GET", url: `/api/clients/${c.id}/preferences` });
     expect(leitura.statusCode).toBe(404);
     const escrita = await requestAs(app, bruno, {
       method: "PUT",
-      url: `/api/leads/${c.id}/preferences`,
+      url: `/api/clients/${c.id}/preferences`,
       payload: { region: "Invasão" },
     });
     expect(escrita.statusCode).toBe(404);

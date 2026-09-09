@@ -417,7 +417,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
 
     const leads = await app.inject({
       method: "GET",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: { authorization: `Bearer ${sessao.tokens.accessToken}` },
     });
     expect(leads.statusCode).toBe(403);
@@ -433,7 +433,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
 
     const leads = await app.inject({
       method: "GET",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: { authorization: `Bearer ${sessao.tokens.accessToken}` },
     });
     expect(leads.statusCode).toBe(200);
@@ -505,7 +505,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
     // Rota privada cai na hora, sem esperar o token vencer.
     const leads = await app.inject({
       method: "GET",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: { authorization: `Bearer ${sessao.tokens.accessToken}` },
     });
     expect(leads.statusCode).toBe(403);
@@ -567,7 +567,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
     // Sem CRECI o corretor usa o sistema inteiro: o selo é prêmio, não pedágio.
     const leads = await app.inject({
       method: "GET",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: { authorization: `Bearer ${sessao.tokens.accessToken}` },
     });
     expect(leads.statusCode).toBe(200);
@@ -628,7 +628,7 @@ describe("Autenticação: tentativas, logout e recuperação de senha", () => {
 
     const lead = await app.inject({
       method: "POST",
-      url: "/api/leads",
+      url: "/api/clients",
       headers: auth,
       payload: { fullName: "Lead do selo", whatsapp: "11966660001" },
     });

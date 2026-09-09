@@ -16,7 +16,6 @@ import { PrismaService } from "../src/prisma/prisma.service";
  * "Fechado" deixou de ser uma etapa proibida à mudança de status. Chegar nela
  * pelo funil grava o mesmo que a antiga conversão gravava: a marca na pessoa,
  * o registro do fechamento, a timeline, a auditoria e o marco do checklist.
- * A rota antiga de conversão continua como apelido, com os detalhes a mais.
  */
 describe("Fechar o negócio", () => {
   let app: NestFastifyApplication;
@@ -65,25 +64,6 @@ describe("Fechar o negócio", () => {
       where: { brokerId: ana.brokerId, type: "FIRST_LEAD_CONVERTED" },
     });
     expect(marco).not.toBeNull();
-  });
-
-  it("fechar pela rota antiga de conversão continua funcionando, com os detalhes", async () => {
-    const c = await criarCliente(app, ana);
-    const res = await requestAs(app, ana, {
-      method: "POST",
-      url: `/api/leads/${c.id}/convert`,
-      payload: {
-        reason: "preparacao_proposta",
-        nextStep: "preparar_proposta",
-        purpose: "compra",
-        consent: true,
-      },
-    });
-    expect(res.statusCode).toBe(201);
-    const conversao = await prisma.conversion.findUniqueOrThrow({ where: { leadId: c.id } });
-    expect(conversao.reason).toBe("preparacao_proposta");
-    expect(conversao.consentGiven).toBe(true);
-    expect(await prisma.consent.count({ where: { leadId: c.id } })).toBe(1);
   });
 
   it("fechar de novo quem já fechou não duplica o fechamento", async () => {
