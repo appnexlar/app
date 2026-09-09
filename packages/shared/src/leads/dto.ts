@@ -56,6 +56,7 @@ export const FUNNEL_GROUPS = [
   "atendimento",
   "imoveis_enviados",
   "visitas",
+  "negociacao",
   "clientes",
 ] as const;
 export type FunnelGroup = (typeof FUNNEL_GROUPS)[number] | "encerradas";
@@ -71,8 +72,8 @@ export const FUNNEL_GROUP_BY_STATUS: Record<LeadStatus, FunnelGroup> = {
   visita_solicitada: "visitas",
   visita_agendada: "visitas",
   visitando_imoveis: "visitas",
-  imovel_prioritario: "visitas",
-  aguardando_decisao: "visitas",
+  imovel_prioritario: "negociacao",
+  aguardando_decisao: "negociacao",
   fechado: "clientes",
   perdida: "encerradas",
   reativar_futuro: "encerradas",

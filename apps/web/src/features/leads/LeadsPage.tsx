@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { LeadSummary } from "@nexlar/shared";
 import { Button } from "../../components/ui/Button";
@@ -58,7 +58,12 @@ export function LeadsPage() {
   usePageAction("Novo cliente", openNewLead);
   const query = useQuery({ queryKey: ["leads"], queryFn: fetchLeads });
   const [termo, setTermo] = useState("");
-  const [faixa, setFaixa] = useState<Faixa>("todos");
+  // O funil e o dashboard chegam aqui com a faixa na URL ("?faixa=encerrado").
+  const [params] = useSearchParams();
+  const faixaInicial = params.get("faixa");
+  const [faixa, setFaixa] = useState<Faixa>(
+    FAIXA_ORDEM.includes(faixaInicial as Faixa) ? (faixaInicial as Faixa) : "todos",
+  );
 
   const leads = query.data;
 
