@@ -497,7 +497,7 @@ Atualização de escopo (20 jul 2026): o **compartilhamento de imóveis com a le
 3. "Novo compromisso" (ou selecionar um horário no calendário) abre "O que deseja criar?": Tarefa, Compromisso geral, e — em breve — Visita e Bloqueio.
 4. A tarefa pede título e data (dia inteiro por padrão, ou horário), com lead, tipo e lembrete opcionais. O compromisso pede título, início, fim e local opcional.
 5. Ao salvar em horário ocupado, o sistema avisa o conflito e deixa confirmar mesmo assim.
-6. Tocar num evento abre as ações: tarefa concluir/editar/reagendar/abrir lead/excluir; compromisso editar/duplicar/excluir. Excluir sempre confirma.
+6. Tocar num evento abre a folha do evento (17 set 2026): primeiro o que ele é (tipo e situação, data por extenso com "Hoje"/"Amanhã", horário e duração, cliente, imóvel, local, lembrete, observação), depois as ações. Tarefa pendente: "Concluir tarefa" como ação principal, "Editar ou reagendar" e "Abrir cliente" secundários. Compromisso: "Editar" e "Duplicar". Excluir é um link discreto no fim e sempre confirma.
 
 **Estados e exceções.**
 - Vazio orienta a próxima ação (criar tarefa, agendar visita, conectar Google) em vez de tela morta.

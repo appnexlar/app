@@ -9,6 +9,7 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { DateSelectArg, EventClickArg, DatesSetArg } from "@fullcalendar/core";
 import ptBrLocale from "@fullcalendar/core/locales/pt-br";
+import { Bell, Building2, Clock, MapPin, User } from "lucide-react";
 import type { AgendaEventSummary, AgendaEventType, AgendaListQuery } from "@nexlar/shared";
 import { Banner } from "../../components/ui/Banner";
 import { Button } from "../../components/ui/Button";
@@ -26,9 +27,14 @@ import { VisitAvailabilitySection } from "./VisitAvailabilitySection";
 import { usePageAction } from "../shell/ShellContext";
 import {
   STATUS_LABELS,
+  TASK_KIND_LABELS,
   TYPE_LABELS,
   TYPE_STYLE,
+  formatDuration,
+  formatLongDate,
+  formatReminder,
   formatTime,
+  relativeDayLabel,
   toDateInput,
   toTimeInput,
 } from "./labels";
@@ -568,6 +574,12 @@ function CreateChooser({
   );
 }
 
+/**
+ * Folha do evento: primeiro o que é (quando, onde, com quem), depois o que
+ * fazer. O corretor abre para conferir, não para editar; editar é a exceção,
+ * então fica em botão secundário. Concluir tarefa é a ação principal quando
+ * cabe. Excluir é discreto e sempre passa por confirmação.
+ */
 function EventActionSheet({
   event,
   completing,
@@ -590,64 +602,132 @@ function EventActionSheet({
   const style = TYPE_STYLE[event.type];
   const isTask = event.type === "tarefa";
   const done = CLOSED.has(event.status);
+  const relativo = relativeDayLabel(event.startAt);
+  const duracao = event.allDay ? "" : formatDuration(event.startAt, event.endAt);
+  const lembrete = formatReminder(event.reminderMinutes);
+  const horario = event.allDay
+    ? "Dia inteiro"
+    : event.endAt
+      ? `${formatTime(event.startAt)} às ${formatTime(event.endAt)}`
+      : formatTime(event.startAt);
+
   return (
     <Modal open onClose={onClose} title={event.title}>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className={`inline-flex items-center gap-1.5 rounded-full ${style.chipBg} px-2.5 py-1 text-caption font-semibold ${style.chipText}`}>
             <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} aria-hidden="true" />
             {TYPE_LABELS[event.type]}
+            {isTask && event.taskKind && ` · ${TASK_KIND_LABELS[event.taskKind]}`}
           </span>
-          <span className="text-caption text-text-muted">{STATUS_LABELS[event.status]}</span>
+          <span
+            className={
+              "rounded-full px-2.5 py-1 text-caption font-semibold " +
+              (done ? "bg-surface-sunken text-text-subtle" : "bg-[var(--success-soft)] text-[var(--success-fg)]")
+            }
+          >
+            {STATUS_LABELS[event.status]}
+          </span>
         </div>
-        {event.leadName && (
-          <p className="text-body-sm text-text-muted">Lead: {event.leadName}</p>
-        )}
-        {event.location && (
-          <p className="text-body-sm text-text-muted">Local: {event.location}</p>
-        )}
-        {event.description && (
-          <p className="text-body-sm text-text-muted">{event.description}</p>
+
+        {/* Quando: é a primeira pergunta de quem abre um evento. */}
+        <div className={`rounded-lg ${style.softBg} px-4 py-3`}>
+          <p className="text-caption font-semibold uppercase tracking-wide text-text-muted">
+            {relativo ? `${relativo} · ` : ""}
+            {formatLongDate(event.startAt)}
+          </p>
+          <p className="mt-0.5 text-h3 font-bold tabular-nums text-text">
+            {horario}
+            {duracao && <span className="ml-2 text-body-sm font-medium text-text-muted">{duracao}</span>}
+          </p>
+        </div>
+
+        {/* Detalhes: só o que foi preenchido. */}
+        {(event.leadName || event.propertyTitle || event.location || lembrete || event.description) && (
+          <dl className="flex flex-col gap-2.5">
+            {event.leadName && (
+              <Detail icon={<User size={16} aria-hidden="true" />} label="Cliente">
+                {event.leadId ? (
+                  <button type="button" onClick={onOpenLead} className="font-semibold text-accent underline-offset-2 hover:underline">
+                    {event.leadName}
+                  </button>
+                ) : (
+                  event.leadName
+                )}
+              </Detail>
+            )}
+            {event.propertyTitle && (
+              <Detail icon={<Building2 size={16} aria-hidden="true" />} label="Imóvel">
+                {event.propertyTitle}
+              </Detail>
+            )}
+            {event.location && (
+              <Detail icon={<MapPin size={16} aria-hidden="true" />} label="Local">
+                {event.location}
+              </Detail>
+            )}
+            {lembrete && (
+              <Detail icon={<Bell size={16} aria-hidden="true" />} label="Lembrete">
+                {lembrete}
+              </Detail>
+            )}
+            {event.description && (
+              <Detail icon={<Clock size={16} aria-hidden="true" />} label="Observação">
+                <span className="whitespace-pre-line">{event.description}</span>
+              </Detail>
+            )}
+          </dl>
         )}
 
-        <div className="flex flex-col divide-y divide-border overflow-hidden rounded-lg border border-border">
+        {/* Ações: uma principal, o resto secundário, excluir discreto. */}
+        <div className="flex flex-col gap-2 border-t border-border pt-4">
           {isTask && !done && (
-            <SheetItem label={completing ? "Concluindo..." : "Concluir"} onClick={onComplete} />
+            <Button type="button" variant="success" fullWidth loading={completing} onClick={onComplete}>
+              Concluir tarefa
+            </Button>
           )}
-          <SheetItem label="Editar" onClick={onEdit} />
-          {isTask ? (
-            <SheetItem label="Reagendar" onClick={onEdit} />
-          ) : (
-            <SheetItem label="Duplicar" onClick={onDuplicate} />
-          )}
-          {event.leadId && <SheetItem label="Abrir cliente" onClick={onOpenLead} />}
-          <SheetItem label="Excluir" onClick={onDelete} danger />
+          <div className="grid grid-cols-2 gap-2">
+            <Button type="button" variant="ghost" fullWidth onClick={onEdit}>
+              {isTask ? "Editar ou reagendar" : "Editar"}
+            </Button>
+            {isTask ? (
+              event.leadId ? (
+                <Button type="button" variant="ghost" fullWidth onClick={onOpenLead}>
+                  Abrir cliente
+                </Button>
+              ) : (
+                <Button type="button" variant="ghost" fullWidth onClick={onClose}>
+                  Fechar
+                </Button>
+              )
+            ) : (
+              <Button type="button" variant="ghost" fullWidth onClick={onDuplicate}>
+                Duplicar
+              </Button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="mt-1 self-center px-3 py-2 text-body-sm font-semibold text-[var(--danger-fg)] transition-colors hover:underline"
+          >
+            Excluir {isTask ? "tarefa" : TYPE_LABELS[event.type].toLowerCase()}
+          </button>
         </div>
       </div>
     </Modal>
   );
 }
 
-function SheetItem({
-  label,
-  onClick,
-  danger,
-}: {
-  label: string;
-  onClick: () => void;
-  danger?: boolean;
-}) {
+function Detail({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        "block w-full px-4 py-3.5 text-left text-body transition-colors hover:bg-surface-sunken " +
-        (danger ? "text-[var(--danger-fg)]" : "text-text")
-      }
-    >
-      {label}
-    </button>
+    <div className="flex items-start gap-3">
+      <span className="mt-0.5 shrink-0 text-text-subtle">{icon}</span>
+      <div className="min-w-0">
+        <dt className="text-caption text-text-subtle">{label}</dt>
+        <dd className="text-body-sm text-text">{children}</dd>
+      </div>
+    </div>
   );
 }
 
