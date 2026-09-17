@@ -88,6 +88,55 @@ const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", {
   timeZone: SP,
 });
 
+const longDateFmt = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  timeZone: SP,
+});
+
+/** "quinta-feira, 17 de setembro", para o topo da folha do evento. */
+export function formatLongDate(iso: string): string {
+  return longDateFmt.format(new Date(iso));
+}
+
+/** "Hoje", "Amanhã", "Ontem" ou vazio, para acompanhar a data longa. */
+export function relativeDayLabel(iso: string): string {
+  const dia = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: SP }).format(d);
+  const alvo = dia(new Date(iso));
+  const hoje = new Date();
+  if (alvo === dia(hoje)) return "Hoje";
+  const amanha = new Date(hoje.getTime() + 86_400_000);
+  if (alvo === dia(amanha)) return "Amanhã";
+  const ontem = new Date(hoje.getTime() - 86_400_000);
+  if (alvo === dia(ontem)) return "Ontem";
+  return "";
+}
+
+/** "1h30", "45 min", ou vazio sem fim. */
+export function formatDuration(startIso: string, endIso: string | null): string {
+  if (!endIso) return "";
+  const min = Math.round((new Date(endIso).getTime() - new Date(startIso).getTime()) / 60_000);
+  if (min <= 0) return "";
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, "0")}`;
+}
+
+/** "15 minutos antes", "1 dia antes", "Na hora". */
+export function formatReminder(minutes: number | null): string | null {
+  if (minutes == null) return null;
+  if (minutes === 0) return "Na hora";
+  if (minutes < 60) return `${minutes} minutos antes`;
+  if (minutes < 1440) {
+    const h = minutes / 60;
+    return h === 1 ? "1 hora antes" : `${h} horas antes`;
+  }
+  const d = minutes / 1440;
+  return d === 1 ? "1 dia antes" : `${d} dias antes`;
+}
+
 export function formatTime(iso: string): string {
   return timeFmt.format(new Date(iso));
 }
